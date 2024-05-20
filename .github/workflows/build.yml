@@ -1,0 +1,29 @@
+name: Android CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+    - name: set up android development environment
+      uses: android-actions/setup-android@v2
+
+    - name: install dependencies
+      run: |
+        sdkmanager --install "cmake;3.22.1"
+        echo "cmake.dir=/usr/local/lib/android/sdk/cmake/3.22.1" > local.properties
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+    - name: Build with Gradle
+      run: ./gradlew build
+    - uses: actions/upload-artifact@v2
+      with:
+        name: GakumasLocalify
+        path: app/build/outputs/apk/debug/app-debug.apk
