@@ -161,7 +161,8 @@ namespace GakumasLocal::HookMain {
             return TMP_Text_set_text_Orig(_this, UnityResolve::UnityType::String::New(transText));
         }
 
-        TMP_Text_set_text_Orig(_this, UnityResolve::UnityType::String::New("[TS]" + text->ToString()));
+        // TMP_Text_set_text_Orig(_this, UnityResolve::UnityType::String::New("[TS]" + text->ToString()));
+        TMP_Text_set_text_Orig(_this, text);
 
         static auto set_font = Il2cppUtils::GetMethod("Unity.TextMeshPro.dll",
                                                       "TMPro", "TMP_Text", "set_font");
@@ -192,7 +193,8 @@ namespace GakumasLocal::HookMain {
     }
 
     DEFINE_HOOK(void, UI_Text_set_text, (void* _this, Il2cppString* value)) {
-        UI_Text_set_text_Orig(_this, Il2cppString::New("[US]" + value->ToString()));
+        // UI_Text_set_text_Orig(_this, Il2cppString::New("[US]" + value->ToString()));
+        UI_Text_set_text_Orig(_this, value);
 
         static auto set_font = Il2cppUtils::GetMethod("Unity.TextMeshPro.dll", "TMPro",
                                                       "TMP_Text", "set_font");
