@@ -1,0 +1,3 @@
+[submodule "app/src/main/assets/gakumas-local"]
+	path = app/src/main/assets/gakumas-local
+	url = https://github.com/chinosk6/GakumasTranslationData.git
