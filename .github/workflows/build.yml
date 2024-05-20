@@ -19,6 +19,12 @@ jobs:
         sdkmanager --install "cmake;3.22.1"
         echo "cmake.dir=/usr/local/lib/android/sdk/cmake/3.22.1" > local.properties
 
+    - name: Setup Java JDK
+      uses: actions/setup-java@v4.2.1
+      with:
+        distribution: 'temurin'
+        java-version: '21'
+              
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Build with Gradle
