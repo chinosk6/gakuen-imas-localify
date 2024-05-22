@@ -13,6 +13,7 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:padding="6sp"
         tools:context=".MainActivity">
 
         <LinearLayout
@@ -39,7 +40,8 @@
             <TableLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:stretchColumns="0">
 
                 <TableRow
                     android:layout_width="match_parent"
@@ -47,7 +49,7 @@
 
                     <com.google.android.material.switchmaterial.SwitchMaterial
                         android:id="@+id/SwitchEnablePlugin"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="48dp"
                         android:checked="@={config.enabled}"
                         android:onCheckedChanged="@{(view, value) -> listener.onEnabledChanged(value)}"
@@ -60,7 +62,7 @@
 
                     <com.google.android.material.switchmaterial.SwitchMaterial
                         android:id="@+id/SwitchEnableFreeCameraPlugin"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="48dp"
                         android:checked="@={config.enableFreeCamera}"
                         android:onCheckedChanged="@{(view, value) -> listener.onEnableFreeCameraChanged(value)}"
@@ -72,7 +74,7 @@
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/StartGameButton"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="48dp"
                         android:onClick="@{() -> listener.onClickStartGame()}"
                         android:text="@string/start_game" />
