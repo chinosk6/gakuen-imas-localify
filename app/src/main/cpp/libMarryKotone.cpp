@@ -5,8 +5,9 @@
 #include <android/log.h>
 #include "string"
 #include "shadowhook.h"
-
 #include "xdl.h"
+#include "GakumasLocalify/camera/camera.hpp"
+#include "GakumasLocalify/config/Config.hpp"
 
 namespace
 {
@@ -24,9 +25,9 @@ namespace
             xdl_close(m_Il2CppLibrary);
         }
 
-        void InstallHook(void* addr, void* hook, void** orig) override
+        void* InstallHook(void* addr, void* hook, void** orig) override
         {
-            shadowhook_hook_func_addr(addr, hook, orig);
+            return shadowhook_hook_func_addr(addr, hook, orig);
         }
 
         GakumasLocal::OpaqueFunctionPointer LookupSymbol(const char* name) override
@@ -44,8 +45,6 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_io_github_chinosk_gakumas_localify_GakumasHookMain_initHook(JNIEnv *env, jclass clazz, jstring targetLibraryPath,
                                                                  jstring localizationFilesDir) {
-    GakumasLocal::Log::Info("Hello initHook!");
-
     const auto targetLibraryPathChars = env->GetStringUTFChars(targetLibraryPath, nullptr);
     const std::string targetLibraryPathStr = targetLibraryPathChars;
 
@@ -54,4 +53,19 @@ Java_io_github_chinosk_gakumas_localify_GakumasHookMain_initHook(JNIEnv *env, jc
 
     auto& plugin = GakumasLocal::Plugin::GetInstance();
     plugin.InstallHook(std::make_unique<AndroidHookInstaller>(targetLibraryPathStr, localizationFilesDirCharsStr));
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_io_github_chinosk_gakumas_localify_GakumasHookMain_keyboardEvent(JNIEnv *env, jclass clazz, jint key_code, jint action) {
+    GKCamera::on_cam_rawinput_keyboard(action, key_code);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_io_github_chinosk_gakumas_localify_GakumasHookMain_loadConfig(JNIEnv *env, jclass clazz,
+                                                                   jstring config_json_str) {
+    const auto configJsonStrChars = env->GetStringUTFChars(config_json_str, nullptr);
+    const std::string configJson = configJsonStrChars;
+    GakumasLocal::Config::LoadConfig(configJson);
 }

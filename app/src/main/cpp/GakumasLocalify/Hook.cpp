@@ -6,7 +6,14 @@
 #include "Il2cppUtils.hpp"
 #include "Local.h"
 #include <unordered_set>
+#include "camera/camera.hpp"
+#include "config/Config.hpp"
+#include "shadowhook.h"
+#include <jni.h>
+#include <thread>
 
+
+std::unordered_set<void*> hookedStubs{};
 
 #define DEFINE_HOOK(returnType, name, params)                                                      \
 	using name##_Type = returnType(*) params;                                                      \
@@ -18,13 +25,32 @@
 #define ADD_HOOK(name, addr)                                                                       \
 	name##_Addr = reinterpret_cast<name##_Type>(addr);                                             \
 	if (addr) {                                                                                    \
-    	hookInstaller->InstallHook(reinterpret_cast<void*>(addr),                                  \
-                                   reinterpret_cast<void*>(name##_Hook),                           \
-                                   reinterpret_cast<void**>(&name##_Orig));                        \
-        GakumasLocal::Log::InfoFmt("ADD_HOOK: %s at %p", #name, addr);                             \
+    	auto stub = hookInstaller->InstallHook(reinterpret_cast<void*>(addr),                      \
+                                               reinterpret_cast<void*>(name##_Hook),               \
+                                               reinterpret_cast<void**>(&name##_Orig));            \
+        if (stub == NULL) {                                                                        \
+            int error_num = shadowhook_get_errno();                                                \
+            const char *error_msg = shadowhook_to_errmsg(error_num);                               \
+            Log::ErrorFmt("ADD_HOOK: %s at %p failed: %s", #name, addr, error_msg);                \
+        }                                                                                          \
+        else {                                                                                     \
+            hookedStubs.emplace(stub);                                                             \
+            GakumasLocal::Log::InfoFmt("ADD_HOOK: %s at %p", #name, addr);                         \
+        }                                                                                          \
     }                                                                                              \
     else GakumasLocal::Log::ErrorFmt("Hook failed: %s is NULL", #name, addr)
 
+void UnHookAll() {
+    for (const auto i: hookedStubs) {
+        int result = shadowhook_unhook(i);
+        if(result != 0)
+        {
+            int error_num = shadowhook_get_errno();
+            const char *error_msg = shadowhook_to_errmsg(error_num);
+            GakumasLocal::Log::ErrorFmt("unhook failed: %d - %s", error_num, error_msg);
+        }
+    }
+}
 
 namespace GakumasLocal::HookMain {
     using Il2cppString = UnityResolve::UnityType::String;
@@ -56,6 +82,52 @@ namespace GakumasLocal::HookMain {
         Internal_Log_Orig(logType, logOption, content, context);
         // 2022.3.21f1
         // Log::LogFmt(ANDROID_LOG_VERBOSE, "UnityLog - Internal_Log: %s", content->ToString().c_str());
+    }
+
+    UnityResolve::UnityType::Camera* mainCameraCache = nullptr;
+    UnityResolve::UnityType::Transform* cameraTransformCache = nullptr;
+    void CheckAndUpdateMainCamera() {
+        if (!Config::enableFreeCamera) return;
+        static auto IsNativeObjectAlive = Il2cppUtils::GetMethod("UnityEngine.CoreModule.dll", "UnityEngine",
+                                                                 "Object", "IsNativeObjectAlive");
+
+        if (IsNativeObjectAlive->Invoke<bool>(mainCameraCache)) return;
+
+        mainCameraCache = UnityResolve::UnityType::Camera::GetMain();
+        cameraTransformCache = mainCameraCache->GetTransform();
+    }
+
+    DEFINE_HOOK(void, Unity_set_position_Injected, (UnityResolve::UnityType::Transform* _this, UnityResolve::UnityType::Vector3* data)) {
+        if (Config::enableFreeCamera) {
+            CheckAndUpdateMainCamera();
+
+            if (cameraTransformCache == _this) {
+                //Log::DebugFmt("MainCamera set pos: %f, %f, %f", data->x, data->y, data->z);
+                auto& origCameraPos = GKCamera::baseCamera.pos;
+                data->x = origCameraPos.x;
+                data->y = origCameraPos.y;
+                data->z = origCameraPos.z;
+            }
+        }
+
+        return Unity_set_position_Injected_Orig(_this, data);
+    }
+
+    DEFINE_HOOK(void, Unity_set_rotation_Injected, (UnityResolve::UnityType::Transform* _this, UnityResolve::UnityType::Quaternion* value)) {
+        if (Config::enableFreeCamera) {
+            if (cameraTransformCache == _this) {
+                auto& origCameraLookat = GKCamera::baseCamera.lookAt;
+                static auto lookat_injected = reinterpret_cast<void (*)(void*_this,
+                                                                        UnityResolve::UnityType::Vector3* worldPosition, UnityResolve::UnityType::Vector3* worldUp)>(
+                        Il2cppUtils::il2cpp_resolve_icall(
+                                "UnityEngine.Transform::Internal_LookAt_Injected(UnityEngine.Vector3&,UnityEngine.Vector3&)"));
+                static auto worldUp = UnityResolve::UnityType::Vector3(0, 1, 0);
+                lookat_injected(_this, &origCameraLookat, &worldUp);
+                // TODO 相机 FOV
+                return;
+            }
+        }
+        return Unity_set_rotation_Injected_Orig(_this, value);
     }
 
     std::unordered_map<void*, std::string> loadHistory{};
@@ -192,14 +264,10 @@ namespace GakumasLocal::HookMain {
         TextMeshProUGUI_Awake_Orig(_this, method);
     }
 
-    DEFINE_HOOK(void, UI_Text_set_text, (void* _this, Il2cppString* value)) {
-        // UI_Text_set_text_Orig(_this, Il2cppString::New("[US]" + value->ToString()));
-        UI_Text_set_text_Orig(_this, value);
-
-        static auto set_font = Il2cppUtils::GetMethod("Unity.TextMeshPro.dll", "TMPro",
-                                                      "TMP_Text", "set_font");
-        auto newFont = GetReplaceFont();
-        set_font->Invoke<void>(_this, newFont);
+    // TODO 文本未hook完整 思路：从tips下手...
+    DEFINE_HOOK(void, TextField_set_value, (void* _this, Il2cppString* value)) {
+        Log::DebugFmt("TextField_set_value: %s", value->ToString().c_str());
+        TextField_set_value_Orig(_this, value);
     }
 
     DEFINE_HOOK(Il2cppString*, OctoCaching_GetResourceFileName, (void* data, void* method)) {
@@ -273,8 +341,8 @@ namespace GakumasLocal::HookMain {
         ADD_HOOK(TMP_Text_set_text, Il2cppUtils::GetMethodPointer("Unity.TextMeshPro.dll", "TMPro",
                                                                       "TMP_Text", "set_text"));
 
-        ADD_HOOK(UI_Text_set_text, Il2cppUtils::GetMethodPointer("UnityEngine.UI.dll", "UnityEngine.UI",
-                                                                  "Text", "set_text"));
+        ADD_HOOK(TextField_set_value, Il2cppUtils::GetMethodPointer("UnityEngine.UIElementsModule.dll", "UnityEngine.UIElements",
+                                                                  "TextField", "set_value"));
 
         ADD_HOOK(OctoCaching_GetResourceFileName, Il2cppUtils::GetMethodPointer("Octo.dll", "Octo.Caching",
                                                                      "OctoCaching", "GetResourceFileName"));
@@ -292,6 +360,11 @@ namespace GakumasLocal::HookMain {
                 "UnityEngine.DebugLogHandler::Internal_LogException(System.Exception,UnityEngine.Object)"));
         ADD_HOOK(Internal_Log, Il2cppUtils::il2cpp_resolve_icall(
                 "UnityEngine.DebugLogHandler::Internal_Log(UnityEngine.LogType,UnityEngine.LogOption,System.String,UnityEngine.Object)"));
+
+        ADD_HOOK(Unity_set_position_Injected, Il2cppUtils::il2cpp_resolve_icall(
+                "UnityEngine.Transform::set_position_Injected(UnityEngine.Vector3&)"));
+        ADD_HOOK(Unity_set_rotation_Injected, Il2cppUtils::il2cpp_resolve_icall(
+                "UnityEngine.Transform::set_rotation_Injected(UnityEngine.Quaternion&)"));
     }
     // 77 2640 5000
 
@@ -299,9 +372,20 @@ namespace GakumasLocal::HookMain {
         const auto ret = il2cpp_init_Orig(domain_name);
         // InjectFunctions();
 
+        Log::Info("Waiting for config...");
+
+        while (!Config::isConfigInit) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+        if (!Config::enabled) {
+            Log::Info("Plugin not enabled");
+            return ret;
+        }
+
         Log::Info("Start init plugin...");
 
         StartInjectFunctions();
+        GKCamera::initCameraSettings();
         Local::LoadData();
 
         Log::Info("Plugin init finished.");

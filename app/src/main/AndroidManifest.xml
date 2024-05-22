@@ -8,7 +8,6 @@
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.GakumasLocalify"
         tools:targetApi="31">
@@ -16,19 +15,15 @@
         <meta-data
             android:name="xposedmodule"
             android:value="true" />
-
         <meta-data
             android:name="xposeddescription"
             android:value="IDOLM@STER Gakuen localify" />
-
         <meta-data
             android:name="xposedminversion"
             android:value="53" />
-
         <meta-data
             android:name="xposedsharedprefs"
             android:value="true" />
-
 
         <activity
             android:name=".MainActivity"

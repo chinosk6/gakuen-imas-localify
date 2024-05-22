@@ -36,12 +36,15 @@ find_package(shadowhook REQUIRED CONFIG)
 # used in the AndroidManifest.xml file.
 add_library(${CMAKE_PROJECT_NAME} SHARED
     # List C/C++ source files with relative paths to this CMakeLists.txt.
-        localify.cpp
+        libMarryKotone.cpp
         GakumasLocalify/Plugin.cpp
         GakumasLocalify/Hook.cpp
         GakumasLocalify/Log.cpp
         GakumasLocalify/Misc.cpp
         GakumasLocalify/Local.cpp
+        GakumasLocalify/camera/baseCamera.cpp
+        GakumasLocalify/camera/camera.cpp
+        GakumasLocalify/config/Config.cpp
         )
 
 target_link_libraries(${CMAKE_PROJECT_NAME} xdl::xdl)

@@ -9,7 +9,7 @@ namespace GakumasLocal {
     struct HookInstaller
     {
         virtual ~HookInstaller();
-        virtual void InstallHook(void* addr, void* hook, void** orig) = 0;
+        virtual void* InstallHook(void* addr, void* hook, void** orig) = 0;
         virtual OpaqueFunctionPointer LookupSymbol(const char* name) = 0;
 
         std::string m_il2cppLibraryPath;

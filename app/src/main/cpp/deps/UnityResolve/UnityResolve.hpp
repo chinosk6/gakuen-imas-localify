@@ -45,6 +45,7 @@
 
 #include "xdl.h"
 #include "../../GakumasLocalify/Log.h"
+#include "../../GakumasLocalify/Misc.h"
 
 class UnityResolve final {
 public:

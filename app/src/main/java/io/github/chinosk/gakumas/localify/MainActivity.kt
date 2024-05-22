@@ -1,48 +1,94 @@
 package io.github.chinosk.gakumas.localify
 
-import android.os.Bundle
-import android.util.Log
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import io.github.chinosk.gakumas.localify.ui.theme.GakumasLocalifyTheme
 
-class MainActivity : ComponentActivity() {
+import android.content.Intent
+import androidx.appcompat.app.AppCompatActivity
+import android.os.Bundle
+import android.widget.Toast
+import androidx.databinding.DataBindingUtil
+import com.google.gson.Gson
+import com.google.gson.JsonSyntaxException
+import io.github.chinosk.gakumas.localify.databinding.ActivityMainBinding
+import io.github.chinosk.gakumas.localify.models.GakumasConfig
+import java.io.File
+
+
+interface ConfigListener {
+    fun onClickStartGame()
+    fun onEnabledChanged(value: Boolean)
+    fun onEnableFreeCameraChanged(value: Boolean)
+}
+
+class MainActivity : AppCompatActivity(), ConfigListener {
+    private lateinit var config: GakumasConfig
+    private val TAG = "GakumasLocalify"
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.i("GakumasLocal", "Hello Producer!")
-        setContent {
-            GakumasLocalifyTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    Greeting("Producer")
-                }
-            }
+        setContentView(R.layout.activity_main)
+
+        loadConfig()
+
+        val requestData = intent.getStringExtra("gkmsData")
+        if (requestData != null) {
+            onClickStartGame()
+            finish()
+        }
+
+        val binding = DataBindingUtil.setContentView<ActivityMainBinding>(this, R.layout.activity_main)
+        binding.config = config
+        binding.listener = this
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun getConfigContent(): String {
+        val configFile = File(filesDir, "gkms-config.json")
+        return if (configFile.exists()) {
+            configFile.readText()
+        }
+        else {
+            showToast("检测到第一次启动，初始化配置文件...")
+            "{}"
         }
     }
-}
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+    private fun loadConfig() {
+        val configStr = getConfigContent()
+        val config = try {
+            Gson().fromJson(configStr, GakumasConfig::class.java)
+        }
+        catch (e: JsonSyntaxException) {
+            showToast("配置文件异常，已重置: $e")
+            Gson().fromJson("{}", GakumasConfig::class.java)
+        }
+        this.config = config
+        saveConfig()
+    }
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    GakumasLocalifyTheme {
-        Greeting("Producer")
+    private fun saveConfig() {
+        val configFile = File(filesDir, "gkms-config.json")
+        configFile.writeText(Gson().toJson(config))
+    }
+
+    override fun onEnabledChanged(value: Boolean) {
+        config.enabled = value
+        saveConfig()
+    }
+
+    override fun onEnableFreeCameraChanged(value: Boolean) {
+        config.enableFreeCamera = value
+        saveConfig()
+    }
+
+    override fun onClickStartGame() {
+        val intent = Intent().apply {
+            setClassName("com.bandainamcoent.idolmaster_gakuen", "com.google.firebase.MessagingUnityPlayerActivity")
+            putExtra("gkmsData", getConfigContent())
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        startActivity(intent)
     }
 }
