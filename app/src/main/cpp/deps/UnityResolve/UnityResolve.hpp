@@ -530,6 +530,9 @@ public:
             if (!xdlAddr) {
                 address_[funcName] = dlsym(hmodule_, funcName.c_str());
             }
+            else {
+                address_[funcName] = xdlAddr;
+            }
 		}
 #endif
 
