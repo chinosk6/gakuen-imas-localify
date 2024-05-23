@@ -5,11 +5,18 @@
 
 
 
+# How to use
+
+- 这是一个 XPosed 插件，已 Root 用户可以使用 [LSPosed](https://github.com/LSPosed/LSPosed)，未 Root 用户可以使用 [LSPatch](https://github.com/LSPosed/LSPatch)。以上两个框架均测试通过，能正常运行。
+
+
+
 # TODO
 
 - [ ] 卡片信息、TIP等部分的文本 hook
-- [ ] 自定义配置
+- [x] 自定义配置
 - [ ] 更多类型的文件替换
+- [ ] 自由视角 FOV 调整
 
 ... and more
 
