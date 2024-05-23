@@ -7,7 +7,7 @@ namespace BaseCamera {
 
 	float moveStep = 0.05;
 	float look_radius = 5;  // 转向半径
-	float moveAngel = 1.5;  // 转向角度
+	float moveAngel = 1;  // 转向角度
 
 	int smoothLevel = 1;
 	unsigned long sleepTime = 0;

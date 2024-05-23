@@ -33,6 +33,10 @@ object FilesChecker {
 
     fun updateFiles() {
         Log.i("GakumasLocal", "Updating files...")
+        val pluginBasePath = File(filesDir, localizationFilesDir)
+        if (!pluginBasePath.exists()) {
+            pluginBasePath.mkdirs()
+        }
 
         val assets = XModuleResources.createInstance(modulePath, null).assets
         fun forAllAssetFiles(
