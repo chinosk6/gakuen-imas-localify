@@ -130,6 +130,11 @@ namespace GakumasLocal::HookMain {
         return Unity_set_rotation_Injected_Orig(_this, value);
     }
 
+    DEFINE_HOOK(void, Unity_set_targetFrameRate, (int value)) {
+        const auto configFps = Config::targetFrameRate;
+        return Unity_set_targetFrameRate_Orig(configFps == 0 ? value: configFps);
+    }
+
     std::unordered_map<void*, std::string> loadHistory{};
 
     DEFINE_HOOK(void*, AssetBundle_LoadAssetAsync, (void* _this, Il2cppString* name, void* type)) {
@@ -365,6 +370,8 @@ namespace GakumasLocal::HookMain {
                 "UnityEngine.Transform::set_position_Injected(UnityEngine.Vector3&)"));
         ADD_HOOK(Unity_set_rotation_Injected, Il2cppUtils::il2cpp_resolve_icall(
                 "UnityEngine.Transform::set_rotation_Injected(UnityEngine.Quaternion&)"));
+        ADD_HOOK(Unity_set_targetFrameRate, Il2cppUtils::il2cpp_resolve_icall(
+                "UnityEngine.Application::set_targetFrameRate(System.Int32)"));
     }
     // 77 2640 5000
 

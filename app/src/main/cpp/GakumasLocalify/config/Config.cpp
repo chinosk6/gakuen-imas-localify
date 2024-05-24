@@ -7,12 +7,14 @@ namespace GakumasLocal::Config {
 
     bool enabled = true;
     bool enableFreeCamera = false;
+    int targetFrameRate = 0;
 
     void LoadConfig(const std::string& configStr) {
         try {
             const auto config = nlohmann::json::parse(configStr);
 
             enabled = config["enabled"];
+            targetFrameRate = config["targetFrameRate"];
             enableFreeCamera = config["enableFreeCamera"];
 
         }

@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
     <data>
         <variable name="config" type="io.github.chinosk.gakumas.localify.models.GakumasConfig" />
         <variable
@@ -9,8 +11,6 @@
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="6sp"
@@ -60,6 +60,33 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
 
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        app:boxBackgroundColor="@android:color/transparent"
+                        android:background="@android:color/transparent"
+                        android:hint="@string/setFpsTitle" >
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/editTextTargetFps"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:ems="10"
+                            android:inputType="numberSigned"
+                            android:paddingStart="0dp"
+                            android:paddingEnd="0dp"
+                            android:paddingBottom="0dp"
+                            android:text="@={`` + config.targetFrameRate}"
+                            android:onTextChanged="@{(s, st, b, a) -> listener.onTargetFpsChanged(s, st, b, a)}"/>
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
                     <com.google.android.material.switchmaterial.SwitchMaterial
                         android:id="@+id/SwitchEnableFreeCameraPlugin"
                         android:layout_width="match_parent"
@@ -68,6 +95,7 @@
                         android:onCheckedChanged="@{(view, value) -> listener.onEnableFreeCameraChanged(value)}"
                         android:text="@string/enable_free_camera" />
                 </TableRow>
+
                 <TableRow
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">

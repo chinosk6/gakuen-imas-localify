@@ -7,6 +7,7 @@ namespace GakumasLocal::Config {
 
     extern bool enabled;
     extern bool enableFreeCamera;
+    extern int targetFrameRate;
 
     void LoadConfig(const std::string& configStr);
 }

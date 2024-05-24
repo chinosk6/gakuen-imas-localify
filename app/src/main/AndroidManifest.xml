@@ -25,6 +25,10 @@
             android:name="xposedsharedprefs"
             android:value="true" />
 
+        <meta-data
+            android:name="xposedscope"
+            android:value="com.bandainamcoent.idolmaster_gakuen" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

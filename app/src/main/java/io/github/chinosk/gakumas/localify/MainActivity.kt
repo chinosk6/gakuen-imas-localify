@@ -4,6 +4,7 @@ package io.github.chinosk.gakumas.localify
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import com.google.gson.Gson
@@ -17,6 +18,7 @@ interface ConfigListener {
     fun onClickStartGame()
     fun onEnabledChanged(value: Boolean)
     fun onEnableFreeCameraChanged(value: Boolean)
+    fun onTargetFpsChanged(s: CharSequence, start: Int, before: Int, count: Int)
 }
 
 class MainActivity : AppCompatActivity(), ConfigListener {
@@ -81,6 +83,23 @@ class MainActivity : AppCompatActivity(), ConfigListener {
     override fun onEnableFreeCameraChanged(value: Boolean) {
         config.enableFreeCamera = value
         saveConfig()
+    }
+
+    override fun onTargetFpsChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+        try {
+            val valueStr = s.toString()
+
+            val value = if (valueStr == "") {
+                0
+            } else {
+                valueStr.toInt()
+            }
+            config.targetFrameRate = value
+            saveConfig()
+        }
+        catch (e: Exception) {
+            return
+        }
     }
 
     override fun onClickStartGame() {
