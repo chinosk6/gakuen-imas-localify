@@ -100,6 +100,81 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
 
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/SwitchUnlockAllLive"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:checked="@={config.unlockAllLive}"
+                        android:onCheckedChanged="@{(view, value) -> listener.onUnlockAllLiveChanged(value)}"
+                        android:text="@string/unlockAllLive" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/SwitchLiveUseCustomeDress"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:checked="@={config.enableLiveCustomeDress}"
+                        android:onCheckedChanged="@{(view, value) -> listener.onLiveCustomeDressChanged(value)}"
+                        android:text="@string/liveUseCustomeDress" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        app:boxBackgroundColor="@android:color/transparent"
+                        android:background="@android:color/transparent"
+                        android:hint="@string/live_costume_head_id" >
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/editTextLiveCustomeCharaId"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:ems="10"
+                            android:paddingStart="0dp"
+                            android:paddingEnd="0dp"
+                            android:paddingBottom="0dp"
+                            android:text="@={config.liveCustomeHeadId}"
+                            android:onTextChanged="@{(s, st, b, a) -> listener.onLiveCustomeHeadIdChanged(s, st, b, a)}"/>
+
+                    </com.google.android.material.textfield.TextInputLayout>
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        app:boxBackgroundColor="@android:color/transparent"
+                        android:background="@android:color/transparent"
+                        android:hint="@string/live_custome_dress_id" >
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/editTextLiveCustomeCostumeId"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:ems="10"
+                            android:paddingStart="0dp"
+                            android:paddingEnd="0dp"
+                            android:paddingBottom="0dp"
+                            android:text="@={config.liveCustomeCostumeId}"
+                            android:onTextChanged="@{(s, st, b, a) -> listener.onLiveCustomeCostumeIdChanged(s, st, b, a)}"/>
+                    </com.google.android.material.textfield.TextInputLayout>
+                </TableRow>
+
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/StartGameButton"
                         android:layout_width="match_parent"

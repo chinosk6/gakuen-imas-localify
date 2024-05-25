@@ -2,6 +2,7 @@
 #define GAKUMAS_LOCALIFY_LOG_H
 
 namespace GakumasLocal::Log {
+    void LogUnityLog(int prio, const char* fmt, ...);
     void LogFmt(int prio, const char* fmt, ...);
     void Info(const char* msg);
     void InfoFmt(const char* fmt, ...);

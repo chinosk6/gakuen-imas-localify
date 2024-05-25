@@ -75,13 +75,14 @@ namespace GakumasLocal::HookMain {
 
     DEFINE_HOOK(void, Internal_LogException, (void* ex, void* obj)) {
         Internal_LogException_Orig(ex, obj);
-        // Log::LogFmt(ANDROID_LOG_VERBOSE, "UnityLog - Internal_LogException");
+        static auto Exception_ToString = Il2cppUtils::GetMethod("mscorlib.dll", "System", "Exception", "ToString");
+        Log::LogUnityLog(ANDROID_LOG_ERROR, "UnityLog - Internal_LogException:\n%s", Exception_ToString->Invoke<Il2cppString*>(ex)->ToString().c_str());
     }
 
     DEFINE_HOOK(void, Internal_Log, (int logType, int logOption, UnityResolve::UnityType::String* content, void* context)) {
         Internal_Log_Orig(logType, logOption, content, context);
         // 2022.3.21f1
-        // Log::LogFmt(ANDROID_LOG_VERBOSE, "UnityLog - Internal_Log: %s", content->ToString().c_str());
+        Log::LogUnityLog(ANDROID_LOG_VERBOSE, "Internal_Log:\n%s", content->ToString().c_str());
     }
 
     UnityResolve::UnityType::Camera* mainCameraCache = nullptr;
@@ -95,6 +96,39 @@ namespace GakumasLocal::HookMain {
 
         mainCameraCache = UnityResolve::UnityType::Camera::GetMain();
         cameraTransformCache = mainCameraCache->GetTransform();
+    }
+
+    DEFINE_HOOK(void, Unity_set_fieldOfView, (UnityResolve::UnityType::Camera* _this, float value)) {
+        if (Config::enableFreeCamera) {
+            if (_this == mainCameraCache) {
+                value = GKCamera::baseCamera.fov;
+            }
+        }
+        Unity_set_fieldOfView_Orig(_this, value);
+    }
+
+    DEFINE_HOOK(float, Unity_get_fieldOfView, (UnityResolve::UnityType::Camera* _this)) {
+        if (Config::enableFreeCamera) {
+            if (_this == mainCameraCache) {
+                static auto get_orthographic = reinterpret_cast<bool (*)(void*)>(Il2cppUtils::il2cpp_resolve_icall(
+                        "UnityEngine.Camera::get_orthographic()"
+                ));
+                static auto set_orthographic = reinterpret_cast<bool (*)(void*, bool)>(Il2cppUtils::il2cpp_resolve_icall(
+                        "UnityEngine.Camera::set_orthographic(System.Boolean)"
+                ));
+
+                for (const auto& i : UnityResolve::UnityType::Camera::GetAllCamera()) {
+                    // Log::DebugFmt("get_orthographic: %d", get_orthographic(i));
+                    // set_orthographic(i, false);
+                    Unity_set_fieldOfView_Orig(i, GKCamera::baseCamera.fov);
+                }
+                Unity_set_fieldOfView_Orig(_this, GKCamera::baseCamera.fov);
+
+                // Log::DebugFmt("main - get_orthographic: %d", get_orthographic(_this));
+                return GKCamera::baseCamera.fov;
+            }
+        }
+        return Unity_get_fieldOfView_Orig(_this);
     }
 
     DEFINE_HOOK(void, Unity_set_position_Injected, (UnityResolve::UnityType::Transform* _this, UnityResolve::UnityType::Vector3* data)) {
@@ -123,11 +157,19 @@ namespace GakumasLocal::HookMain {
                                 "UnityEngine.Transform::Internal_LookAt_Injected(UnityEngine.Vector3&,UnityEngine.Vector3&)"));
                 static auto worldUp = UnityResolve::UnityType::Vector3(0, 1, 0);
                 lookat_injected(_this, &origCameraLookat, &worldUp);
-                // TODO 相机 FOV
+                // Log::DebugFmt("fov: %f, target: %f", Unity_get_fieldOfView_Orig(mainCameraCache), GKCamera::baseCamera.fov);
                 return;
             }
         }
         return Unity_set_rotation_Injected_Orig(_this, value);
+    }
+
+    DEFINE_HOOK(void, EndCameraRendering, (void* ctx, void* camera, void* method)) {
+        EndCameraRendering_Orig(ctx, camera, method);
+
+        if (Config::enableFreeCamera && mainCameraCache) {
+            Unity_set_fieldOfView_Orig(mainCameraCache, GKCamera::baseCamera.fov);
+        }
     }
 
     DEFINE_HOOK(void, Unity_set_targetFrameRate, (int value)) {
@@ -321,6 +363,76 @@ namespace GakumasLocal::HookMain {
         // return UnityResolve::UnityType::String::New("[I18]" + ret->ToString());
     }
 
+    DEFINE_HOOK(void, PictureBookLiveThumbnailView_SetData, (void* _this, void* liveData, bool isUnlocked, bool isNew)) {
+        // Log::DebugFmt("PictureBookLiveThumbnailView_SetData: isUnlocked: %d, isNew: %d", isUnlocked, isNew);
+        if (Config::unlockAllLive) {
+            isUnlocked = true;
+        }
+        PictureBookLiveThumbnailView_SetData_Orig(_this, liveData, isUnlocked, isNew);
+    }
+
+
+    DEFINE_HOOK(void*, PictureBookLiveSelectScreenPresenter_MoveLiveScene, (void* _this, void* produceLive,
+            Il2cppString* characterId, Il2cppString* costumeId, Il2cppString* costumeHeadId)) {
+
+        Log::InfoFmt("MoveLiveScene: characterId: %s, costumeId: %s, costumeHeadId: %s,",
+                     characterId->ToString().c_str(), costumeId->ToString().c_str(), costumeHeadId->ToString().c_str());
+
+        /*
+         characterId: hski, costumeId: hski-cstm-0002, costumeHeadId: costume_head_hski-cstm-0002,
+         characterId: shro, costumeId: shro-cstm-0006, costumeHeadId: costume_head_shro-cstm-0006,
+         */
+
+        if (Config::enableLiveCustomeDress) {
+            // 修改 LiveFixedData_GetCharacter 可以更改 Loading 角色和演唱者名字，而不变更实际登台人
+            return PictureBookLiveSelectScreenPresenter_MoveLiveScene_Orig(_this, produceLive, characterId,
+                                                                           Config::liveCustomeCostumeId.empty() ? costumeId : Il2cppString::New(Config::liveCustomeCostumeId),
+                                                                           Config::liveCustomeHeadId.empty() ? costumeHeadId : Il2cppString::New(Config::liveCustomeHeadId));
+        }
+
+        return PictureBookLiveSelectScreenPresenter_MoveLiveScene_Orig(_this, produceLive, characterId, costumeId, costumeHeadId);
+    }
+
+    // std::string lastMusicId;
+    DEFINE_HOOK(void, PictureBookLiveSelectScreenPresenter_OnSelectMusic, (void* _this, void* itemModel, bool isFirst, void* mtd)) {
+        /*  // 修改角色后，Live 结束返回时, itemModel 为 null
+        Log::DebugFmt("OnSelectMusic itemModel at %p", itemModel);
+
+        static auto GetMusic = Il2cppUtils::GetMethod("Assembly-CSharp.dll", "Campus.OutGame",
+                                                      "PlaylistMusicContext", "GetMusic");
+        static auto GetCurrMusic = Il2cppUtils::GetMethod("Assembly-CSharp.dll", "Campus.OutGame.PictureBook",
+                                                      "PictureBookLiveSelectMusicListItemModel", "get_Music");
+        static auto GetMusicId = Il2cppUtils::GetMethod("Assembly-CSharp.dll", "Campus.Common.Proto.Client.Master",
+                                                          "Music", "get_Id");
+
+        static auto PictureBookLiveSelectMusicListItemModel_klass = Il2cppUtils::GetClass("Assembly-CSharp.dll", "Campus.OutGame.PictureBook",
+                                                                                          "PictureBookLiveSelectMusicListItemModel");
+        static auto PictureBookLiveSelectMusicListItemModel_ctor = Il2cppUtils::GetMethod("Assembly-CSharp.dll", "Campus.OutGame.PictureBook",
+                                                                                          "PictureBookLiveSelectMusicListItemModel", ".ctor", {"*", "*"});
+
+        if (!itemModel) {
+            Log::DebugFmt("OnSelectMusic block", itemModel);
+            auto music = GetMusic->Invoke<void*>(lastMusicId);
+            auto newItemModel = PictureBookLiveSelectMusicListItemModel_klass->New<void*>();
+            PictureBookLiveSelectMusicListItemModel_ctor->Invoke<void>(newItemModel, music, false);
+
+            return PictureBookLiveSelectScreenPresenter_OnSelectMusic_Orig(_this, newItemModel, isFirst, mtd);
+        }
+
+        if (itemModel) {
+            auto currMusic = GetCurrMusic->Invoke<void*>(itemModel);
+            auto musicId = GetMusicId->Invoke<Il2cppString*>(currMusic);
+            lastMusicId = musicId->ToString();
+        }*/
+        if (!itemModel) return;
+        return PictureBookLiveSelectScreenPresenter_OnSelectMusic_Orig(_this, itemModel, isFirst, mtd);
+    }
+
+    DEFINE_HOOK(bool, VLDOF_IsActive, (void* _this)) {
+        if (Config::enableFreeCamera) return false;
+        return VLDOF_IsActive_Orig(_this);
+    }
+
     void StartInjectFunctions() {
         const auto hookInstaller = Plugin::GetInstance().GetHookInstaller();
         UnityResolve::Init(xdl_open(hookInstaller->m_il2cppLibraryPath.c_str(), RTLD_NOW), UnityResolve::Mode::Il2Cpp);
@@ -361,6 +473,21 @@ namespace GakumasLocal::HookMain {
                  Il2cppUtils::GetMethodPointer("Octo.dll", "Octo",
                                                "OnDownloadProgress", "Invoke"));
 
+        ADD_HOOK(PictureBookLiveThumbnailView_SetData,
+                 Il2cppUtils::GetMethodPointer("Assembly-CSharp.dll", "Campus.OutGame.PictureBook",
+                                               "PictureBookLiveThumbnailView", "SetData"));
+
+        ADD_HOOK(PictureBookLiveSelectScreenPresenter_MoveLiveScene,
+                 Il2cppUtils::GetMethodPointer("Assembly-CSharp.dll", "Campus.OutGame",
+                                               "PictureBookLiveSelectScreenPresenter", "MoveLiveScene"));
+        ADD_HOOK(PictureBookLiveSelectScreenPresenter_OnSelectMusic,
+                 Il2cppUtils::GetMethodPointer("Assembly-CSharp.dll", "Campus.OutGame",
+                                               "PictureBookLiveSelectScreenPresenter", "OnSelectMusic"));
+
+        ADD_HOOK(VLDOF_IsActive,
+                 Il2cppUtils::GetMethodPointer("Unity.RenderPipelines.Universal.Runtime.dll", "VL.Rendering",
+                                               "VLDOF", "IsActive"));
+
         ADD_HOOK(Internal_LogException, Il2cppUtils::il2cpp_resolve_icall(
                 "UnityEngine.DebugLogHandler::Internal_LogException(System.Exception,UnityEngine.Object)"));
         ADD_HOOK(Internal_Log, Il2cppUtils::il2cpp_resolve_icall(
@@ -370,8 +497,14 @@ namespace GakumasLocal::HookMain {
                 "UnityEngine.Transform::set_position_Injected(UnityEngine.Vector3&)"));
         ADD_HOOK(Unity_set_rotation_Injected, Il2cppUtils::il2cpp_resolve_icall(
                 "UnityEngine.Transform::set_rotation_Injected(UnityEngine.Quaternion&)"));
+        ADD_HOOK(Unity_get_fieldOfView, Il2cppUtils::GetMethodPointer("UnityEngine.CoreModule.dll", "UnityEngine",
+                                                                      "Camera", "get_fieldOfView"));
+        ADD_HOOK(Unity_set_fieldOfView, Il2cppUtils::GetMethodPointer("UnityEngine.CoreModule.dll", "UnityEngine",
+                                                                      "Camera", "set_fieldOfView"));
         ADD_HOOK(Unity_set_targetFrameRate, Il2cppUtils::il2cpp_resolve_icall(
                 "UnityEngine.Application::set_targetFrameRate(System.Int32)"));
+        ADD_HOOK(EndCameraRendering, Il2cppUtils::GetMethodPointer("UnityEngine.CoreModule.dll", "UnityEngine.Rendering",
+                                                                     "RenderPipeline", "EndCameraRendering"));
     }
     // 77 2640 5000
 

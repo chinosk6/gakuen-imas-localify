@@ -19,6 +19,10 @@ interface ConfigListener {
     fun onEnabledChanged(value: Boolean)
     fun onEnableFreeCameraChanged(value: Boolean)
     fun onTargetFpsChanged(s: CharSequence, start: Int, before: Int, count: Int)
+    fun onUnlockAllLiveChanged(value: Boolean)
+    fun onLiveCustomeDressChanged(value: Boolean)
+    fun onLiveCustomeHeadIdChanged(s: CharSequence, start: Int, before: Int, count: Int)
+    fun onLiveCustomeCostumeIdChanged(s: CharSequence, start: Int, before: Int, count: Int)
 }
 
 class MainActivity : AppCompatActivity(), ConfigListener {
@@ -85,6 +89,11 @@ class MainActivity : AppCompatActivity(), ConfigListener {
         saveConfig()
     }
 
+    override fun onUnlockAllLiveChanged(value: Boolean) {
+        config.unlockAllLive = value
+        saveConfig()
+    }
+
     override fun onTargetFpsChanged(s: CharSequence, start: Int, before: Int, count: Int) {
         try {
             val valueStr = s.toString()
@@ -100,6 +109,21 @@ class MainActivity : AppCompatActivity(), ConfigListener {
         catch (e: Exception) {
             return
         }
+    }
+
+    override fun onLiveCustomeDressChanged(value: Boolean) {
+        config.enableLiveCustomeDress = value
+        saveConfig()
+    }
+
+    override fun onLiveCustomeCostumeIdChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+        config.liveCustomeCostumeId = s.toString()
+        saveConfig()
+    }
+
+    override fun onLiveCustomeHeadIdChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+        config.liveCustomeHeadId = s.toString()
+        saveConfig()
     }
 
     override fun onClickStartGame() {

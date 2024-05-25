@@ -8,14 +8,25 @@ namespace GakumasLocal::Config {
     bool enabled = true;
     bool enableFreeCamera = false;
     int targetFrameRate = 0;
+    bool unlockAllLive = false;
+
+    bool enableLiveCustomeDress = false;
+    std::string liveCustomeHeadId = "";
+    std::string liveCustomeCostumeId = "";
 
     void LoadConfig(const std::string& configStr) {
         try {
             const auto config = nlohmann::json::parse(configStr);
 
-            enabled = config["enabled"];
-            targetFrameRate = config["targetFrameRate"];
-            enableFreeCamera = config["enableFreeCamera"];
+            #define GetConfigItem(name) if (config.contains(#name)) name = config[#name]
+
+            GetConfigItem(enabled);
+            GetConfigItem(targetFrameRate);
+            GetConfigItem(enableFreeCamera);
+            GetConfigItem(unlockAllLive);
+            GetConfigItem(enableLiveCustomeDress);
+            GetConfigItem(liveCustomeHeadId);
+            GetConfigItem(liveCustomeCostumeId);
 
         }
         catch (std::exception& e) {
