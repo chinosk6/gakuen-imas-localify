@@ -14,6 +14,14 @@ namespace GakumasLocal::Config {
     std::string liveCustomeHeadId = "";
     std::string liveCustomeCostumeId = "";
 
+    bool useCustomeGraphicSettings = false;
+    float renderScale = 0.77f;
+    int qualitySettingsLevel = 3;
+    int volumeIndex = 3;
+    int maxBufferPixel = 3384;
+    int reflectionQualityLevel = 4;
+    int lodQualityLevel = 4;
+
     void LoadConfig(const std::string& configStr) {
         try {
             const auto config = nlohmann::json::parse(configStr);
@@ -27,6 +35,13 @@ namespace GakumasLocal::Config {
             GetConfigItem(enableLiveCustomeDress);
             GetConfigItem(liveCustomeHeadId);
             GetConfigItem(liveCustomeCostumeId);
+            GetConfigItem(useCustomeGraphicSettings);
+            GetConfigItem(renderScale);
+            GetConfigItem(qualitySettingsLevel);
+            GetConfigItem(volumeIndex);
+            GetConfigItem(maxBufferPixel);
+            GetConfigItem(reflectionQualityLevel);
+            GetConfigItem(lodQualityLevel);
 
         }
         catch (std::exception& e) {

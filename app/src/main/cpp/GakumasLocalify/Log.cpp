@@ -1,30 +1,26 @@
 #include "Log.h"
 #include <android/log.h>
+#include <Misc.h>
 #include <sstream>
 #include <string>
+#include <thread>
 
-std::string format(const char* fmt, ...) {
-    va_list args;
-    va_start(args, fmt);
-    va_list args_copy;
-    va_copy(args_copy, args);
+extern JavaVM* g_javaVM;
+extern jclass g_gakumasHookMainClass;
+extern jmethodID showToastMethodId;
 
-    // 计算格式化后的字符串长度
-    int size = vsnprintf(nullptr, 0, fmt, args_copy) + 1; // 加上额外的终止符空间
-    va_end(args_copy);
-
-    // 动态分配缓冲区
-    char* buffer = new char[size];
-
-    // 格式化字符串
-    vsnprintf(buffer, size, fmt, args);
-
-    va_end(args);
-
-    std::string result(buffer);
-    delete[] buffer; // 释放缓冲区
-    return result;
-}
+#define GetParamStringResult(name)\
+    va_list args;\
+    va_start(args, fmt);\
+    va_list args_copy;\
+    va_copy(args_copy, args);\
+    int size = vsnprintf(nullptr, 0, fmt, args_copy) + 1;\
+    va_end(args_copy);\
+    char* buffer = new char[size];\
+    vsnprintf(buffer, size, fmt, args);\
+    va_end(args);\
+    std::string name(buffer);\
+    delete[] buffer
 
 
 namespace GakumasLocal::Log {
@@ -33,26 +29,7 @@ namespace GakumasLocal::Log {
     }
 
     void LogFmt(int prio, const char* fmt, ...) {
-        va_list args;
-        va_start(args, fmt);
-        va_list args_copy;
-        va_copy(args_copy, args);
-
-        // 计算格式化后的字符串长度
-        int size = vsnprintf(nullptr, 0, fmt, args_copy) + 1; // 加上额外的终止符空间
-        va_end(args_copy);
-
-        // 动态分配缓冲区
-        char* buffer = new char[size];
-
-        // 格式化字符串
-        vsnprintf(buffer, size, fmt, args);
-
-        va_end(args);
-
-        std::string result(buffer);
-        delete[] buffer; // 释放缓冲区
-
+        GetParamStringResult(result);
         Log(prio, result.c_str());
     }
 
@@ -61,26 +38,7 @@ namespace GakumasLocal::Log {
     }
 
     void InfoFmt(const char* fmt, ...) {
-        va_list args;
-        va_start(args, fmt);
-        va_list args_copy;
-        va_copy(args_copy, args);
-
-        // 计算格式化后的字符串长度
-        int size = vsnprintf(nullptr, 0, fmt, args_copy) + 1; // 加上额外的终止符空间
-        va_end(args_copy);
-
-        // 动态分配缓冲区
-        char* buffer = new char[size];
-
-        // 格式化字符串
-        vsnprintf(buffer, size, fmt, args);
-
-        va_end(args);
-
-        std::string result(buffer);
-        delete[] buffer; // 释放缓冲区
-
+        GetParamStringResult(result);
         Info(result.c_str());
     }
 
@@ -89,26 +47,7 @@ namespace GakumasLocal::Log {
     }
 
     void ErrorFmt(const char* fmt, ...) {
-        va_list args;
-        va_start(args, fmt);
-        va_list args_copy;
-        va_copy(args_copy, args);
-
-        // 计算格式化后的字符串长度
-        int size = vsnprintf(nullptr, 0, fmt, args_copy) + 1; // 加上额外的终止符空间
-        va_end(args_copy);
-
-        // 动态分配缓冲区
-        char* buffer = new char[size];
-
-        // 格式化字符串
-        vsnprintf(buffer, size, fmt, args);
-
-        va_end(args);
-
-        std::string result(buffer);
-        delete[] buffer; // 释放缓冲区
-
+        GetParamStringResult(result);
         Error(result.c_str());
     }
 
@@ -117,50 +56,44 @@ namespace GakumasLocal::Log {
     }
 
     void DebugFmt(const char* fmt, ...) {
-        va_list args;
-        va_start(args, fmt);
-        va_list args_copy;
-        va_copy(args_copy, args);
-
-        // 计算格式化后的字符串长度
-        int size = vsnprintf(nullptr, 0, fmt, args_copy) + 1; // 加上额外的终止符空间
-        va_end(args_copy);
-
-        // 动态分配缓冲区
-        char* buffer = new char[size];
-
-        // 格式化字符串
-        vsnprintf(buffer, size, fmt, args);
-
-        va_end(args);
-
-        std::string result(buffer);
-        delete[] buffer; // 释放缓冲区
-
+        GetParamStringResult(result);
         Debug(result.c_str());
     }
 
     void LogUnityLog(int prio, const char* fmt, ...) {
-        va_list args;
-        va_start(args, fmt);
-        va_list args_copy;
-        va_copy(args_copy, args);
-
-        // 计算格式化后的字符串长度
-        int size = vsnprintf(nullptr, 0, fmt, args_copy) + 1; // 加上额外的终止符空间
-        va_end(args_copy);
-
-        // 动态分配缓冲区
-        char* buffer = new char[size];
-
-        // 格式化字符串
-        vsnprintf(buffer, size, fmt, args);
-
-        va_end(args);
-
-        std::string result(buffer);
-        delete[] buffer; // 释放缓冲区
-
+        GetParamStringResult(result);
         __android_log_write(prio, "GakumasLog", result.c_str());
+    }
+
+    void ShowToast(const std::string& text) {
+        DebugFmt("Toast: %s", text.c_str());
+
+        std::thread([text](){
+            auto env = Misc::GetJNIEnv();
+            if (!env) {
+                return;
+            }
+            g_javaVM->AttachCurrentThread(&env, nullptr);
+
+            jclass& kotlinClass = g_gakumasHookMainClass;
+            if (!kotlinClass) {
+                g_javaVM->DetachCurrentThread();
+                return;
+            }
+            jmethodID& methodId = showToastMethodId;
+            if (!methodId) {
+                g_javaVM->DetachCurrentThread();
+                return;
+            }
+            jstring param = env->NewStringUTF(text.c_str());
+            env->CallStaticVoidMethod(kotlinClass, methodId, param);
+
+            g_javaVM->DetachCurrentThread();
+        }).detach();
+    }
+
+    void ShowToastFmt(const char* fmt, ...) {
+        GetParamStringResult(result);
+        ShowToast(result);
     }
 }

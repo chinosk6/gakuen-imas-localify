@@ -9,4 +9,6 @@
     <string name="liveUseCustomeDress">Live 使用自定义角色</string>
     <string name="live_costume_head_id">Live 自定义头部 ID (例: costume_head_hski-cstm-0002)</string>
     <string name="live_custome_dress_id">Live 自定义服装 ID (例: hski-cstm-0002)</string>
+    <string name="useCustomeGraphicSettings">使用自定义画质设置</string>
+    <string name="renderscale">RenderScale (0.5/0.59/0.67/0.77/1.0)</string>
 </resources>

@@ -433,6 +433,48 @@ namespace GakumasLocal::HookMain {
         return VLDOF_IsActive_Orig(_this);
     }
 
+    DEFINE_HOOK(void, CampusQualityManager_set_TargetFrameRate, (void* _this, float value)) {
+        // Log::InfoFmt("CampusQualityManager_set_TargetFrameRate: %f", value);
+        const auto configFps = Config::targetFrameRate;
+        CampusQualityManager_set_TargetFrameRate_Orig(_this, configFps == 0 ? value : (float)configFps);
+    }
+
+    DEFINE_HOOK(void, CampusQualityManager_ApplySetting, (void* _this, int qualitySettingsLevel, int maxBufferPixel, float renderScale, int volumeIndex)) {
+        if (Config::targetFrameRate != 0) {
+            CampusQualityManager_set_TargetFrameRate_Orig(_this, Config::targetFrameRate);
+        }
+        if (Config::useCustomeGraphicSettings) {
+            static auto SetReflectionQuality = Il2cppUtils::GetMethod("campus-submodule.Runtime.dll", "Campus.Common",
+                                                                      "CampusQualityManager", "SetReflectionQuality");
+            static auto SetLODQuality = Il2cppUtils::GetMethod("campus-submodule.Runtime.dll", "Campus.Common",
+                                                               "CampusQualityManager", "SetLODQuality");
+
+            static auto Enum_GetValues = Il2cppUtils::GetMethod("mscorlib.dll", "System", "Enum", "GetValues");
+
+            static auto QualityLevel_klass = Il2cppUtils::GetClass("campus-submodule.Runtime.dll", "", "QualityLevel");
+
+            static auto values = Enum_GetValues->Invoke<UnityResolve::UnityType::Array<int>*>(QualityLevel_klass->GetType())->ToVector();
+            if (values.empty()) {
+                values = {0x0, 0xa, 0x14, 0x1e, 0x28, 0x64};
+            }
+            if (Config::lodQualityLevel >= values.size()) Config::lodQualityLevel = values.size() - 1;
+            if (Config::reflectionQualityLevel >= values.size()) Config::reflectionQualityLevel = values.size() - 1;
+
+            SetLODQuality->Invoke<void>(_this, values[Config::lodQualityLevel]);
+            SetReflectionQuality->Invoke<void>(_this, values[Config::reflectionQualityLevel]);
+
+            qualitySettingsLevel = Config::qualitySettingsLevel;
+            maxBufferPixel = Config::maxBufferPixel;
+            renderScale = Config::renderScale;
+            volumeIndex = Config::volumeIndex;
+
+            Log::ShowToastFmt("ApplySetting\nqualityLevel: %d, maxBufferPixel: %d\nenderScale: %f, volumeIndex: %d\nLODQualityLv: %d, ReflectionLv: %d",
+                              qualitySettingsLevel, maxBufferPixel, renderScale, volumeIndex, Config::lodQualityLevel, Config::reflectionQualityLevel);
+        }
+
+        CampusQualityManager_ApplySetting_Orig(_this, qualitySettingsLevel, maxBufferPixel, renderScale, volumeIndex);
+    }
+
     void StartInjectFunctions() {
         const auto hookInstaller = Plugin::GetInstance().GetHookInstaller();
         UnityResolve::Init(xdl_open(hookInstaller->m_il2cppLibraryPath.c_str(), RTLD_NOW), UnityResolve::Mode::Il2Cpp);
@@ -487,6 +529,14 @@ namespace GakumasLocal::HookMain {
         ADD_HOOK(VLDOF_IsActive,
                  Il2cppUtils::GetMethodPointer("Unity.RenderPipelines.Universal.Runtime.dll", "VL.Rendering",
                                                "VLDOF", "IsActive"));
+
+        ADD_HOOK(CampusQualityManager_ApplySetting,
+                 Il2cppUtils::GetMethodPointer("campus-submodule.Runtime.dll", "Campus.Common",
+                                               "CampusQualityManager", "ApplySetting"));
+
+        ADD_HOOK(CampusQualityManager_set_TargetFrameRate,
+                 Il2cppUtils::GetMethodPointer("campus-submodule.Runtime.dll", "Campus.Common",
+                                               "CampusQualityManager", "set_TargetFrameRate"));
 
         ADD_HOOK(Internal_LogException, Il2cppUtils::il2cpp_resolve_icall(
                 "UnityEngine.DebugLogHandler::Internal_LogException(System.Exception,UnityEngine.Object)"));

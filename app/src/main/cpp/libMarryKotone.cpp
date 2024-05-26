@@ -9,6 +9,10 @@
 #include "GakumasLocalify/camera/camera.hpp"
 #include "GakumasLocalify/config/Config.hpp"
 
+JavaVM* g_javaVM = nullptr;
+jclass g_gakumasHookMainClass = nullptr;
+jmethodID showToastMethodId = nullptr;
+
 namespace
 {
     class AndroidHookInstaller : public GakumasLocal::HookInstaller
@@ -40,11 +44,20 @@ namespace
     };
 }
 
+extern "C"
+JNIEXPORT jint JNICALL
+JNI_OnLoad(JavaVM* vm, void* reserved) {
+    g_javaVM = vm;
+    return JNI_VERSION_1_6;
+}
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_io_github_chinosk_gakumas_localify_GakumasHookMain_initHook(JNIEnv *env, jclass clazz, jstring targetLibraryPath,
                                                                  jstring localizationFilesDir) {
+    g_gakumasHookMainClass = clazz;
+    showToastMethodId = env->GetStaticMethodID(clazz, "showToast", "(Ljava/lang/String;)V");
+
     const auto targetLibraryPathChars = env->GetStringUTFChars(targetLibraryPath, nullptr);
     const std::string targetLibraryPathStr = targetLibraryPathChars;
 

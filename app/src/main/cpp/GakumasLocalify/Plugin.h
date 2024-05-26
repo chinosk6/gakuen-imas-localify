@@ -4,6 +4,7 @@
 #include "Misc.h"
 #include <string>
 #include <memory>
+#include <jni.h>
 
 namespace GakumasLocal {
     struct HookInstaller

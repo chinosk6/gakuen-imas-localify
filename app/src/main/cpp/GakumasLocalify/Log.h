@@ -10,6 +10,9 @@ namespace GakumasLocal::Log {
     void ErrorFmt(const char* fmt, ...);
     void Debug(const char* msg);
     void DebugFmt(const char* fmt, ...);
+
+    void ShowToast(const char* text);
+    void ShowToastFmt(const char* fmt, ...);
 }
 
 #endif //GAKUMAS_LOCALIFY_LOG_H

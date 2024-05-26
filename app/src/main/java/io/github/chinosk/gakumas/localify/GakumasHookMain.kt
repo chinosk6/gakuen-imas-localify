@@ -22,12 +22,12 @@ import android.widget.Toast
 import de.robv.android.xposed.XposedBridge
 import java.io.File
 
+val TAG = "GakumasLocalify"
 
 class GakumasHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
     private lateinit var modulePath: String
     private var nativeLibLoadSuccess: Boolean
     private var alreadyInitialized = false
-    private val TAG = "GakumasLocalify"
     private val targetPackageName = "com.bandainamcoent.idolmaster_gakuen"
     private val nativeLibName = "MarryKotone"
 
@@ -115,20 +115,6 @@ class GakumasHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
             })
     }
 
-    private fun showToast(message: String) {
-        val app = AndroidAppHelper.currentApplication()
-        val context = app?.applicationContext
-        if (context != null) {
-            val handler = Handler(Looper.getMainLooper())
-            handler.post {
-                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-            }
-        }
-        else {
-            Log.e(TAG, "showToast: $message failed: applicationContext is null")
-        }
-    }
-
     fun initGkmsConfig(activity: Activity) {
         val intent = activity.intent
         val gkmsData = intent.getStringExtra("gkmsData")
@@ -160,8 +146,22 @@ class GakumasHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
         external fun keyboardEvent(keyCode: Int, action: Int)
         @JvmStatic
         external fun loadConfig(configJsonStr: String)
-    }
 
+        @JvmStatic
+        fun showToast(message: String) {
+            val app = AndroidAppHelper.currentApplication()
+            val context = app?.applicationContext
+            if (context != null) {
+                val handler = Handler(Looper.getMainLooper())
+                handler.post {
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                }
+            }
+            else {
+                Log.e(TAG, "showToast: $message failed: applicationContext is null")
+            }
+        }
+    }
 
     init {
         ShadowHook.init(
