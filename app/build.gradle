@@ -65,9 +65,19 @@ android {
     packagingOptions {
         pickFirst '**/libxdl.so'
         pickFirst '**/libshadowhook.so'
+        exclude 'gakumas-local/gakuen-adapted-translation-data/**'
     }
     dataBinding {
         enable true
+    }
+
+    applicationVariants.configureEach { variant ->
+        variant.mergeAssetsProvider.configure { mergeAssetsTask ->
+            mergeAssetsTask.doLast {
+                delete(fileTree(dir: mergeAssetsTask.outputDir, includes: ['gakumas-local/gakuen-adapted-translation-data/**',
+                                                                           'gakumas-local/GakumasPreTranslation/**']))
+            }
+        }
     }
 }
 
