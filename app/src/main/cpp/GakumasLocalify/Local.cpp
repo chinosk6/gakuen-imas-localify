@@ -14,7 +14,7 @@ namespace GakumasLocal::Local {
     std::unordered_map<std::string, std::string> i18nData{};
     std::unordered_map<std::string, std::string> i18nDumpData{};
     std::unordered_map<std::string, std::string> genericText{};
-    std::unordered_map<std::string, std::string> genericTextDumpData{};
+    std::vector<std::string> genericTextDumpData{};
     std::unordered_set<std::string> translatedText{};
 
     std::filesystem::path GetBasePath() {
@@ -73,6 +73,36 @@ namespace GakumasLocal::Local {
         }
         catch (std::exception& e) {
             Log::ErrorFmt("DumpMapDataToJson %s failed: %s", dumpFilePath.c_str(), e.what());
+        }
+    }
+
+    void DumpVectorDataToJson(const std::filesystem::path& dumpBasePath, const std::filesystem::path& fileName,
+                           const std::vector<std::string>& vec) {
+        const auto dumpFilePath = dumpBasePath / fileName;
+        try {
+            if (!is_directory(dumpBasePath)) {
+                std::filesystem::create_directories(dumpBasePath);
+            }
+            if (!std::filesystem::exists(dumpFilePath)) {
+                std::ofstream dumpWriteLrcFile(dumpFilePath, std::ofstream::out);
+                dumpWriteLrcFile << "{}";
+                dumpWriteLrcFile.close();
+            }
+
+            std::ifstream dumpLrcFile(dumpFilePath);
+            std::string fileContent((std::istreambuf_iterator<char>(dumpLrcFile)), std::istreambuf_iterator<char>());
+            dumpLrcFile.close();
+            auto fileData = nlohmann::ordered_json::parse(fileContent);
+            for (const auto& i : vec) {
+                fileData[i] = i;
+            }
+            const auto newStr = fileData.dump(4, 32, false);
+            std::ofstream dumpWriteLrcFile(dumpFilePath, std::ofstream::out);
+            dumpWriteLrcFile << newStr.c_str();
+            dumpWriteLrcFile.close();
+        }
+        catch (std::exception& e) {
+            Log::ErrorFmt("DumpVectorDataToJson %s failed: %s", dumpFilePath.c_str(), e.what());
         }
     }
 
@@ -155,14 +185,18 @@ namespace GakumasLocal::Local {
 
         if (translatedText.contains(origText)) return false;
 
-        genericTextDumpData.emplace(origText, origText);
+        if (std::find(genericTextDumpData.begin(), genericTextDumpData.end(), "") != genericTextDumpData.end()) {
+            return false;
+        }
+
+        genericTextDumpData.push_back(origText);
         static auto dumpBasePath = GetBasePath() / "dump-files";
 
         if (inDumpGeneric) return false;
         inDumpGeneric = true;
         std::thread([](){
             std::this_thread::sleep_for(std::chrono::seconds(5));
-            DumpMapDataToJson(dumpBasePath, "generic.json", genericTextDumpData);
+            DumpVectorDataToJson(dumpBasePath, "generic.json", genericTextDumpData);
             genericTextDumpData.clear();
             inDumpGeneric = false;
         }).detach();
