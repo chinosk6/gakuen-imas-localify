@@ -226,7 +226,12 @@ namespace GakumasLocal::HookMain {
             return;
         }
         Local::DumpI18nItem(key->ToString(), value->ToString());
-        I18nHelper_SetValue_Orig(_this, key, value);
+        if (Config::textTest) {
+            I18nHelper_SetValue_Orig(_this, key, Il2cppString::New("[I18]" + value->ToString()));
+        }
+        else {
+            I18nHelper_SetValue_Orig(_this, key, value);
+        }
     }
 
     void* fontCache = nullptr;
@@ -286,8 +291,12 @@ namespace GakumasLocal::HookMain {
             return TMP_Text_set_text_Orig(_this, UnityResolve::UnityType::String::New(transText));
         }
 
-        // TMP_Text_set_text_Orig(_this, UnityResolve::UnityType::String::New("[TS]" + text->ToString()));
-        TMP_Text_set_text_Orig(_this, text);
+        if (Config::textTest) {
+            TMP_Text_set_text_Orig(_this, UnityResolve::UnityType::String::New("[TS]" + text->ToString()));
+        }
+        else {
+            TMP_Text_set_text_Orig(_this, text);
+        }
 
         static auto set_font = Il2cppUtils::GetMethod("Unity.TextMeshPro.dll",
                                                       "TMPro", "TMP_Text", "set_font");
@@ -308,7 +317,12 @@ namespace GakumasLocal::HookMain {
             //Log::InfoFmt("TextMeshProUGUI_Awake: %s", currText->ToString().c_str());
             std::string transText;
             if (Local::GetGenericText(currText->ToString(), &transText)) {
-                TMP_Text_set_text_Orig(_this, UnityResolve::UnityType::String::New(transText));
+                if (Config::textTest) {
+                    TMP_Text_set_text_Orig(_this, UnityResolve::UnityType::String::New("[TA]" + transText));
+                }
+                else {
+                    TMP_Text_set_text_Orig(_this, UnityResolve::UnityType::String::New(transText));
+                }
             }
         }
 
@@ -317,7 +331,7 @@ namespace GakumasLocal::HookMain {
         TextMeshProUGUI_Awake_Orig(_this, method);
     }
 
-    // TODO 文本未hook完整 思路：从tips下手...
+    // TODO 文本未hook完整
     DEFINE_HOOK(void, TextField_set_value, (void* _this, Il2cppString* value)) {
         Log::DebugFmt("TextField_set_value: %s", value->ToString().c_str());
         TextField_set_value_Orig(_this, value);
@@ -326,7 +340,6 @@ namespace GakumasLocal::HookMain {
     DEFINE_HOOK(Il2cppString*, OctoCaching_GetResourceFileName, (void* data, void* method)) {
         auto ret = OctoCaching_GetResourceFileName_Orig(data, method);
         //Log::DebugFmt("OctoCaching_GetResourceFileName: %s", ret->ToString().c_str());
-
         return ret;
     }
 

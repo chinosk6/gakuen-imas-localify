@@ -68,6 +68,19 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent">
 
+                        <com.google.android.material.switchmaterial.SwitchMaterial
+                            android:id="@+id/textTestMode"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:checked="@={config.textTest}"
+                            android:onCheckedChanged="@{(view, value) -> listener.onTextTestChanged(value)}"
+                            android:text="文本 hook 测试模式" />
+                    </TableRow>
+
+                    <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
                         <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="match_parent"
                             android:layout_height="48dp"

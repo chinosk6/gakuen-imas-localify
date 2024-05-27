@@ -6,6 +6,7 @@ namespace GakumasLocal::Config {
     extern bool isConfigInit;
 
     extern bool enabled;
+    extern bool textTest;
     extern bool enableFreeCamera;
     extern int targetFrameRate;
     extern bool unlockAllLive;

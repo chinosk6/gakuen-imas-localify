@@ -20,6 +20,7 @@ import java.io.File
 interface ConfigListener {
     fun onClickStartGame()
     fun onEnabledChanged(value: Boolean)
+    fun onTextTestChanged(value: Boolean)
     fun onEnableFreeCameraChanged(value: Boolean)
     fun onTargetFpsChanged(s: CharSequence, start: Int, before: Int, count: Int)
     fun onUnlockAllLiveChanged(value: Boolean)
@@ -89,6 +90,11 @@ class MainActivity : AppCompatActivity(), ConfigListener {
 
     override fun onEnabledChanged(value: Boolean) {
         binding.config!!.enabled = value
+        saveConfig()
+    }
+
+    override fun onTextTestChanged(value: Boolean) {
+        binding.config!!.textTest = value
         saveConfig()
     }
 
