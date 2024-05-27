@@ -36,6 +36,12 @@ namespace Il2cppUtils {
         uint8_t is_marshaled_from_native : 1;
     };
 
+    struct Resolution_t {
+        int width;
+        int height;
+        int herz;
+    };
+
     UnityResolve::Class* GetClass(const std::string& assemblyName, const std::string& nameSpaceName,
                    const std::string& className) {
         const auto assembly = UnityResolve::Get(assemblyName);

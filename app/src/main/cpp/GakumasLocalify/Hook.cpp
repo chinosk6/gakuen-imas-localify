@@ -98,6 +98,12 @@ namespace GakumasLocal::HookMain {
         cameraTransformCache = mainCameraCache->GetTransform();
     }
 
+    Il2cppUtils::Resolution_t GetResolution() {
+        static auto GetResolution = Il2cppUtils::GetMethod("UnityEngine.CoreModule.dll", "UnityEngine",
+                                                           "Screen", "get_currentResolution");
+        return GetResolution->Invoke<Il2cppUtils::Resolution_t>();
+    }
+
     DEFINE_HOOK(void, Unity_set_fieldOfView, (UnityResolve::UnityType::Camera* _this, float value)) {
         if (Config::enableFreeCamera) {
             if (_this == mainCameraCache) {
@@ -475,6 +481,29 @@ namespace GakumasLocal::HookMain {
         CampusQualityManager_ApplySetting_Orig(_this, qualitySettingsLevel, maxBufferPixel, renderScale, volumeIndex);
     }
 
+    DEFINE_HOOK(void, UIManager_UpdateRenderTarget, (UnityResolve::UnityType::Vector2 ratio, void* mtd)) {
+        // const auto resolution = GetResolution();
+        // Log::DebugFmt("UIManager_UpdateRenderTarget: %f, %f", ratio.x, ratio.y);
+        return UIManager_UpdateRenderTarget_Orig(ratio, mtd);
+    }
+
+    DEFINE_HOOK(void, VLSRPCameraController_UpdateRenderTarget, (void* _this, int width, int height, bool forceAlpha, void* method)) {
+        // const auto resolution = GetResolution();
+        // Log::DebugFmt("VLSRPCameraController_UpdateRenderTarget: %d, %d", width, height);
+        return VLSRPCameraController_UpdateRenderTarget_Orig(_this, width, height, forceAlpha, method);
+    }
+
+    DEFINE_HOOK(void*, VLUtility_GetLimitedResolution, (int32_t screenWidth, int32_t screenHeight,
+            UnityResolve::UnityType::Vector2 aspectRatio, int32_t maxBufferPixel, float bufferScale, bool firstCall)) {
+
+        if (Config::useCustomeGraphicSettings && (Config::renderScale > 1.0f)) {
+            screenWidth *= Config::renderScale;
+            screenHeight *= Config::renderScale;
+        }
+        //Log::DebugFmt("VLUtility_GetLimitedResolution: %d, %d, %f, %f", screenWidth, screenHeight, aspectRatio.x, aspectRatio.y);
+        return VLUtility_GetLimitedResolution_Orig(screenWidth, screenHeight, aspectRatio, maxBufferPixel, bufferScale, firstCall);
+    }
+
     void StartInjectFunctions() {
         const auto hookInstaller = Plugin::GetInstance().GetHookInstaller();
         UnityResolve::Init(xdl_open(hookInstaller->m_il2cppLibraryPath.c_str(), RTLD_NOW), UnityResolve::Mode::Il2Cpp);
@@ -533,6 +562,19 @@ namespace GakumasLocal::HookMain {
         ADD_HOOK(CampusQualityManager_ApplySetting,
                  Il2cppUtils::GetMethodPointer("campus-submodule.Runtime.dll", "Campus.Common",
                                                "CampusQualityManager", "ApplySetting"));
+
+        ADD_HOOK(UIManager_UpdateRenderTarget,
+                 Il2cppUtils::GetMethodPointer("ADV.Runtime.dll", "Campus.ADV",
+                                               "UIManager", "UpdateRenderTarget"));
+        ADD_HOOK(VLSRPCameraController_UpdateRenderTarget,
+                 Il2cppUtils::GetMethodPointer("vl-unity.Runtime.dll", "VL.Rendering",
+                                               "VLSRPCameraController", "UpdateRenderTarget",
+                                               {"*", "*", "*"}));
+
+        ADD_HOOK(VLUtility_GetLimitedResolution,
+                 Il2cppUtils::GetMethodPointer("vl-unity.Runtime.dll", "VL",
+                                               "VLUtility", "GetLimitedResolution",
+                                               {"*", "*", "*", "*", "*", "*"}));
 
         ADD_HOOK(CampusQualityManager_set_TargetFrameRate,
                  Il2cppUtils::GetMethodPointer("campus-submodule.Runtime.dll", "Campus.Common",
