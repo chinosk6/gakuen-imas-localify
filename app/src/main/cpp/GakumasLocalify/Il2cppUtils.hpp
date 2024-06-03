@@ -125,6 +125,9 @@ namespace Il2cppUtils {
         return static_cast<Il2CppClassHead*>(*static_cast<void* const*>(std::assume_aligned<alignof(void*)>(instance)));
     }
 
+    MethodInfo* il2cpp_class_get_method_from_name(void* klass, const char* name, int argsCount) {
+        return UnityResolve::Invoke<MethodInfo*>("il2cpp_class_get_method_from_name", klass, name, argsCount);
+    }
 
     void* find_nested_class(void* klass, std::predicate<void*> auto&& predicate)
     {
@@ -146,5 +149,16 @@ namespace Il2cppUtils {
             return static_cast<Il2CppClassHead*>(nestedClass)->name == name;
         });
     }
+
+    template <typename RType>
+    auto ClassGetFieldValue(void* obj, UnityResolve::Field* field) -> RType {
+        return *reinterpret_cast<RType*>(reinterpret_cast<uintptr_t>(obj) + field->offset);
+    }
+
+    template <typename RType>
+    auto ClassSetFieldValue(void* obj, UnityResolve::Field* field, RType value) -> void {
+        return *reinterpret_cast<RType*>(reinterpret_cast<uintptr_t>(obj) + field->offset) = value;
+    }
+
 
 }

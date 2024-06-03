@@ -11,6 +11,7 @@
 #include "shadowhook.h"
 #include <jni.h>
 #include <thread>
+#include <map>
 
 
 std::unordered_set<void*> hookedStubs{};
@@ -85,14 +86,18 @@ namespace GakumasLocal::HookMain {
         Log::LogUnityLog(ANDROID_LOG_VERBOSE, "Internal_Log:\n%s", content->ToString().c_str());
     }
 
+    bool IsNativeObjectAlive(void* obj) {
+        static UnityResolve::Method* IsNativeObjectAliveMtd = NULL;
+        if (!IsNativeObjectAliveMtd) IsNativeObjectAliveMtd = Il2cppUtils::GetMethod("UnityEngine.CoreModule.dll", "UnityEngine",
+                                                                                     "Object", "IsNativeObjectAlive");
+        return IsNativeObjectAliveMtd->Invoke<bool>(obj);
+    }
+
     UnityResolve::UnityType::Camera* mainCameraCache = nullptr;
     UnityResolve::UnityType::Transform* cameraTransformCache = nullptr;
     void CheckAndUpdateMainCamera() {
         if (!Config::enableFreeCamera) return;
-        static auto IsNativeObjectAlive = Il2cppUtils::GetMethod("UnityEngine.CoreModule.dll", "UnityEngine",
-                                                                 "Object", "IsNativeObjectAlive");
-
-        if (IsNativeObjectAlive->Invoke<bool>(mainCameraCache)) return;
+        if (IsNativeObjectAlive(mainCameraCache)) return;
 
         mainCameraCache = UnityResolve::UnityType::Camera::GetMain();
         cameraTransformCache = mainCameraCache->GetTransform();
@@ -137,37 +142,77 @@ namespace GakumasLocal::HookMain {
         return Unity_get_fieldOfView_Orig(_this);
     }
 
+    UnityResolve::UnityType::Transform* cacheTrans = NULL;
+    UnityResolve::UnityType::Quaternion cacheRotation{};
+    UnityResolve::UnityType::Vector3 cachePosition{};
+    UnityResolve::UnityType::Vector3 cacheForward{};
+    UnityResolve::UnityType::Vector3 cacheLookAt{};
+
+    DEFINE_HOOK(void, Unity_set_rotation_Injected, (UnityResolve::UnityType::Transform* _this, UnityResolve::UnityType::Quaternion* value)) {
+        if (Config::enableFreeCamera) {
+            static auto lookat_injected = reinterpret_cast<void (*)(void*_this,
+                                                                    UnityResolve::UnityType::Vector3* worldPosition, UnityResolve::UnityType::Vector3* worldUp)>(
+                    Il2cppUtils::il2cpp_resolve_icall(
+                            "UnityEngine.Transform::Internal_LookAt_Injected(UnityEngine.Vector3&,UnityEngine.Vector3&)"));
+            static auto worldUp = UnityResolve::UnityType::Vector3(0, 1, 0);
+
+            if (cameraTransformCache == _this) {
+                const auto cameraMode = GKCamera::GetCameraMode();
+                if (cameraMode == GKCamera::CameraMode::FIRST_PERSON) {
+                    if (cacheTrans && IsNativeObjectAlive(cacheTrans)) {
+                        if (GKCamera::GetFirstPersonRoll() == GKCamera::FirstPersonRoll::ENABLE_ROLL) {
+                            *value = cacheRotation;
+                        }
+                        else {
+                            lookat_injected(_this, &cacheLookAt, &worldUp);
+                            return;
+                        }
+                    }
+                }
+                else if (cameraMode == GKCamera::CameraMode::FOLLOW) {
+                    lookat_injected(_this, &cachePosition, &worldUp);
+                    return;
+                }
+                else {
+                    auto& origCameraLookat = GKCamera::baseCamera.lookAt;
+                    lookat_injected(_this, &origCameraLookat, &worldUp);
+                    // Log::DebugFmt("fov: %f, target: %f", Unity_get_fieldOfView_Orig(mainCameraCache), GKCamera::baseCamera.fov);
+                    return;
+                }
+            }
+        }
+        return Unity_set_rotation_Injected_Orig(_this, value);
+    }
+
     DEFINE_HOOK(void, Unity_set_position_Injected, (UnityResolve::UnityType::Transform* _this, UnityResolve::UnityType::Vector3* data)) {
         if (Config::enableFreeCamera) {
             CheckAndUpdateMainCamera();
 
             if (cameraTransformCache == _this) {
-                //Log::DebugFmt("MainCamera set pos: %f, %f, %f", data->x, data->y, data->z);
-                auto& origCameraPos = GKCamera::baseCamera.pos;
-                data->x = origCameraPos.x;
-                data->y = origCameraPos.y;
-                data->z = origCameraPos.z;
+                const auto cameraMode = GKCamera::GetCameraMode();
+                if (cameraMode == GKCamera::CameraMode::FIRST_PERSON) {
+                    if (cacheTrans && IsNativeObjectAlive(cacheTrans)) {
+                        *data = GKCamera::CalcFirstPersonPosition(cachePosition, cacheForward, GKCamera::firstPersonPosOffset);
+                    }
+
+                }
+                else if (cameraMode == GKCamera::CameraMode::FOLLOW) {
+                    auto pos = GKCamera::CalcPositionFromLookAt(cachePosition, GKCamera::followPosOffset);
+                    data->x = pos.x;
+                    data->y = pos.y;
+                    data->z = pos.z;
+                }
+                else {
+                    //Log::DebugFmt("MainCamera set pos: %f, %f, %f", data->x, data->y, data->z);
+                    auto& origCameraPos = GKCamera::baseCamera.pos;
+                    data->x = origCameraPos.x;
+                    data->y = origCameraPos.y;
+                    data->z = origCameraPos.z;
+                }
             }
         }
 
         return Unity_set_position_Injected_Orig(_this, data);
-    }
-
-    DEFINE_HOOK(void, Unity_set_rotation_Injected, (UnityResolve::UnityType::Transform* _this, UnityResolve::UnityType::Quaternion* value)) {
-        if (Config::enableFreeCamera) {
-            if (cameraTransformCache == _this) {
-                auto& origCameraLookat = GKCamera::baseCamera.lookAt;
-                static auto lookat_injected = reinterpret_cast<void (*)(void*_this,
-                                                                        UnityResolve::UnityType::Vector3* worldPosition, UnityResolve::UnityType::Vector3* worldUp)>(
-                        Il2cppUtils::il2cpp_resolve_icall(
-                                "UnityEngine.Transform::Internal_LookAt_Injected(UnityEngine.Vector3&,UnityEngine.Vector3&)"));
-                static auto worldUp = UnityResolve::UnityType::Vector3(0, 1, 0);
-                lookat_injected(_this, &origCameraLookat, &worldUp);
-                // Log::DebugFmt("fov: %f, target: %f", Unity_get_fieldOfView_Orig(mainCameraCache), GKCamera::baseCamera.fov);
-                return;
-            }
-        }
-        return Unity_set_rotation_Injected_Orig(_this, value);
     }
 
     DEFINE_HOOK(void, EndCameraRendering, (void* ctx, void* camera, void* method)) {
@@ -175,6 +220,9 @@ namespace GakumasLocal::HookMain {
 
         if (Config::enableFreeCamera && mainCameraCache) {
             Unity_set_fieldOfView_Orig(mainCameraCache, GKCamera::baseCamera.fov);
+            if (GKCamera::GetCameraMode() == GKCamera::CameraMode::FIRST_PERSON) {
+                mainCameraCache->SetNearClipPlane(0.001f);
+            }
         }
     }
 
@@ -243,10 +291,8 @@ namespace GakumasLocal::HookMain {
                                                        "UnityEngine", "Font");
         static auto Font_ctor = Il2cppUtils::GetMethod("UnityEngine.TextRenderingModule.dll",
                                                        "UnityEngine", "Font", ".ctor");
-        static auto IsNativeObjectAlive = Il2cppUtils::GetMethod("UnityEngine.CoreModule.dll", "UnityEngine",
-                                                                 "Object", "IsNativeObjectAlive");
         if (fontCache) {
-            if (IsNativeObjectAlive->Invoke<bool>(fontCache)) {
+            if (IsNativeObjectAlive(fontCache)) {
                 return fontCache;
             }
         }
@@ -390,10 +436,10 @@ namespace GakumasLocal::HookMain {
         PictureBookLiveThumbnailView_SetData_Orig(_this, liveData, isUnlocked, isNew);
     }
 
-
+    bool needRestoreHides = false;
     DEFINE_HOOK(void*, PictureBookLiveSelectScreenPresenter_MoveLiveScene, (void* _this, void* produceLive,
             Il2cppString* characterId, Il2cppString* costumeId, Il2cppString* costumeHeadId)) {
-
+        needRestoreHides = false;
         Log::InfoFmt("MoveLiveScene: characterId: %s, costumeId: %s, costumeHeadId: %s,",
                      characterId->ToString().c_str(), costumeId->ToString().c_str(), costumeHeadId->ToString().c_str());
 
@@ -517,6 +563,136 @@ namespace GakumasLocal::HookMain {
         return VLUtility_GetLimitedResolution_Orig(screenWidth, screenHeight, aspectRatio, maxBufferPixel, bufferScale, firstCall);
     }
 
+
+    DEFINE_HOOK(void, CampusActorModelParts_OnRegisterBone, (void* _this, Il2cppString** name, UnityResolve::UnityType::Transform* bone)) {
+        CampusActorModelParts_OnRegisterBone_Orig(_this, name, bone);
+        // Log::DebugFmt("CampusActorModelParts_OnRegisterBone: %s, %p", (*name)->ToString().c_str(), bone);
+    }
+
+    bool InitBodyParts() {
+        static auto isInit = false;
+        if (isInit) return true;
+
+        const auto Enum_GetValues = Il2cppUtils::GetMethod("mscorlib.dll", "System", "Enum", "GetValues");
+        const auto Enum_GetNames = Il2cppUtils::GetMethod("mscorlib.dll", "System", "Enum", "GetNames");
+
+        const auto HumanBodyBones_klass = Il2cppUtils::GetClass(
+                "UnityEngine.AnimationModule.dll", "UnityEngine", "HumanBodyBones");
+
+        const auto values = Enum_GetValues->Invoke<UnityResolve::UnityType::Array<int>*>(HumanBodyBones_klass->GetType())->ToVector();
+        const auto names = Enum_GetNames->Invoke<UnityResolve::UnityType::Array<Il2cppString*>*>(HumanBodyBones_klass->GetType())->ToVector();
+        if (values.size() != names.size()) {
+            Log::ErrorFmt("InitBodyParts Error: values count: %ld, names count: %ld", values.size(), names.size());
+            return false;
+        }
+
+        std::vector<std::string> namesVec{};
+        for (auto i :names) {
+            namesVec.push_back(i->ToString());
+        }
+        GKCamera::bodyPartsEnum = Misc::CSEnum(namesVec, values);
+        isInit = true;
+        return true;
+    }
+
+    void HideHead(UnityResolve::UnityType::GameObject* obj, const bool isFace) {
+        static UnityResolve::UnityType::GameObject* lastFaceObj = nullptr;
+        static UnityResolve::UnityType::GameObject* lastHairObj = nullptr;
+
+#define lastHidedObj (isFace ? lastFaceObj : lastHairObj)
+
+       static auto get_activeInHierarchy = reinterpret_cast<bool (*)(void*)>(
+                Il2cppUtils::il2cpp_resolve_icall("UnityEngine.GameObject::get_activeInHierarchy()"));
+
+        const auto isFirstPerson = GKCamera::GetCameraMode() == GKCamera::CameraMode::FIRST_PERSON;
+        if (isFirstPerson && obj) {
+            if (obj == lastHidedObj) return;
+            if (lastHidedObj && IsNativeObjectAlive(lastHidedObj)) {
+                if (get_activeInHierarchy(lastHidedObj)) {
+                    lastHidedObj->SetActive(true);
+                }
+            }
+            if (IsNativeObjectAlive(obj)) {
+                obj->SetActive(false);
+                lastHidedObj = obj;
+            }
+        }
+        else {
+            if (lastHidedObj && IsNativeObjectAlive(lastHidedObj)) {
+                lastHidedObj->SetActive(true);
+                lastHidedObj = nullptr;
+            }
+        }
+    }
+
+    DEFINE_HOOK(void, CampusActorController_LateUpdate, (void* _this, void* mtd)) {
+        if (!Config::enableFreeCamera || (GKCamera::GetCameraMode() == GKCamera::CameraMode::FREE)) {
+            if (needRestoreHides) {
+                needRestoreHides = false;
+                HideHead(NULL, false);
+                HideHead(NULL, true);
+            }
+            return CampusActorController_LateUpdate_Orig(_this, mtd);
+        }
+
+        static auto CampusActorController_klass = Il2cppUtils::GetClass("campus-submodule.Runtime.dll",
+                                                                        "Campus.Common", "CampusActorController");
+        static auto rootBody_field = CampusActorController_klass->Get<UnityResolve::Field>("_rootBody");
+        static auto parentKlass = UnityResolve::Invoke<void*>("il2cpp_class_get_parent", CampusActorController_klass->address);
+        static auto GetHumanBodyBoneTransform_mtd = Il2cppUtils::il2cpp_class_get_method_from_name(parentKlass, "GetHumanBodyBoneTransform", 1);
+        static auto GetHumanBodyBoneTransform = reinterpret_cast<UnityResolve::UnityType::Transform* (*)(void*, int)>(
+                GetHumanBodyBoneTransform_mtd->methodPointer
+                );
+        static auto get_index_mtd = Il2cppUtils::il2cpp_class_get_method_from_name(CampusActorController_klass->address, "get_index", 0);
+        static auto get_Index = get_index_mtd ? reinterpret_cast<int (*)(void*)>(
+                get_index_mtd->methodPointer) : [](void*){return 0;};
+
+        const auto currIndex = get_Index(_this);
+        if (currIndex == GKCamera::followCharaIndex) {
+            static auto initPartsSuccess = InitBodyParts();
+            static auto headBodyId = initPartsSuccess ? GKCamera::bodyPartsEnum.GetValueByName("Head") : 0xA;
+            const auto isFirstPerson = GKCamera::GetCameraMode() == GKCamera::CameraMode::FIRST_PERSON;
+
+            auto targetTrans = GetHumanBodyBoneTransform(_this,
+                                                         isFirstPerson ? headBodyId : GKCamera::bodyPartsEnum.GetCurrent().second);
+
+            if (targetTrans) {
+                cacheTrans = targetTrans;
+                cacheRotation = cacheTrans->GetRotation();
+                cachePosition = cacheTrans->GetPosition();
+                cacheForward = cacheTrans->GetForward();
+                cacheLookAt = cacheTrans->GetPosition() + cacheTrans->GetForward() * 3;
+
+                auto rootBody = Il2cppUtils::ClassGetFieldValue<UnityResolve::UnityType::Transform*>(_this, rootBody_field);
+                auto rootModel = rootBody->GetParent();
+                auto rootModelChildCount = rootModel->GetChildCount();
+                for (int i = 0; i < rootModelChildCount; i++) {
+                    auto rootChild = rootModel->GetChild(i);
+                    const auto childName = rootChild->GetName();
+                    if (childName == "Root_Face") {
+                        for (int n = 0; n < rootChild->GetChildCount(); n++) {
+                            auto vLSkinningRenderer = rootChild->GetChild(n);
+                            if (vLSkinningRenderer->GetName() == "VLSkinningRenderer") {
+                                HideHead(vLSkinningRenderer->GetGameObject(), true);
+                                needRestoreHides = true;
+                            }
+                        }
+                    }
+                    else if (childName == "Root_Hair") {
+                        HideHead(rootChild->GetGameObject(), false);
+                        needRestoreHides = true;
+                    }
+                }
+            }
+            else {
+                cacheTrans = NULL;
+            }
+
+        }
+
+        CampusActorController_LateUpdate_Orig(_this, mtd);
+    }
+
     void StartInjectFunctions() {
         const auto hookInstaller = Plugin::GetInstance().GetHookInstaller();
         UnityResolve::Init(xdl_open(hookInstaller->m_il2cppLibraryPath.c_str(), RTLD_NOW), UnityResolve::Mode::Il2Cpp);
@@ -588,6 +764,20 @@ namespace GakumasLocal::HookMain {
                  Il2cppUtils::GetMethodPointer("vl-unity.Runtime.dll", "VL",
                                                "VLUtility", "GetLimitedResolution",
                                                {"*", "*", "*", "*", "*", "*"}));
+
+        ADD_HOOK(CampusActorModelParts_OnRegisterBone,
+                 Il2cppUtils::GetMethodPointer("campus-submodule.Runtime.dll", "Campus.Common",
+                                               "CampusActorModelParts", "OnRegisterBone"));
+        ADD_HOOK(CampusActorController_LateUpdate,
+                 Il2cppUtils::GetMethodPointer("campus-submodule.Runtime.dll", "Campus.Common",
+                                               "CampusActorController", "LateUpdate"));
+
+        static auto CampusActorController_klass = Il2cppUtils::GetClass("campus-submodule.Runtime.dll",
+                                                                        "Campus.Common", "CampusActorController");
+        for (const auto& i : CampusActorController_klass->methods) {
+            Log::DebugFmt("CampusActorController.%s at %p", i->name.c_str(), i->function);
+        }
+
 
         ADD_HOOK(CampusQualityManager_set_TargetFrameRate,
                  Il2cppUtils::GetMethodPointer("campus-submodule.Runtime.dll", "Campus.Common",

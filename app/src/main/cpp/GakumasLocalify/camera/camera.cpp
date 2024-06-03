@@ -1,4 +1,5 @@
 #include "baseCamera.hpp"
+#include "camera.hpp"
 #include <thread>
 
 #define KEY_W  51
@@ -8,6 +9,7 @@
 #define KEY_R  46
 #define KEY_Q  45
 #define KEY_E  33
+#define KEY_F  34
 #define KEY_I  37
 #define KEY_K  39
 #define KEY_J  38
@@ -28,42 +30,132 @@
 
 namespace GKCamera {
 	BaseCamera::Camera baseCamera{};
+    CameraMode cameraMode = CameraMode::FREE;
+    FirstPersonRoll firstPersonRoll = FirstPersonRoll::ENABLE_ROLL;
+
+    UnityResolve::UnityType::Vector3 firstPersonPosOffset{0, 0.064f, 0.000f};
+    UnityResolve::UnityType::Vector3 followPosOffset{0, 0, 1.5};
+    float offsetMoveStep = 0.008;
+    int followCharaIndex = 0;
+    GakumasLocal::Misc::CSEnum bodyPartsEnum("Head", 0xa);
 
 	bool rMousePressFlg = false;
 
-	void reset_camera() {
+    void SetCameraMode(CameraMode mode) {
+        cameraMode = mode;
+    }
+
+    CameraMode GetCameraMode() {
+        return cameraMode;
+    }
+
+    void SetFirstPersonRoll(FirstPersonRoll mode) {
+        firstPersonRoll = mode;
+    }
+
+    FirstPersonRoll GetFirstPersonRoll() {
+        return firstPersonRoll;
+    }
+
+
+    void reset_camera() {
+        followCharaIndex = 0;
+        firstPersonPosOffset = {0, 0.064f, 0.000f};  // f3: 0.008f
+        followPosOffset = {0, 0, 1.5};
 		baseCamera.reset();
 	}
 
 	void camera_forward() {  // 向前
-		baseCamera.set_lon_move(0, LonMoveHState::LonMoveForward);
+        switch (cameraMode) {
+            case CameraMode::FREE: {
+                baseCamera.set_lon_move(0, LonMoveHState::LonMoveForward);
+            } break;
+            case CameraMode::FIRST_PERSON: {
+                firstPersonPosOffset.z += offsetMoveStep;
+            } break;
+            case CameraMode::FOLLOW: {
+                followPosOffset.z -= offsetMoveStep;
+            }
+        }
+
 	}
 	void camera_back() {  // 后退
-		baseCamera.set_lon_move(180, LonMoveHState::LonMoveBack);
+        switch (cameraMode) {
+            case CameraMode::FREE: {
+                baseCamera.set_lon_move(180, LonMoveHState::LonMoveBack);
+            } break;
+            case CameraMode::FIRST_PERSON: {
+                firstPersonPosOffset.z -= offsetMoveStep;
+            } break;
+            case CameraMode::FOLLOW: {
+                followPosOffset.z += offsetMoveStep;
+            }
+        }
 	}
 	void camera_left() {  // 向左
-		baseCamera.set_lon_move(90);
+        switch (cameraMode) {
+            case CameraMode::FREE: {
+                baseCamera.set_lon_move(90);
+            } break;
+            case CameraMode::FOLLOW: {
+                followPosOffset.x += 0.8;
+            }
+            default:
+                break;
+        }
+
 	}
 	void camera_right() {  // 向右
-		baseCamera.set_lon_move(-90);
+        switch (cameraMode) {
+            case CameraMode::FREE: {
+                baseCamera.set_lon_move(-90);
+            } break;
+            case CameraMode::FOLLOW: {
+                followPosOffset.x -= 0.8;
+            }
+            default:
+                break;
+        }
 	}
+
 	void camera_down() {  // 向下
-		float preStep = BaseCamera::moveStep / BaseCamera::smoothLevel;
+        switch (cameraMode) {
+            case CameraMode::FREE: {
+                float preStep = BaseCamera::moveStep / BaseCamera::smoothLevel;
 
-		for (int i = 0; i < BaseCamera::smoothLevel; i++) {
-			baseCamera.pos.y -= preStep;
-			baseCamera.lookAt.y -= preStep;
-            std::this_thread::sleep_for(std::chrono::milliseconds(BaseCamera::sleepTime));
-		}
+                for (int i = 0; i < BaseCamera::smoothLevel; i++) {
+                    baseCamera.pos.y -= preStep;
+                    baseCamera.lookAt.y -= preStep;
+                    std::this_thread::sleep_for(std::chrono::milliseconds(BaseCamera::sleepTime));
+                }
+            } break;
+            case CameraMode::FIRST_PERSON: {
+                firstPersonPosOffset.y -= offsetMoveStep;
+            } break;
+            case CameraMode::FOLLOW: {
+                followPosOffset.y -= offsetMoveStep;
+            }
+        }
 	}
-	void camera_up() {  // 向上
-		float preStep = BaseCamera::moveStep / BaseCamera::smoothLevel;
 
-		for (int i = 0; i < BaseCamera::smoothLevel; i++) {
-			baseCamera.pos.y += preStep;
-			baseCamera.lookAt.y += preStep;
-            std::this_thread::sleep_for(std::chrono::milliseconds(BaseCamera::sleepTime));
-		}
+	void camera_up() {  // 向上
+        switch (cameraMode) {
+            case CameraMode::FREE: {
+                float preStep = BaseCamera::moveStep / BaseCamera::smoothLevel;
+
+                for (int i = 0; i < BaseCamera::smoothLevel; i++) {
+                    baseCamera.pos.y += preStep;
+                    baseCamera.lookAt.y += preStep;
+                    std::this_thread::sleep_for(std::chrono::milliseconds(BaseCamera::sleepTime));
+                }
+            } break;
+            case CameraMode::FIRST_PERSON: {
+                firstPersonPosOffset.y += offsetMoveStep;
+            } break;
+            case CameraMode::FOLLOW: {
+                followPosOffset.y += offsetMoveStep;
+            }
+        }
 	}
 	void cameraLookat_up(float mAngel, bool mouse = false) {
 		baseCamera.horizontalAngle += mAngel;
@@ -88,6 +180,92 @@ namespace GKCamera {
 	void changeCameraFOV(float value) {
 		baseCamera.fov += value;
 	}
+
+    void SwitchCameraMode() {
+        switch (cameraMode) {
+            case CameraMode::FREE: {
+                cameraMode = CameraMode::FOLLOW;
+                GakumasLocal::Log::Info("CameraMode: FOLLOW");
+            } break;
+            case CameraMode::FOLLOW: {
+                cameraMode = CameraMode::FIRST_PERSON;
+                firstPersonRoll = FirstPersonRoll::ENABLE_ROLL;
+                GakumasLocal::Log::Info("CameraMode: FIRST_PERSON");
+            } break;
+            case CameraMode::FIRST_PERSON: {
+                if (firstPersonRoll == FirstPersonRoll::ENABLE_ROLL) {
+                    firstPersonRoll = FirstPersonRoll::DISABLE_ROLL;
+                }
+                else {
+                    cameraMode = CameraMode::FREE;
+                    GakumasLocal::Log::Info("CameraMode: FREE");
+                }
+            } break;
+        }
+    }
+
+    void OnLeftDown() {
+        if (cameraMode == CameraMode::FREE) return;
+        if (followCharaIndex >= 1) {
+            followCharaIndex--;
+        }
+    }
+
+    void OnRightDown() {
+        if (cameraMode == CameraMode::FREE) return;
+        followCharaIndex++;
+    }
+
+    void OnUpDown() {
+        if (cameraMode == CameraMode::FOLLOW) {
+            const auto currPart = bodyPartsEnum.Last();
+            GakumasLocal::Log::InfoFmt("Look at: %s (0x%x)", currPart.first.c_str(), currPart.second);
+        }
+    }
+
+    void OnDownDown() {
+        if (cameraMode == CameraMode::FOLLOW) {
+            const auto currPart = bodyPartsEnum.Next();
+            GakumasLocal::Log::InfoFmt("Look at: %s (0x%x)", currPart.first.c_str(), currPart.second);
+        }
+    }
+
+    UnityResolve::UnityType::Vector3 CalcPositionFromLookAt(const UnityResolve::UnityType::Vector3& target,
+                                                            const UnityResolve::UnityType::Vector3& offset) {
+        // offset: z 远近, y 高低, x角度
+        float angleX = offset.x;
+        float distanceZ = offset.z;
+        float angleRad = angleX * (M_PI / 180.0f);
+        float newX = target.x + distanceZ * std::sin(angleRad);
+        float newZ = target.z + distanceZ * std::cos(angleRad);
+        float newY = target.y + offset.y;
+        return UnityResolve::UnityType::Vector3(newX, newY, newZ);
+    }
+
+    UnityResolve::UnityType::Vector3 CalcFirstPersonPosition(const UnityResolve::UnityType::Vector3& position,
+                                                             const UnityResolve::UnityType::Vector3& forward,
+                                                             const UnityResolve::UnityType::Vector3& offset) {
+        using Vector3 = UnityResolve::UnityType::Vector3;
+
+        // 计算角色的右方向
+        Vector3 up(0, 1, 0); // Y轴方向
+        Vector3 right = forward.cross(up).Normalize();
+        Vector3 fwd = forward;
+        Vector3 pos = position;
+
+        // 计算角色的左方向
+        Vector3 left = right * -1.0f;
+
+        // 计算最终位置
+        Vector3 backwardOffset = fwd * -offset.z;
+        Vector3 leftOffset = left * offset.x;
+
+        Vector3 finalPosition = pos + backwardOffset + leftOffset;
+        finalPosition.y += offset.y;
+
+        return finalPosition;
+
+    }
 
 	struct CameraMoveState {
 		bool w = false;
@@ -161,14 +339,30 @@ namespace GKCamera {
 				cameraMoveState.ctrl = message == WM_KEYDOWN; break;
 			case KEY_SPACE:
 				cameraMoveState.space = message == WM_KEYDOWN; break;
-			case KEY_UP:
-				cameraMoveState.up = message == WM_KEYDOWN; break;
-			case KEY_DOWN:
-				cameraMoveState.down = message == WM_KEYDOWN; break;
-			case KEY_LEFT:
-				cameraMoveState.left = message == WM_KEYDOWN; break;
-			case KEY_RIGHT:
-				cameraMoveState.right = message == WM_KEYDOWN; break;
+			case KEY_UP: {
+                if (message == WM_KEYDOWN) {
+                    OnUpDown();
+                }
+                cameraMoveState.up = message == WM_KEYDOWN;
+            } break;
+			case KEY_DOWN: {
+                if (message == WM_KEYDOWN) {
+                    OnDownDown();
+                }
+                cameraMoveState.down = message == WM_KEYDOWN;
+            } break;
+			case KEY_LEFT: {
+                if (message == WM_KEYDOWN) {
+                    OnLeftDown();
+                }
+                cameraMoveState.left = message == WM_KEYDOWN;
+            } break;
+			case KEY_RIGHT: {
+                if (message == WM_KEYDOWN) {
+                    OnRightDown();
+                }
+                cameraMoveState.right = message == WM_KEYDOWN;
+            } break;
 			case KEY_Q:
 				cameraMoveState.q = message == WM_KEYDOWN; break;
 			case KEY_E:
@@ -183,7 +377,8 @@ namespace GKCamera {
 				cameraMoveState.l = message == WM_KEYDOWN; break;
 			case KEY_R: {
 				if (message == WM_KEYDOWN) reset_camera();
-			}; break;
+			} break;
+            case KEY_F: if (message == WM_KEYDOWN) SwitchCameraMode(); break;
 			default: break;
 			}
 		}
