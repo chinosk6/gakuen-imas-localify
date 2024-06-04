@@ -13,6 +13,11 @@ namespace GKCamera {
         DISABLE_ROLL
     };
 
+    enum class FollowModeY {
+        APPLY_Y,
+        SMOOTH_Y
+    };
+
     void SetCameraMode(CameraMode mode);
     CameraMode GetCameraMode();
     void SetFirstPersonRoll(FirstPersonRoll mode);
@@ -30,6 +35,10 @@ namespace GKCamera {
     UnityResolve::UnityType::Vector3 CalcFirstPersonPosition(const UnityResolve::UnityType::Vector3& position,
                                                              const UnityResolve::UnityType::Vector3& forward,
                                                              const UnityResolve::UnityType::Vector3& offset);
+
+    UnityResolve::UnityType::Vector3 CalcFollowModeLookAt(const UnityResolve::UnityType::Vector3& targetPos,
+                                                          const UnityResolve::UnityType::Vector3& posOffset,
+                                                          const bool recordY = false);
 
     void on_cam_rawinput_keyboard(int message, int key);
 	void initCameraSettings();

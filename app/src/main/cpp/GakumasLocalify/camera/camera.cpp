@@ -1,6 +1,7 @@
 #include "baseCamera.hpp"
 #include "camera.hpp"
 #include <thread>
+#include "Misc.hpp"
 
 #define KEY_W  51
 #define KEY_S  47
@@ -14,7 +15,7 @@
 #define KEY_K  39
 #define KEY_J  38
 #define KEY_L  40
-#define KEY_R  46
+#define KEY_V  50
 #define KEY_UP  19
 #define KEY_DOWN  20
 #define KEY_LEFT  21
@@ -32,14 +33,16 @@ namespace GKCamera {
 	BaseCamera::Camera baseCamera{};
     CameraMode cameraMode = CameraMode::FREE;
     FirstPersonRoll firstPersonRoll = FirstPersonRoll::ENABLE_ROLL;
+    FollowModeY followModeY = FollowModeY::SMOOTH_Y;
 
     UnityResolve::UnityType::Vector3 firstPersonPosOffset{0, 0.064f, 0.000f};
     UnityResolve::UnityType::Vector3 followPosOffset{0, 0, 1.5};
+    UnityResolve::UnityType::Vector2 followLookAtOffset{0, 0};
     float offsetMoveStep = 0.008;
     int followCharaIndex = 0;
     GakumasLocal::Misc::CSEnum bodyPartsEnum("Head", 0xa);
 
-	bool rMousePressFlg = false;
+	// bool rMousePressFlg = false;
 
     void SetCameraMode(CameraMode mode) {
         cameraMode = mode;
@@ -62,6 +65,7 @@ namespace GKCamera {
         followCharaIndex = 0;
         firstPersonPosOffset = {0, 0.064f, 0.000f};  // f3: 0.008f
         followPosOffset = {0, 0, 1.5};
+        followLookAtOffset = {0, 0};
 		baseCamera.reset();
 	}
 
@@ -98,7 +102,8 @@ namespace GKCamera {
                 baseCamera.set_lon_move(90);
             } break;
             case CameraMode::FOLLOW: {
-                followPosOffset.x += 0.8;
+                // followPosOffset.x += 0.8;
+                followLookAtOffset.x += offsetMoveStep;
             }
             default:
                 break;
@@ -111,7 +116,8 @@ namespace GKCamera {
                 baseCamera.set_lon_move(-90);
             } break;
             case CameraMode::FOLLOW: {
-                followPosOffset.x -= 0.8;
+                // followPosOffset.x -= 0.8;
+                followLookAtOffset.x -= offsetMoveStep;
             }
             default:
                 break;
@@ -133,7 +139,8 @@ namespace GKCamera {
                 firstPersonPosOffset.y -= offsetMoveStep;
             } break;
             case CameraMode::FOLLOW: {
-                followPosOffset.y -= offsetMoveStep;
+                // followPosOffset.y -= offsetMoveStep;
+                followLookAtOffset.y -= offsetMoveStep;
             }
         }
 	}
@@ -153,7 +160,8 @@ namespace GKCamera {
                 firstPersonPosOffset.y += offsetMoveStep;
             } break;
             case CameraMode::FOLLOW: {
-                followPosOffset.y += offsetMoveStep;
+                // followPosOffset.y += offsetMoveStep;
+                followLookAtOffset.y += offsetMoveStep;
             }
         }
 	}
@@ -189,18 +197,41 @@ namespace GKCamera {
             } break;
             case CameraMode::FOLLOW: {
                 cameraMode = CameraMode::FIRST_PERSON;
-                firstPersonRoll = FirstPersonRoll::ENABLE_ROLL;
                 GakumasLocal::Log::Info("CameraMode: FIRST_PERSON");
             } break;
             case CameraMode::FIRST_PERSON: {
+                cameraMode = CameraMode::FREE;
+                GakumasLocal::Log::Info("CameraMode: FREE");
+
+            } break;
+        }
+    }
+
+    void SwitchCameraSubMode() {
+        switch (cameraMode) {
+            case CameraMode::FIRST_PERSON: {
                 if (firstPersonRoll == FirstPersonRoll::ENABLE_ROLL) {
                     firstPersonRoll = FirstPersonRoll::DISABLE_ROLL;
+                    GakumasLocal::Log::Info("FirstPersonRoll: DISABLE_ROLL");
                 }
                 else {
-                    cameraMode = CameraMode::FREE;
-                    GakumasLocal::Log::Info("CameraMode: FREE");
+                    firstPersonRoll = FirstPersonRoll::ENABLE_ROLL;
+                    GakumasLocal::Log::Info("FirstPersonRoll: ENABLE_ROLL");
                 }
             } break;
+
+            case CameraMode::FOLLOW: {
+                if (followModeY == FollowModeY::APPLY_Y) {
+                    followModeY = FollowModeY::SMOOTH_Y;
+                    GakumasLocal::Log::Info("FollowModeY: SMOOTH_Y");
+                }
+                else {
+                    followModeY = FollowModeY::APPLY_Y;
+                    GakumasLocal::Log::Info("FollowModeY: APPLY_Y");
+                }
+            } break;
+
+            default: break;
         }
     }
 
@@ -230,16 +261,74 @@ namespace GKCamera {
         }
     }
 
+    void ChangeLiveFollowCameraOffsetY(const float value) {
+        if (cameraMode == CameraMode::FOLLOW) {
+            followPosOffset.y += value;
+        }
+    }
+
+    void ChangeLiveFollowCameraOffsetX(const float value) {
+        if (cameraMode == CameraMode::FOLLOW) {
+            followPosOffset.x += value;
+        }
+    }
+
     UnityResolve::UnityType::Vector3 CalcPositionFromLookAt(const UnityResolve::UnityType::Vector3& target,
                                                             const UnityResolve::UnityType::Vector3& offset) {
         // offset: z 远近, y 高低, x角度
-        float angleX = offset.x;
-        float distanceZ = offset.z;
-        float angleRad = angleX * (M_PI / 180.0f);
-        float newX = target.x + distanceZ * std::sin(angleRad);
-        float newZ = target.z + distanceZ * std::cos(angleRad);
-        float newY = target.y + offset.y;
+        const float angleX = offset.x;
+        const float distanceZ = offset.z;
+        const float angleRad = angleX * (M_PI / 180.0f);
+        const float newX = target.x + distanceZ * std::sin(angleRad);
+        const float newZ = target.z + distanceZ * std::cos(angleRad);
+        const float newY = target.y + offset.y;
         return UnityResolve::UnityType::Vector3(newX, newY, newZ);
+    }
+
+
+    float CheckNewY(const UnityResolve::UnityType::Vector3& targetPos, const bool recordY) {
+        static GakumasLocal::Misc::FixedSizeQueue<float> recordsY(60);
+        const auto currentY = targetPos.y;
+        static auto lastRetY = currentY;
+
+        if (followModeY == FollowModeY::APPLY_Y) {
+            lastRetY = currentY;
+            return currentY;
+        }
+
+        const auto currentAvg = recordsY.Average();
+        // GakumasLocal::Log::DebugFmt("currentY: %f, currentAvg: %f, diff: %f", currentY, currentAvg, abs(currentY - currentAvg));
+
+        if (recordY) {
+            recordsY.Push(currentY);
+        }
+
+        if (abs(currentY - currentAvg) < 0.02) {
+            return lastRetY;
+        }
+
+        const auto retAvg = recordsY.Average();
+        lastRetY = lastRetY + (retAvg - lastRetY) / 8;
+        return lastRetY;
+    }
+
+    UnityResolve::UnityType::Vector3 CalcFollowModeLookAt(const UnityResolve::UnityType::Vector3& targetPos,
+                                                          const UnityResolve::UnityType::Vector3& posOffset,
+                                                          const bool recordY) {
+        const float angleX = posOffset.x;
+        const float angleRad = (angleX + (followPosOffset.z >= 0 ? 90.0f : -90.0f)) * (M_PI / 180.0f);
+
+        UnityResolve::UnityType::Vector3 newTargetPos = targetPos;
+        newTargetPos.y = CheckNewY(targetPos, recordY);
+
+        const float offsetX = followLookAtOffset.x * sin(angleRad);
+        const float offsetZ = followLookAtOffset.x * cos(angleRad);
+
+        newTargetPos.x += offsetX;
+        newTargetPos.z += offsetZ;
+        newTargetPos.y += followLookAtOffset.y;
+
+        return newTargetPos;
     }
 
     UnityResolve::UnityType::Vector3 CalcFirstPersonPosition(const UnityResolve::UnityType::Vector3& position,
@@ -315,10 +404,10 @@ namespace GKCamera {
 				if (cameraMoveState.right) cameraLookat_right(moveAngel);
 				if (cameraMoveState.q) changeCameraFOV(0.5f);
 				if (cameraMoveState.e) changeCameraFOV(-0.5f);
-				// if (cameraMoveState.i) changeLiveFollowCameraOffsetY(moveStep / 3);
-				// if (cameraMoveState.k) changeLiveFollowCameraOffsetY(-moveStep / 3);
-				// if (cameraMoveState.j) changeLiveFollowCameraOffsetX(moveStep * 10);
-				// if (cameraMoveState.l) changeLiveFollowCameraOffsetX(-moveStep * 10);
+				if (cameraMoveState.i) ChangeLiveFollowCameraOffsetY(offsetMoveStep);
+				if (cameraMoveState.k) ChangeLiveFollowCameraOffsetY(-offsetMoveStep);
+				if (cameraMoveState.j) ChangeLiveFollowCameraOffsetX(0.8);
+				if (cameraMoveState.l) ChangeLiveFollowCameraOffsetX(-0.8);
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
 			}
 			}).detach();
@@ -379,6 +468,7 @@ namespace GKCamera {
 				if (message == WM_KEYDOWN) reset_camera();
 			} break;
             case KEY_F: if (message == WM_KEYDOWN) SwitchCameraMode(); break;
+            case KEY_V: if (message == WM_KEYDOWN) SwitchCameraSubMode(); break;
 			default: break;
 			}
 		}

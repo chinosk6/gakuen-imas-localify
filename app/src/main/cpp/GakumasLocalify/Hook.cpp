@@ -170,7 +170,9 @@ namespace GakumasLocal::HookMain {
                     }
                 }
                 else if (cameraMode == GKCamera::CameraMode::FOLLOW) {
-                    lookat_injected(_this, &cachePosition, &worldUp);
+                    auto newLookAtPos = GKCamera::CalcFollowModeLookAt(cachePosition,
+                                                                       GKCamera::followPosOffset, true);
+                    lookat_injected(_this, &newLookAtPos, &worldUp);
                     return;
                 }
                 else {
@@ -197,7 +199,8 @@ namespace GakumasLocal::HookMain {
 
                 }
                 else if (cameraMode == GKCamera::CameraMode::FOLLOW) {
-                    auto pos = GKCamera::CalcPositionFromLookAt(cachePosition, GKCamera::followPosOffset);
+                    auto newLookAtPos = GKCamera::CalcFollowModeLookAt(cachePosition, GKCamera::followPosOffset);
+                    auto pos = GKCamera::CalcPositionFromLookAt(newLookAtPos, GKCamera::followPosOffset);
                     data->x = pos.x;
                     data->y = pos.y;
                     data->z = pos.z;
@@ -591,6 +594,7 @@ namespace GakumasLocal::HookMain {
             namesVec.push_back(i->ToString());
         }
         GKCamera::bodyPartsEnum = Misc::CSEnum(namesVec, values);
+        GKCamera::bodyPartsEnum.SetIndex(GKCamera::bodyPartsEnum.GetValueByName("Head"));
         isInit = true;
         return true;
     }
@@ -605,12 +609,11 @@ namespace GakumasLocal::HookMain {
                 Il2cppUtils::il2cpp_resolve_icall("UnityEngine.GameObject::get_activeInHierarchy()"));
 
         const auto isFirstPerson = GKCamera::GetCameraMode() == GKCamera::CameraMode::FIRST_PERSON;
+
         if (isFirstPerson && obj) {
             if (obj == lastHidedObj) return;
-            if (lastHidedObj && IsNativeObjectAlive(lastHidedObj)) {
-                if (get_activeInHierarchy(lastHidedObj)) {
-                    lastHidedObj->SetActive(true);
-                }
+            if (lastHidedObj && IsNativeObjectAlive(lastHidedObj) && get_activeInHierarchy(lastHidedObj)) {
+                lastHidedObj->SetActive(true);
             }
             if (IsNativeObjectAlive(obj)) {
                 obj->SetActive(false);

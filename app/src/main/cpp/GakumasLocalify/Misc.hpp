@@ -1,9 +1,11 @@
-#ifndef GAKUMAS_LOCALIFY_MISC_H
-#define GAKUMAS_LOCALIFY_MISC_H
+#pragma once
 
 #include <string>
 #include <string_view>
 #include <jni.h>
+#include <deque>
+#include <numeric>
+
 
 namespace GakumasLocal {
     using OpaqueFunctionPointer = void (*)();
@@ -20,6 +22,8 @@ namespace GakumasLocal {
             CSEnum(const std::vector<std::string>& names, const std::vector<int>& values);
 
             int GetIndex();
+
+            void SetIndex(int index);
 
             int GetTotalLength();
 
@@ -39,7 +43,34 @@ namespace GakumasLocal {
             std::vector<int> values{};
 
         };
+
+        template <typename T>
+        class FixedSizeQueue {
+            static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
+
+        public:
+            FixedSizeQueue(size_t maxSize) : maxSize(maxSize), sum(0) {}
+
+            void Push(T value) {
+                if (deque.size() >= maxSize) {
+                    sum -= deque.front();
+                    deque.pop_front();
+                }
+                deque.push_back(value);
+                sum += value;
+            }
+
+            float Average() {
+                if (deque.empty()) {
+                    return 0.0;
+                }
+                return static_cast<float>(sum) / deque.size();
+            }
+
+        private:
+            std::deque<T> deque;
+            size_t maxSize;
+            T sum;
+        };
     }
 }
-
-#endif //GAKUMAS_LOCALIFY_MISC_H

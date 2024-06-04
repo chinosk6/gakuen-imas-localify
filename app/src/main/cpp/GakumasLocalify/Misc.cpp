@@ -1,4 +1,4 @@
-#include "Misc.h"
+#include "Misc.hpp"
 
 #include <codecvt>
 #include <locale>
@@ -45,6 +45,12 @@ namespace GakumasLocal::Misc {
         return currIndex;
     }
 
+    void CSEnum::SetIndex(int index) {
+        if (index < 0) return;
+        if (index + 1 >= values.size()) return;
+        currIndex = index;
+    }
+
     int CSEnum::GetTotalLength() {
         return values.size();
     }
@@ -89,4 +95,4 @@ namespace GakumasLocal::Misc {
         return values[0];
     }
 
-} // namespace UmaPyogin::Misc
+}

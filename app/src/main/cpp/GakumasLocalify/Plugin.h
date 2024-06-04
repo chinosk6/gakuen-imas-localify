@@ -1,7 +1,7 @@
 #ifndef GAKUMAS_LOCALIFY_PLUGIN_H
 #define GAKUMAS_LOCALIFY_PLUGIN_H
 
-#include "Misc.h"
+#include "Misc.hpp"
 #include <string>
 #include <memory>
 #include <jni.h>
