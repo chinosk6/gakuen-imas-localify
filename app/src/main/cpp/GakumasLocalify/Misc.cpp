@@ -1,4 +1,4 @@
-#include "Misc.h"
+#include "Misc.hpp"
 
 #include <codecvt>
 #include <locale>
@@ -31,4 +31,68 @@ namespace GakumasLocal::Misc {
         return env;
     }
 
-} // namespace UmaPyogin::Misc
+    CSEnum::CSEnum(const std::string& name, const int value) {
+        this->Add(name, value);
+    }
+
+    CSEnum::CSEnum(const std::vector<std::string>& names, const std::vector<int>& values) {
+        if (names.size() != values.size()) return;
+        this->names = names;
+        this->values = values;
+    }
+
+    int CSEnum::GetIndex() {
+        return currIndex;
+    }
+
+    void CSEnum::SetIndex(int index) {
+        if (index < 0) return;
+        if (index + 1 >= values.size()) return;
+        currIndex = index;
+    }
+
+    int CSEnum::GetTotalLength() {
+        return values.size();
+    }
+
+    void CSEnum::Add(const std::string &name, const int value) {
+        this->names.push_back(name);
+        this->values.push_back(value);
+    }
+
+    std::pair<std::string, int> CSEnum::GetCurrent() {
+        return std::make_pair(names[currIndex], values[currIndex]);
+    }
+
+    std::pair<std::string, int> CSEnum::Last() {
+        const auto maxIndex = this->GetTotalLength() - 1;
+        if (currIndex <= 0) {
+            currIndex = maxIndex;
+        }
+        else {
+            currIndex--;
+        }
+        return this->GetCurrent();
+    }
+
+    std::pair<std::string, int> CSEnum::Next() {
+        const auto maxIndex = this->GetTotalLength() - 1;
+        if (currIndex >= maxIndex) {
+            currIndex = 0;
+        }
+        else {
+            currIndex++;
+        }
+        return this->GetCurrent();
+    }
+
+    int CSEnum::GetValueByName(const std::string &name) {
+        for (int i = 0; i < names.size(); i++) {
+            if (names[i].compare(name) == 0) {
+                return values[i];
+            }
+        }
+        return values[0];
+    }
+
+}

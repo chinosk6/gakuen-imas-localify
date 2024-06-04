@@ -1,6 +1,6 @@
 #include "Log.h"
 #include <android/log.h>
-#include <Misc.h>
+#include <Misc.hpp>
 #include <sstream>
 #include <string>
 #include <thread>

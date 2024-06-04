@@ -45,7 +45,7 @@
 
 #include "xdl.h"
 #include "../../GakumasLocalify/Log.h"
-#include "../../GakumasLocalify/Misc.h"
+#include "../../GakumasLocalify/Misc.hpp"
 
 class UnityResolve final {
 public:
@@ -906,6 +906,14 @@ public:
 			}
 
 			auto operator ==(const Vector3 x) const -> bool { return this->x == x.x && this->y == x.y && this->z == x.z; }
+
+            Vector3 cross(const Vector3& other) const {
+                return Vector3(
+                        y * other.z - z * other.y,
+                        z * other.x - x * other.z,
+                        x * other.y - y * other.x
+                );
+            }
 		};
 
 		struct Vector2 {
@@ -1580,6 +1588,14 @@ public:
 				if (!method) method = Get("UnityEngine.CoreModule.dll")->Get("Object")->Get<Method>("Destroy", { "*" });
 				if (method) return method->Invoke<void>(original);
 			}
+
+            static auto op_Implicit(UnityObject* exists) -> bool {
+                if (!exists) return false;
+                static Method* method;
+                if (!method) method = Get("UnityEngine.CoreModule.dll")->Get("Object", "UnityEngine")->Get<Method>("op_Implicit");
+                if (method) return method->Invoke<bool>(exists);
+                return false;
+            }
 		};
 
 		struct Component : UnityObject {
@@ -1816,6 +1832,20 @@ public:
 				if (!method) method = Get("UnityEngine.CoreModule.dll")->Get("Camera")->Get<Method>("get_orthographicSize");
 				return method->Invoke<float>(this);
 			}
+
+            void SetNearClipPlane(float value) {
+                if (!this) return;
+                static Method* method;
+                if (!method) method = Get("UnityEngine.CoreModule.dll")->Get("Camera")->Get<Method>("set_nearClipPlane");
+                return method->Invoke<void>(this, value);
+            }
+
+            float GetNearClipPlane() {
+                if (!this) return -1;
+                static Method* method;
+                if (!method) method = Get("UnityEngine.CoreModule.dll")->Get("Camera")->Get<Method>("get_nearClipPlane");
+                return method->Invoke<float>(this);
+            }
 		};
 
 		struct Transform : Component {
