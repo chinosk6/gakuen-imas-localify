@@ -285,9 +285,8 @@ namespace GKCamera {
         return UnityResolve::UnityType::Vector3(newX, newY, newZ);
     }
 
-
-    float CheckNewY(const UnityResolve::UnityType::Vector3& targetPos, const bool recordY) {
-        static GakumasLocal::Misc::FixedSizeQueue<float> recordsY(60);
+    float CheckNewY(const UnityResolve::UnityType::Vector3& targetPos, const bool recordY,
+                    GakumasLocal::Misc::FixedSizeQueue<float>& recordsY) {
         const auto currentY = targetPos.y;
         static auto lastRetY = currentY;
 
@@ -315,11 +314,13 @@ namespace GKCamera {
     UnityResolve::UnityType::Vector3 CalcFollowModeLookAt(const UnityResolve::UnityType::Vector3& targetPos,
                                                           const UnityResolve::UnityType::Vector3& posOffset,
                                                           const bool recordY) {
+        static GakumasLocal::Misc::FixedSizeQueue<float> recordsY(60);
+
         const float angleX = posOffset.x;
         const float angleRad = (angleX + (followPosOffset.z >= 0 ? 90.0f : -90.0f)) * (M_PI / 180.0f);
 
         UnityResolve::UnityType::Vector3 newTargetPos = targetPos;
-        newTargetPos.y = CheckNewY(targetPos, recordY);
+        newTargetPos.y = CheckNewY(targetPos, recordY, recordsY);
 
         const float offsetX = followLookAtOffset.x * sin(angleRad);
         const float offsetZ = followLookAtOffset.x * cos(angleRad);

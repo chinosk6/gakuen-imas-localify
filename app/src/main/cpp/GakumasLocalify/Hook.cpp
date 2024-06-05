@@ -164,7 +164,10 @@ namespace GakumasLocal::HookMain {
                             *value = cacheRotation;
                         }
                         else {
-                            lookat_injected(_this, &cacheLookAt, &worldUp);
+                            static GakumasLocal::Misc::FixedSizeQueue<float> recordsY(60);
+                            const auto newY = GKCamera::CheckNewY(cacheLookAt, true, recordsY);
+                            UnityResolve::UnityType::Vector3 newCacheLookAt{cacheLookAt.x, newY, cacheLookAt.z};
+                            lookat_injected(_this, &newCacheLookAt, &worldUp);
                             return;
                         }
                     }

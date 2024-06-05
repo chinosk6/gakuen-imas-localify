@@ -29,6 +29,9 @@ namespace GKCamera {
     extern int followCharaIndex;
     extern GakumasLocal::Misc::CSEnum bodyPartsEnum;
 
+    float CheckNewY(const UnityResolve::UnityType::Vector3& targetPos, const bool recordY,
+                    GakumasLocal::Misc::FixedSizeQueue<float>& recordsY);
+
     UnityResolve::UnityType::Vector3 CalcPositionFromLookAt(const UnityResolve::UnityType::Vector3& target,
                                                             const UnityResolve::UnityType::Vector3& offset);
 
