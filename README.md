@@ -7,14 +7,16 @@
 
 # How to use
 
-- 这是一个 XPosed 插件，已 Root 用户可以使用 [LSPosed](https://github.com/LSPosed/LSPosed)，未 Root 用户可以使用 [LSPatch](https://github.com/LSPosed/LSPatch)。以上两个框架均测试通过，能正常运行。
+- 这是一个 XPosed 插件，已 Root 用户可以使用 [LSPosed](https://github.com/LSPosed/LSPosed)，未 Root 用户可以使用 [LSPatch](https://github.com/LSPosed/LSPatch)。
 
 
 
 # TODO
 
-- [ ] 卡片信息、TIP等部分的文本 hook
+- [ ] 卡片信息、TIPS 等部分的文本 hook
+- [ ] TIPS 文本消失
 - [ ] 更多类型的文件替换
+- [ ] LSPatch 集成模式无效
 
 ... and more
 

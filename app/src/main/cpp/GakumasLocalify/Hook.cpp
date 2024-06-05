@@ -303,7 +303,7 @@ namespace GakumasLocal::HookMain {
         const auto newFont = Font_klass->New<void*>();
         Font_ctor->Invoke<void>(newFont);
 
-        static std::string fontName = Local::GetBasePath() / "local-files" / "MO-UDShinGo-SC-Gb4-M.otf";
+        static std::string fontName = Local::GetBasePath() / "local-files" / "gkamsZHFontMIX.otf";
         CreateFontFromPath(newFont, Il2cppString::New(fontName));
         fontCache = newFont;
         return newFont;
