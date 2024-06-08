@@ -5,14 +5,17 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.KeyEvent
 import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ObservableField
+import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import io.github.chinosk.gakumas.localify.databinding.ActivityMainBinding
+import io.github.chinosk.gakumas.localify.hookUtils.MainKeyEventDispatcher
 import io.github.chinosk.gakumas.localify.models.GakumasConfig
 import java.io.File
 
@@ -266,5 +269,24 @@ class MainActivity : AppCompatActivity(), ConfigListener {
 
     private fun showTextInputLayoutHint(view: TextInputLayout) {
         showToast(view.hint.toString())
+    }
+
+    fun checkConfigAndUpdateView() {
+        val sw = findViewById<SwitchMaterial>(R.id.SwitchUnlockAllLive)
+        sw.visibility = if (binding.config!!.dbgMode) android.view.View.VISIBLE else android.view.View.GONE
+    }
+
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (MainKeyEventDispatcher.checkDbgKey(event.keyCode, event.action)) {
+            val origDbg = binding.config?.dbgMode
+            if (origDbg != null) {
+                binding.config!!.dbgMode = !origDbg
+                binding.config = binding.config
+                binding.notifyChange()
+                saveConfig()
+                showToast("TestMode: ${!origDbg}")
+            }
+        }
+        return super.dispatchKeyEvent(event)
     }
 }

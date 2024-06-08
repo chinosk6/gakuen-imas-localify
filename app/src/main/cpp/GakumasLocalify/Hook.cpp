@@ -336,24 +336,27 @@ namespace GakumasLocal::HookMain {
         set_font->Invoke<void>(TMP_Text_this, fontAsset);
     }
 
-    DEFINE_HOOK(void, TMP_Text_set_text, (void* _this, UnityResolve::UnityType::String* text)) {
-        // Log::DebugFmt("TMP_Text_set_text: %s", text->ToString().c_str());
+    DEFINE_HOOK(void, TMP_Text_PopulateTextBackingArray, (void* _this, UnityResolve::UnityType::String* text, int start, int length)) {
+        if (!text) {
+            return TMP_Text_PopulateTextBackingArray_Orig(_this, text, start, length);
+        }
+
+        static auto Substring = Il2cppUtils::GetMethod("mscorlib.dll", "System", "String", "Substring",
+                                                       {"System.Int32", "System.Int32"});
+
+        const std::string origText = Substring->Invoke<Il2cppString*>(text, start, length)->ToString();
         std::string transText;
-        if (Local::GetGenericText(text->ToString(), &transText)) {
-            return TMP_Text_set_text_Orig(_this, UnityResolve::UnityType::String::New(transText));
+        if (Local::GetGenericText(origText, &transText)) {
+            const auto newText = UnityResolve::UnityType::String::New(transText);
+            return TMP_Text_PopulateTextBackingArray_Orig(_this, newText, 0, newText->length);
         }
 
         if (Config::textTest) {
-            TMP_Text_set_text_Orig(_this, UnityResolve::UnityType::String::New("[TS]" + text->ToString()));
+            TMP_Text_PopulateTextBackingArray_Orig(_this, UnityResolve::UnityType::String::New("[TP]" + text->ToString()), start, length + 4);
         }
         else {
-            TMP_Text_set_text_Orig(_this, text);
+            TMP_Text_PopulateTextBackingArray_Orig(_this, text, start, length);
         }
-
-        static auto set_font = Il2cppUtils::GetMethod("Unity.TextMeshPro.dll",
-                                                      "TMPro", "TMP_Text", "set_font");
-        //auto font = GetReplaceFontAsset();
-        //set_font->Invoke<void>(_this, font);
         UpdateFont(_this);
     }
 
@@ -370,10 +373,10 @@ namespace GakumasLocal::HookMain {
             std::string transText;
             if (Local::GetGenericText(currText->ToString(), &transText)) {
                 if (Config::textTest) {
-                    TMP_Text_set_text_Orig(_this, UnityResolve::UnityType::String::New("[TA]" + transText));
+                    set_Text_method->Invoke<void>(_this, UnityResolve::UnityType::String::New("[TA]" + transText));
                 }
                 else {
-                    TMP_Text_set_text_Orig(_this, UnityResolve::UnityType::String::New(transText));
+                    set_Text_method->Invoke<void>(_this, UnityResolve::UnityType::String::New(transText));
                 }
             }
         }
@@ -721,8 +724,9 @@ namespace GakumasLocal::HookMain {
         ADD_HOOK(TextMeshProUGUI_Awake, Il2cppUtils::GetMethodPointer("Unity.TextMeshPro.dll", "TMPro",
                                                                       "TextMeshProUGUI", "Awake"));
 
-        ADD_HOOK(TMP_Text_set_text, Il2cppUtils::GetMethodPointer("Unity.TextMeshPro.dll", "TMPro",
-                                                                      "TMP_Text", "set_text"));
+        ADD_HOOK(TMP_Text_PopulateTextBackingArray, Il2cppUtils::GetMethodPointer("Unity.TextMeshPro.dll", "TMPro",
+                                                                  "TMP_Text", "PopulateTextBackingArray",
+                                                                  {"System.String", "System.Int32", "System.Int32"}));
 
         ADD_HOOK(TextField_set_value, Il2cppUtils::GetMethodPointer("UnityEngine.UIElementsModule.dll", "UnityEngine.UIElements",
                                                                   "TextField", "set_value"));
@@ -777,13 +781,12 @@ namespace GakumasLocal::HookMain {
         ADD_HOOK(CampusActorController_LateUpdate,
                  Il2cppUtils::GetMethodPointer("campus-submodule.Runtime.dll", "Campus.Common",
                                                "CampusActorController", "LateUpdate"));
-
+        /*
         static auto CampusActorController_klass = Il2cppUtils::GetClass("campus-submodule.Runtime.dll",
                                                                         "Campus.Common", "CampusActorController");
         for (const auto& i : CampusActorController_klass->methods) {
             Log::DebugFmt("CampusActorController.%s at %p", i->name.c_str(), i->function);
-        }
-
+        }*/
 
         ADD_HOOK(CampusQualityManager_set_TargetFrameRate,
                  Il2cppUtils::GetMethodPointer("campus-submodule.Runtime.dll", "Campus.Common",

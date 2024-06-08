@@ -176,6 +176,17 @@ namespace GakumasLocal::Local {
         return false;
     }
 
+    bool CheckNeedDump(const std::string& str) {
+        static std::unordered_set<char> notDeeds = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':',
+                                                    '/', ' ', '.', '%', ',', '+', '-', 'x', '\n'};
+        for (const auto& i : str) {
+            if (!notDeeds.contains(i)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     bool inDumpGeneric = false;
     bool GetGenericText(const std::string& origText, std::string* newStr) {
         if (const auto iter = genericText.find(origText); iter != genericText.end()) {
@@ -188,6 +199,7 @@ namespace GakumasLocal::Local {
         if (std::find(genericTextDumpData.begin(), genericTextDumpData.end(), origText) != genericTextDumpData.end()) {
             return false;
         }
+        if (!CheckNeedDump(origText)) return false;
 
         genericTextDumpData.push_back(origText);
         static auto dumpBasePath = GetBasePath() / "dump-files";
@@ -202,7 +214,6 @@ namespace GakumasLocal::Local {
         }).detach();
 
         return false;
-
     }
 
 }

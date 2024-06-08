@@ -5,6 +5,7 @@
 namespace GakumasLocal::Config {
     extern bool isConfigInit;
 
+    extern bool dbgMode;
     extern bool enabled;
     extern bool textTest;
     extern bool enableFreeCamera;

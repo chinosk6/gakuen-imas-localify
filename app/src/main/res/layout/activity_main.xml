@@ -125,6 +125,7 @@
                             android:id="@+id/SwitchUnlockAllLive"
                             android:layout_width="match_parent"
                             android:layout_height="48dp"
+                            android:visibility="@{config.dbgMode ? android.view.View.VISIBLE : android.view.View.GONE}"
                             android:checked="@={config.unlockAllLive}"
                             android:onCheckedChanged="@{(view, value) -> listener.onUnlockAllLiveChanged(value)}"
                             android:text="@string/unlockAllLive" />

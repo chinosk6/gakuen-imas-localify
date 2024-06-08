@@ -5,6 +5,7 @@
 namespace GakumasLocal::Config {
     bool isConfigInit = false;
 
+    bool dbgMode = false;
     bool enabled = true;
     bool textTest = false;
     bool enableFreeCamera = false;
@@ -29,6 +30,7 @@ namespace GakumasLocal::Config {
 
             #define GetConfigItem(name) if (config.contains(#name)) name = config[#name]
 
+            GetConfigItem(dbgMode);
             GetConfigItem(enabled);
             GetConfigItem(textTest);
             GetConfigItem(targetFrameRate);
