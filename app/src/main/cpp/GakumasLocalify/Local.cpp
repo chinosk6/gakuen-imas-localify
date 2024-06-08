@@ -185,7 +185,7 @@ namespace GakumasLocal::Local {
 
         if (translatedText.contains(origText)) return false;
 
-        if (std::find(genericTextDumpData.begin(), genericTextDumpData.end(), "") != genericTextDumpData.end()) {
+        if (std::find(genericTextDumpData.begin(), genericTextDumpData.end(), origText) != genericTextDumpData.end()) {
             return false;
         }
 
