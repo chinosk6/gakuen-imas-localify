@@ -29,8 +29,6 @@ jobs:
       run: |
         branch=$(git rev-parse --abbrev-ref HEAD)
         hash=$(git rev-parse --short=8 HEAD)
-        echo "::set-output name=branch::$branch"
-        echo "::set-output name=hash::$hash"
         echo "$branch.$hash" > app/src/main/assets/gakumas-local/version.txt
               
     - name: Grant execute permission for gradlew
