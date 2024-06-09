@@ -23,6 +23,7 @@ import java.io.File
 interface ConfigListener {
     fun onClickStartGame()
     fun onEnabledChanged(value: Boolean)
+    fun onForceExportResourceChanged(value: Boolean)
     fun onTextTestChanged(value: Boolean)
     fun onEnableFreeCameraChanged(value: Boolean)
     fun onTargetFpsChanged(s: CharSequence, start: Int, before: Int, count: Int)
@@ -93,6 +94,11 @@ class MainActivity : AppCompatActivity(), ConfigListener {
 
     override fun onEnabledChanged(value: Boolean) {
         binding.config!!.enabled = value
+        saveConfig()
+    }
+
+    override fun onForceExportResourceChanged(value: Boolean) {
+        binding.config!!.forceExportResource = value
         saveConfig()
     }
 

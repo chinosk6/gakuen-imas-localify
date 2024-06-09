@@ -13,6 +13,7 @@ object FilesChecker {
     lateinit var filesDir: File
     lateinit var modulePath: String
     val localizationFilesDir = "gakumas-local"
+    var filesUpdated = false
 
     fun initAndCheck(fileDir: File, modulePath: String) {
         this.filesDir = fileDir
@@ -32,6 +33,9 @@ object FilesChecker {
     }
 
     fun updateFiles() {
+        if (filesUpdated) return
+        filesUpdated = true
+
         Log.i("GakumasLocal", "Updating files...")
         val pluginBasePath = File(filesDir, localizationFilesDir)
         if (!pluginBasePath.exists()) {

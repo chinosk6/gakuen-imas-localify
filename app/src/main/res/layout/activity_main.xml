@@ -81,6 +81,20 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent">
 
+                        <com.google.android.material.switchmaterial.SwitchMaterial
+                            android:id="@+id/textForceExtract"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:checked="@={config.forceExportResource}"
+                            android:onCheckedChanged="@{(view, value) -> listener.onForceExportResourceChanged(value)}"
+                            android:text="启动后强制导出资源" />
+                    </TableRow>
+
+
+                    <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
                         <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="match_parent"
                             android:layout_height="48dp"
@@ -140,6 +154,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="match_parent"
                             android:orientation="vertical"
+                            android:visibility="@{config.dbgMode ? android.view.View.VISIBLE : android.view.View.GONE}"
                             android:paddingLeft="10sp"
                             android:paddingRight="10sp"
                             android:paddingBottom="10sp"

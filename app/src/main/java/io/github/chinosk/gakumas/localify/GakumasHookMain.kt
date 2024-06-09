@@ -19,7 +19,9 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.chinosk.gakumas.localify.hookUtils.FilesChecker
 import android.view.KeyEvent
 import android.widget.Toast
+import com.google.gson.Gson
 import de.robv.android.xposed.XposedBridge
+import io.github.chinosk.gakumas.localify.models.GakumasConfig
 import java.io.File
 
 val TAG = "GakumasLocalify"
@@ -120,6 +122,16 @@ class GakumasHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
         val gkmsData = intent.getStringExtra("gkmsData")
         if (gkmsData != null) {
             gkmsDataInited = true
+            val initConfig = try {
+                Gson().fromJson(gkmsData, GakumasConfig::class.java)
+            }
+            catch (e: Exception) {
+                null
+            }
+            if (initConfig?.forceExportResource == true) {
+                FilesChecker.updateFiles()
+            }
+
             loadConfig(gkmsData)
             Log.d(TAG, "gkmsData: $gkmsData")
         }

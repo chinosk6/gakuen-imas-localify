@@ -22,10 +22,12 @@ namespace GakumasLocal::Local {
     }
 
     void LoadJsonDataToMap(const std::filesystem::path& filePath, std::unordered_map<std::string, std::string>& dict,
-                           const bool insertToTranslated = false) {
+                           const bool insertToTranslated = false, const bool needClearDict = true) {
         if (!exists(filePath)) return;
         try {
-            dict.clear();
+            if (needClearDict) {
+                dict.clear();
+            }
             std::ifstream file(filePath);
             if (!file.is_open()) {
                 Log::ErrorFmt("Load %s failed.\n", filePath.c_str());
@@ -106,15 +108,32 @@ namespace GakumasLocal::Local {
         }
     }
 
+    std::string to_lower(const std::string& str) {
+        std::string lower_str = str;
+        std::transform(lower_str.begin(), lower_str.end(), lower_str.begin(), ::tolower);
+        return lower_str;
+    }
+
     void LoadData() {
         static auto localizationFile = GetBasePath() / "local-files" / "localization.json";
         static auto genericFile = GetBasePath() / "local-files" / "generic.json";
+        static auto genericDir = GetBasePath() / "local-files" / "genericTrans";
 
         if (!exists(localizationFile)) return;
         LoadJsonDataToMap(localizationFile, i18nData, true);
         Log::InfoFmt("%ld localization items loaded.", i18nData.size());
 
         LoadJsonDataToMap(genericFile, genericText, true);
+        if (std::filesystem::exists(genericDir) || std::filesystem::is_directory(genericDir)) {
+            for (const auto& entry : std::filesystem::recursive_directory_iterator(genericDir)) {
+                if (std::filesystem::is_regular_file(entry.path())) {
+                    const auto currFile = entry.path();
+                    if (to_lower(currFile.extension().string()) == ".json") {
+                        LoadJsonDataToMap(currFile, genericText, true, false);
+                    }
+                }
+            }
+        }
         Log::InfoFmt("%ld generic text items loaded.", genericText.size());
 
         static auto dumpBasePath = GetBasePath() / "dump-files";

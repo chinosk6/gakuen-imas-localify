@@ -75,7 +75,8 @@ android {
         variant.mergeAssetsProvider.configure { mergeAssetsTask ->
             mergeAssetsTask.doLast {
                 delete(fileTree(dir: mergeAssetsTask.outputDir, includes: ['gakumas-local/gakuen-adapted-translation-data/**',
-                                                                           'gakumas-local/GakumasPreTranslation/**']))
+                                                                           'gakumas-local/GakumasPreTranslation/**',
+                                                                           'gakumas-local/raw/**']))
             }
         }
     }

@@ -7,6 +7,7 @@ namespace GakumasLocal::Config {
 
     extern bool dbgMode;
     extern bool enabled;
+    extern bool forceExportResource;
     extern bool textTest;
     extern bool enableFreeCamera;
     extern int targetFrameRate;
