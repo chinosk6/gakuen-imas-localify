@@ -41,6 +41,12 @@
                     android:textColor="@color/black"
                     android:textSize="20sp" />
 
+                <TextView
+                    android:id="@+id/textViewResVersion"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/black" />
+
                 <Space
                     android:layout_width="match_parent"
                     android:layout_height="25sp" />

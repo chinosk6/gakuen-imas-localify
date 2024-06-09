@@ -1,11 +1,13 @@
 package io.github.chinosk.gakumas.localify
 
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
+import android.widget.TextView
 import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ObservableField
@@ -15,6 +17,7 @@ import com.google.android.material.textfield.TextInputLayout
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import io.github.chinosk.gakumas.localify.databinding.ActivityMainBinding
+import io.github.chinosk.gakumas.localify.hookUtils.FilesChecker
 import io.github.chinosk.gakumas.localify.hookUtils.MainKeyEventDispatcher
 import io.github.chinosk.gakumas.localify.models.GakumasConfig
 import java.io.File
@@ -58,6 +61,7 @@ class MainActivity : AppCompatActivity(), ConfigListener {
             onClickStartGame()
             finish()
         }
+        showVersion()
     }
 
     private fun showToast(message: String) {
@@ -73,6 +77,25 @@ class MainActivity : AppCompatActivity(), ConfigListener {
             showToast("检测到第一次启动，初始化配置文件...")
             "{}"
         }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun showVersion() {
+        val titleLabel = findViewById<TextView>(R.id.textViewTitle)
+        val versionLabel = findViewById<TextView>(R.id.textViewResVersion)
+        var versionText = "unknown"
+
+        try {
+            val stream = assets.open("${FilesChecker.localizationFilesDir}/version.txt")
+            versionText = FilesChecker.convertToString(stream)
+
+            val packInfo = packageManager.getPackageInfo(packageName, 0)
+            val version = packInfo.versionName
+            val versionCode = packInfo.longVersionCode
+            titleLabel.text = "${titleLabel.text} $version ($versionCode)"
+        }
+        catch (_: Exception) {}
+        versionLabel.text = "Assets Version: $versionText"
     }
 
     private fun loadConfig() {
