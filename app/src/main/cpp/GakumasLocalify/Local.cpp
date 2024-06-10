@@ -8,6 +8,8 @@
 #include <unordered_set>
 #include <nlohmann/json.hpp>
 #include <thread>
+#include <regex>
+#include <ranges>
 
 
 namespace GakumasLocal::Local {
@@ -114,6 +116,81 @@ namespace GakumasLocal::Local {
         return lower_str;
     }
 
+    bool IsPureStringValue(const std::string& str) {
+        static std::unordered_set<char> notDeeds = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':',
+                                                    '/', ' ', '.', '%', ',', '+', '-', 'x', '\n'};
+        for (const auto& i : str) {
+            if (!notDeeds.contains(i)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    std::vector<std::string> SplitByTags(const std::string& origText) {
+        static const std::regex tagsRe("<.*?>(.*?)</.*?>");
+        std::string text = origText;
+        std::smatch match;
+
+        std::vector<std::string> ret{};
+
+        std::string lastSuffix;
+        while (std::regex_search(text, match, tagsRe)) {
+            const auto tagValue = match[1].str();
+            if (IsPureStringValue(tagValue)) {
+                ret.push_back(match.prefix().str());
+                lastSuffix = match.suffix().str();
+            }
+            text = match.suffix().str();
+        }
+        if (!lastSuffix.empty()) {
+            ret.push_back(lastSuffix);
+        }
+
+        return ret;
+    }
+
+    void ProcessGenericTextLabels() {
+        std::unordered_map<std::string, std::string> appendsText{};
+
+        for (const auto& i : genericText) {
+            const auto origContents = SplitByTags(i.first);
+            if (origContents.empty()) {
+                continue;
+            }
+            const auto translatedContents = SplitByTags(i.second);
+            if (origContents.size() == translatedContents.size()) {
+                for (const auto& [orig, trans] : std::ranges::views::zip(origContents, translatedContents)) {
+                    appendsText.emplace(orig, trans);
+                }
+            }
+        }
+        genericText.insert(appendsText.begin(), appendsText.end());
+    }
+
+    bool ReplaceString(std::string* str, const std::string& oldSubstr, const std::string& newSubstr) {
+        size_t pos = str->find(oldSubstr);
+        if (pos != std::string::npos) {
+            str->replace(pos, oldSubstr.length(), newSubstr);
+            return true;
+        }
+        return false;
+    }
+
+    bool GetSplitTagsTranslation(const std::string& origText, std::string* newText) {
+        if (!origText.contains(L'<')) return false;
+        const auto splitResult = SplitByTags(origText);
+        if (splitResult.empty()) return false;
+
+        *newText = origText;
+        for (const auto& i : splitResult) {
+            if (const auto iter = genericText.find(i); iter != genericText.end()) {
+                ReplaceString(newText, i, iter->second);
+            }
+        }
+        return true;
+    }
+
     void LoadData() {
         static auto localizationFile = GetBasePath() / "local-files" / "localization.json";
         static auto genericFile = GetBasePath() / "local-files" / "generic.json";
@@ -134,6 +211,7 @@ namespace GakumasLocal::Local {
                 }
             }
         }
+        ProcessGenericTextLabels();
         Log::InfoFmt("%ld generic text items loaded.", genericText.size());
 
         static auto dumpBasePath = GetBasePath() / "dump-files";
@@ -195,21 +273,15 @@ namespace GakumasLocal::Local {
         return false;
     }
 
-    bool CheckNeedDump(const std::string& str) {
-        static std::unordered_set<char> notDeeds = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':',
-                                                    '/', ' ', '.', '%', ',', '+', '-', 'x', '\n'};
-        for (const auto& i : str) {
-            if (!notDeeds.contains(i)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     bool inDumpGeneric = false;
     bool GetGenericText(const std::string& origText, std::string* newStr) {
         if (const auto iter = genericText.find(origText); iter != genericText.end()) {
             *newStr = iter->second;
+            return true;
+        }
+
+        if (GetSplitTagsTranslation(origText, newStr)) {
+            Log::DebugFmt("GetSplitTagsTranslation: %s -> %s", origText.c_str(), newStr->c_str());
             return true;
         }
 
@@ -218,7 +290,7 @@ namespace GakumasLocal::Local {
         if (std::find(genericTextDumpData.begin(), genericTextDumpData.end(), origText) != genericTextDumpData.end()) {
             return false;
         }
-        if (!CheckNeedDump(origText)) return false;
+        if (IsPureStringValue(origText)) return false;
 
         genericTextDumpData.push_back(origText);
         static auto dumpBasePath = GetBasePath() / "dump-files";

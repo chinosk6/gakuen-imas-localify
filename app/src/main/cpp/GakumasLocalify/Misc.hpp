@@ -5,6 +5,7 @@
 #include <jni.h>
 #include <deque>
 #include <numeric>
+#include <vector>
 
 
 namespace GakumasLocal {
