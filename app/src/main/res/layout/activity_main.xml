@@ -88,6 +88,19 @@
                         android:layout_height="match_parent">
 
                         <com.google.android.material.switchmaterial.SwitchMaterial
+                            android:id="@+id/textExport"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:checked="@={config.dumpText}"
+                            android:onCheckedChanged="@{(view, value) -> listener.onDumpTextChanged(value)}"
+                            android:text="导出文本" />
+                    </TableRow>
+
+                    <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <com.google.android.material.switchmaterial.SwitchMaterial
                             android:id="@+id/textForceExtract"
                             android:layout_width="match_parent"
                             android:layout_height="48dp"

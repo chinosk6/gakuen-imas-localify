@@ -12,6 +12,8 @@ namespace GakumasLocal::Local {
 
     bool GetResourceText(const std::string& name, std::string* ret);
     bool GetGenericText(const std::string& origText, std::string* newStr);
+
+    std::string OnKeyDown(int message, int key);
 }
 
 #endif //GAKUMAS_LOCALIFY_LOCAL_H

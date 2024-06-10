@@ -42,6 +42,7 @@ interface ConfigListener {
     fun onChangePresetQuality(level: Int)
     fun onReflectionQualityLevelChanged(s: CharSequence, start: Int, before: Int, count: Int)
     fun onLodQualityLevelChanged(s: CharSequence, start: Int, before: Int, count: Int)
+    fun onDumpTextChanged(value: Boolean)
 }
 
 class MainActivity : AppCompatActivity(), ConfigListener {
@@ -129,6 +130,11 @@ class MainActivity : AppCompatActivity(), ConfigListener {
 
     override fun onTextTestChanged(value: Boolean) {
         binding.config!!.textTest = value
+        saveConfig()
+    }
+
+    override fun onDumpTextChanged(value: Boolean) {
+        binding.config!!.dumpText = value
         saveConfig()
     }
 

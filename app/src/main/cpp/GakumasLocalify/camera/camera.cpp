@@ -2,31 +2,7 @@
 #include "camera.hpp"
 #include <thread>
 #include "Misc.hpp"
-
-#define KEY_W  51
-#define KEY_S  47
-#define KEY_A  29
-#define KEY_D  32
-#define KEY_R  46
-#define KEY_Q  45
-#define KEY_E  33
-#define KEY_F  34
-#define KEY_I  37
-#define KEY_K  39
-#define KEY_J  38
-#define KEY_L  40
-#define KEY_V  50
-#define KEY_UP  19
-#define KEY_DOWN  20
-#define KEY_LEFT  21
-#define KEY_RIGHT  22
-#define KEY_CTRL  113
-#define KEY_SHIFT  59
-#define KEY_ALT  57
-#define KEY_SPACE  62
-
-#define WM_KEYDOWN 0
-#define WM_KEYUP 1
+#include "../BaseDefine.h"
 
 
 namespace GKCamera {

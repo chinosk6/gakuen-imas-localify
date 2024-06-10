@@ -9,6 +9,7 @@ namespace GakumasLocal::Config {
     extern bool enabled;
     extern bool forceExportResource;
     extern bool textTest;
+    extern bool dumpText;
     extern bool enableFreeCamera;
     extern int targetFrameRate;
     extern bool unlockAllLive;

@@ -1,6 +1,7 @@
 #include "Local.h"
 #include "Log.h"
 #include "Plugin.h"
+#include "config/Config.hpp"
 #include <filesystem>
 #include <iostream>
 #include <fstream>
@@ -10,6 +11,7 @@
 #include <thread>
 #include <regex>
 #include <ranges>
+#include "BaseDefine.h"
 
 
 namespace GakumasLocal::Local {
@@ -18,6 +20,7 @@ namespace GakumasLocal::Local {
     std::unordered_map<std::string, std::string> genericText{};
     std::vector<std::string> genericTextDumpData{};
     std::unordered_set<std::string> translatedText{};
+    int genericDumpFileIndex = 0;
 
     std::filesystem::path GetBasePath() {
         return Plugin::GetInstance().GetHookInstaller()->localizationFilesDir;
@@ -234,6 +237,7 @@ namespace GakumasLocal::Local {
 
     bool inDump = false;
     void DumpI18nItem(const std::string& key, const std::string& value) {
+        if (!Config::dumpText) return;
         if (i18nDumpData.contains(key)) return;
         i18nDumpData[key] = value;
         Log::DebugFmt("DumpI18nItem: %s - %s", key.c_str(), value.c_str());
@@ -278,6 +282,11 @@ namespace GakumasLocal::Local {
         return false;
     }
 
+    std::string GetDumpGenericFileName() {
+        if (genericDumpFileIndex == 0) return "generic.json";
+        return Log::StringFormat("generic_%d.json", genericDumpFileIndex);
+    }
+
     bool inDumpGeneric = false;
     void DumpGenericText(const std::string& origText) {
         if (translatedText.contains(origText)) return;
@@ -294,7 +303,7 @@ namespace GakumasLocal::Local {
         inDumpGeneric = true;
         std::thread([](){
             std::this_thread::sleep_for(std::chrono::seconds(5));
-            DumpVectorDataToJson(dumpBasePath, "generic.json", genericTextDumpData);
+            DumpVectorDataToJson(dumpBasePath, GetDumpGenericFileName(), genericTextDumpData);
             genericTextDumpData.clear();
             inDumpGeneric = false;
         }).detach();
@@ -311,6 +320,10 @@ namespace GakumasLocal::Local {
             return true;
         }
 
+        if (!Config::dumpText) {
+            return false;
+        }
+
         if (unTransResultRet.empty()) {
             DumpGenericText(origText);
         }
@@ -321,6 +334,26 @@ namespace GakumasLocal::Local {
         }
 
         return false;
+    }
+
+    std::string ChangeDumpTextIndex(int changeValue) {
+        if (!Config::dumpText) return "";
+        genericDumpFileIndex += changeValue;
+        return Log::StringFormat("GenericDumpFile: %s", GetDumpGenericFileName().c_str());
+    }
+
+    std::string OnKeyDown(int message, int key) {
+        if (message == WM_KEYDOWN) {
+            switch (key) {
+                case KEY_ADD: {
+                    return ChangeDumpTextIndex(1);
+                } break;
+                case KEY_SUB: {
+                    return ChangeDumpTextIndex(-1);
+                } break;
+            }
+        }
+        return "";
     }
 
 }

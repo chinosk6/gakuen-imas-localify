@@ -24,6 +24,11 @@ extern jmethodID showToastMethodId;
 
 
 namespace GakumasLocal::Log {
+    std::string StringFormat(const char* fmt, ...) {
+        GetParamStringResult(result);
+        return result.c_str();
+    }
+
     void Log(int prio, const char* msg) {
         __android_log_write(prio, "GakumasLocal-Native", msg);
     }
@@ -73,7 +78,6 @@ namespace GakumasLocal::Log {
             if (!env) {
                 return;
             }
-            g_javaVM->AttachCurrentThread(&env, nullptr);
 
             jclass& kotlinClass = g_gakumasHookMainClass;
             if (!kotlinClass) {

@@ -9,6 +9,7 @@ namespace GakumasLocal::Config {
     bool enabled = true;
     bool forceExportResource = true;
     bool textTest = false;
+    bool dumpText = false;
     bool enableFreeCamera = false;
     int targetFrameRate = 0;
     bool unlockAllLive = false;
@@ -35,6 +36,7 @@ namespace GakumasLocal::Config {
             GetConfigItem(enabled);
             GetConfigItem(forceExportResource);
             GetConfigItem(textTest);
+            GetConfigItem(dumpText);
             GetConfigItem(targetFrameRate);
             GetConfigItem(enableFreeCamera);
             GetConfigItem(unlockAllLive);

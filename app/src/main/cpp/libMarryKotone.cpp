@@ -1,5 +1,6 @@
 #include "GakumasLocalify/Plugin.h"
 #include "GakumasLocalify/Log.h"
+#include "GakumasLocalify/Local.h"
 
 #include <jni.h>
 #include <android/log.h>
@@ -72,6 +73,18 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_io_github_chinosk_gakumas_localify_GakumasHookMain_keyboardEvent(JNIEnv *env, jclass clazz, jint key_code, jint action) {
     GKCamera::on_cam_rawinput_keyboard(action, key_code);
+    const auto msg = GakumasLocal::Local::OnKeyDown(action, key_code);
+    if (!msg.empty()) {
+        g_gakumasHookMainClass = clazz;
+        showToastMethodId = env->GetStaticMethodID(clazz, "showToast", "(Ljava/lang/String;)V");
+        
+        if (env && clazz && showToastMethodId) {
+            jstring param = env->NewStringUTF(msg.c_str());
+            env->CallStaticVoidMethod(clazz, showToastMethodId, param);
+            env->DeleteLocalRef(param);
+        }
+    }
+
 }
 
 extern "C"
