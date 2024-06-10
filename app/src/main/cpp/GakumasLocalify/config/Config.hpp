@@ -1,6 +1,4 @@
-#ifndef GAKUMAS_LOCALIFY_CONFIG_HPP
-#define GAKUMAS_LOCALIFY_CONFIG_HPP
-
+#pragma once
 
 namespace GakumasLocal::Config {
     extern bool isConfigInit;
@@ -29,6 +27,3 @@ namespace GakumasLocal::Config {
 
     void LoadConfig(const std::string& configStr);
 }
-
-
-#endif //GAKUMAS_LOCALIFY_CONFIG_HPP

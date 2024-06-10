@@ -77,7 +77,7 @@ Java_io_github_chinosk_gakumas_localify_GakumasHookMain_keyboardEvent(JNIEnv *en
     if (!msg.empty()) {
         g_gakumasHookMainClass = clazz;
         showToastMethodId = env->GetStaticMethodID(clazz, "showToast", "(Ljava/lang/String;)V");
-        
+
         if (env && clazz && showToastMethodId) {
             jstring param = env->NewStringUTF(msg.c_str());
             env->CallStaticVoidMethod(clazz, showToastMethodId, param);
