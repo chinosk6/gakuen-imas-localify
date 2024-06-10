@@ -8,7 +8,7 @@ object MainKeyEventDispatcher {
     private var currentIndex = 0;
 
     fun checkDbgKey(code: Int, action: Int): Boolean {
-        if (action != KeyEvent.ACTION_DOWN) return false
+        if (action == KeyEvent.ACTION_UP) return false
         if (targetDbgKeyList[currentIndex] == code) {
             if (currentIndex == targetDbgKeyList.size - 1) {
                 currentIndex = 0

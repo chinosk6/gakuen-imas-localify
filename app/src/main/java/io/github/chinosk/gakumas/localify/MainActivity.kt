@@ -118,11 +118,13 @@ class MainActivity : AppCompatActivity(), ConfigListener {
     override fun onEnabledChanged(value: Boolean) {
         binding.config!!.enabled = value
         saveConfig()
+        dispatchKeyEvent(KeyEvent(1145, 29))
     }
 
     override fun onForceExportResourceChanged(value: Boolean) {
         binding.config!!.forceExportResource = value
         saveConfig()
+        dispatchKeyEvent(KeyEvent(1145, 30))
     }
 
     override fun onTextTestChanged(value: Boolean) {
@@ -306,6 +308,7 @@ class MainActivity : AppCompatActivity(), ConfigListener {
     }
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        // Log.d(TAG, "${event.keyCode}, ${event.action}")
         if (MainKeyEventDispatcher.checkDbgKey(event.keyCode, event.action)) {
             val origDbg = binding.config?.dbgMode
             if (origDbg != null) {
@@ -316,6 +319,6 @@ class MainActivity : AppCompatActivity(), ConfigListener {
                 showToast("TestMode: ${!origDbg}")
             }
         }
-        return super.dispatchKeyEvent(event)
+        return if (event.action == 1145) true else super.dispatchKeyEvent(event)
     }
 }
