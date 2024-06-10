@@ -33,9 +33,22 @@ jobs:
               
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
+
     - name: Build with Gradle
       run: ./gradlew build
+
+    - uses: ilharp/sign-android-release@v1
+      name: Sign app APK
+      id: sign_app
+      with:
+        releaseDir: app/build/outputs/apk/debug
+        signingKey: ${{ secrets.KEYSTOREB64 }}
+        keyAlias: ${{ secrets.ANDROID_KEY_ALIAS }}
+        keyStorePassword: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        buildToolsVersion: 33.0.0
+
     - uses: actions/upload-artifact@v4
       with:
         name: GakumasLocalify
-        path: app/build/outputs/apk/debug/app-debug.apk
+        path: ${{steps.sign_app.outputs.signedFile}}
