@@ -1,7 +1,10 @@
 #ifndef GAKUMAS_LOCALIFY_LOG_H
 #define GAKUMAS_LOCALIFY_LOG_H
 
+#include <string>
+
 namespace GakumasLocal::Log {
+    std::string StringFormat(const char* fmt, ...);
     void LogUnityLog(int prio, const char* fmt, ...);
     void LogFmt(int prio, const char* fmt, ...);
     void Info(const char* msg);

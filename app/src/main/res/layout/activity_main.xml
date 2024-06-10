@@ -41,6 +41,12 @@
                     android:textColor="@color/black"
                     android:textSize="20sp" />
 
+                <TextView
+                    android:id="@+id/textViewResVersion"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/black" />
+
                 <Space
                     android:layout_width="match_parent"
                     android:layout_height="25sp" />
@@ -76,6 +82,33 @@
                             android:onCheckedChanged="@{(view, value) -> listener.onTextTestChanged(value)}"
                             android:text="文本 hook 测试模式" />
                     </TableRow>
+
+                    <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <com.google.android.material.switchmaterial.SwitchMaterial
+                            android:id="@+id/textExport"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:checked="@={config.dumpText}"
+                            android:onCheckedChanged="@{(view, value) -> listener.onDumpTextChanged(value)}"
+                            android:text="导出文本" />
+                    </TableRow>
+
+                    <TableRow
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <com.google.android.material.switchmaterial.SwitchMaterial
+                            android:id="@+id/textForceExtract"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:checked="@={config.forceExportResource}"
+                            android:onCheckedChanged="@{(view, value) -> listener.onForceExportResourceChanged(value)}"
+                            android:text="启动后强制导出资源" />
+                    </TableRow>
+
 
                     <TableRow
                         android:layout_width="match_parent"
@@ -125,6 +158,7 @@
                             android:id="@+id/SwitchUnlockAllLive"
                             android:layout_width="match_parent"
                             android:layout_height="48dp"
+                            android:visibility="@{config.dbgMode ? android.view.View.VISIBLE : android.view.View.GONE}"
                             android:checked="@={config.unlockAllLive}"
                             android:onCheckedChanged="@{(view, value) -> listener.onUnlockAllLiveChanged(value)}"
                             android:text="@string/unlockAllLive" />
@@ -139,6 +173,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="match_parent"
                             android:orientation="vertical"
+                            android:visibility="@{config.dbgMode ? android.view.View.VISIBLE : android.view.View.GONE}"
                             android:paddingLeft="10sp"
                             android:paddingRight="10sp"
                             android:paddingBottom="10sp"
@@ -431,6 +466,7 @@
                                         android:weightSum="2">
 
                                         <com.google.android.material.textfield.TextInputLayout
+                                            android:id="@+id/editTextReflectionQualityLevelLayout"
                                             android:layout_width="match_parent"
                                             android:layout_height="48dp"
                                             android:layout_weight="1"
@@ -454,6 +490,7 @@
                                         </com.google.android.material.textfield.TextInputLayout>
 
                                         <com.google.android.material.textfield.TextInputLayout
+                                            android:id="@+id/editTextLodQualityLevelLayout"
                                             android:layout_width="match_parent"
                                             android:layout_height="48dp"
                                             android:layout_weight="1"

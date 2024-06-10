@@ -1,12 +1,13 @@
-#ifndef GAKUMAS_LOCALIFY_CONFIG_HPP
-#define GAKUMAS_LOCALIFY_CONFIG_HPP
-
+#pragma once
 
 namespace GakumasLocal::Config {
     extern bool isConfigInit;
 
+    extern bool dbgMode;
     extern bool enabled;
+    extern bool forceExportResource;
     extern bool textTest;
+    extern bool dumpText;
     extern bool enableFreeCamera;
     extern int targetFrameRate;
     extern bool unlockAllLive;
@@ -26,6 +27,3 @@ namespace GakumasLocal::Config {
 
     void LoadConfig(const std::string& configStr);
 }
-
-
-#endif //GAKUMAS_LOCALIFY_CONFIG_HPP

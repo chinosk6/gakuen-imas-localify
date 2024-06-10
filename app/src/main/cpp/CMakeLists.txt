@@ -14,9 +14,9 @@ project(MarryKotone)
 
 add_compile_options(-fdeclspec)
 add_compile_options(-Wno-undefined-bool-conversion)
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++23")
 
 find_package(xdl REQUIRED CONFIG)
 find_package(shadowhook REQUIRED CONFIG)
@@ -61,4 +61,4 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
     android
     log)
 
-target_compile_features(${CMAKE_PROJECT_NAME} PRIVATE cxx_std_20)
+target_compile_features(${CMAKE_PROJECT_NAME} PRIVATE cxx_std_23)

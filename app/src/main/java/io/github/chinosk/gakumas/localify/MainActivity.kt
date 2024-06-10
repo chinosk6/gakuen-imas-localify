@@ -1,18 +1,24 @@
 package io.github.chinosk.gakumas.localify
 
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.KeyEvent
+import android.widget.TextView
 import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ObservableField
+import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import io.github.chinosk.gakumas.localify.databinding.ActivityMainBinding
+import io.github.chinosk.gakumas.localify.hookUtils.FilesChecker
+import io.github.chinosk.gakumas.localify.hookUtils.MainKeyEventDispatcher
 import io.github.chinosk.gakumas.localify.models.GakumasConfig
 import java.io.File
 
@@ -20,6 +26,7 @@ import java.io.File
 interface ConfigListener {
     fun onClickStartGame()
     fun onEnabledChanged(value: Boolean)
+    fun onForceExportResourceChanged(value: Boolean)
     fun onTextTestChanged(value: Boolean)
     fun onEnableFreeCameraChanged(value: Boolean)
     fun onTargetFpsChanged(s: CharSequence, start: Int, before: Int, count: Int)
@@ -35,6 +42,7 @@ interface ConfigListener {
     fun onChangePresetQuality(level: Int)
     fun onReflectionQualityLevelChanged(s: CharSequence, start: Int, before: Int, count: Int)
     fun onLodQualityLevelChanged(s: CharSequence, start: Int, before: Int, count: Int)
+    fun onDumpTextChanged(value: Boolean)
 }
 
 class MainActivity : AppCompatActivity(), ConfigListener {
@@ -54,6 +62,7 @@ class MainActivity : AppCompatActivity(), ConfigListener {
             onClickStartGame()
             finish()
         }
+        showVersion()
     }
 
     private fun showToast(message: String) {
@@ -69,6 +78,25 @@ class MainActivity : AppCompatActivity(), ConfigListener {
             showToast("检测到第一次启动，初始化配置文件...")
             "{}"
         }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun showVersion() {
+        val titleLabel = findViewById<TextView>(R.id.textViewTitle)
+        val versionLabel = findViewById<TextView>(R.id.textViewResVersion)
+        var versionText = "unknown"
+
+        try {
+            val stream = assets.open("${FilesChecker.localizationFilesDir}/version.txt")
+            versionText = FilesChecker.convertToString(stream)
+
+            val packInfo = packageManager.getPackageInfo(packageName, 0)
+            val version = packInfo.versionName
+            val versionCode = packInfo.longVersionCode
+            titleLabel.text = "${titleLabel.text} $version ($versionCode)"
+        }
+        catch (_: Exception) {}
+        versionLabel.text = "Assets Version: $versionText"
     }
 
     private fun loadConfig() {
@@ -91,10 +119,22 @@ class MainActivity : AppCompatActivity(), ConfigListener {
     override fun onEnabledChanged(value: Boolean) {
         binding.config!!.enabled = value
         saveConfig()
+        dispatchKeyEvent(KeyEvent(1145, 29))
+    }
+
+    override fun onForceExportResourceChanged(value: Boolean) {
+        binding.config!!.forceExportResource = value
+        saveConfig()
+        dispatchKeyEvent(KeyEvent(1145, 30))
     }
 
     override fun onTextTestChanged(value: Boolean) {
         binding.config!!.textTest = value
+        saveConfig()
+    }
+
+    override fun onDumpTextChanged(value: Boolean) {
+        binding.config!!.dumpText = value
         saveConfig()
     }
 
@@ -266,5 +306,25 @@ class MainActivity : AppCompatActivity(), ConfigListener {
 
     private fun showTextInputLayoutHint(view: TextInputLayout) {
         showToast(view.hint.toString())
+    }
+
+    fun checkConfigAndUpdateView() {
+        val sw = findViewById<SwitchMaterial>(R.id.SwitchUnlockAllLive)
+        sw.visibility = if (binding.config!!.dbgMode) android.view.View.VISIBLE else android.view.View.GONE
+    }
+
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        // Log.d(TAG, "${event.keyCode}, ${event.action}")
+        if (MainKeyEventDispatcher.checkDbgKey(event.keyCode, event.action)) {
+            val origDbg = binding.config?.dbgMode
+            if (origDbg != null) {
+                binding.config!!.dbgMode = !origDbg
+                binding.config = binding.config
+                binding.notifyChange()
+                saveConfig()
+                showToast("TestMode: ${!origDbg}")
+            }
+        }
+        return if (event.action == 1145) true else super.dispatchKeyEvent(event)
     }
 }

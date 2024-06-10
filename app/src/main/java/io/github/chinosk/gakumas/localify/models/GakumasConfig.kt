@@ -3,8 +3,11 @@ package io.github.chinosk.gakumas.localify.models
 import androidx.databinding.BaseObservable
 
 data class GakumasConfig (
+    var dbgMode: Boolean = false,
     var enabled: Boolean = true,
     var textTest: Boolean = false,
+    var dumpText: Boolean = false,
+    var forceExportResource: Boolean = false,
     var enableFreeCamera: Boolean = false,
     var targetFrameRate: Int = 0,
     var unlockAllLive: Boolean = false,

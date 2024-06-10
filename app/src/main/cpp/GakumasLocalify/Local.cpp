@@ -1,6 +1,7 @@
 #include "Local.h"
 #include "Log.h"
 #include "Plugin.h"
+#include "config/Config.hpp"
 #include <filesystem>
 #include <iostream>
 #include <fstream>
@@ -8,6 +9,9 @@
 #include <unordered_set>
 #include <nlohmann/json.hpp>
 #include <thread>
+#include <regex>
+#include <ranges>
+#include "BaseDefine.h"
 
 
 namespace GakumasLocal::Local {
@@ -16,16 +20,19 @@ namespace GakumasLocal::Local {
     std::unordered_map<std::string, std::string> genericText{};
     std::vector<std::string> genericTextDumpData{};
     std::unordered_set<std::string> translatedText{};
+    int genericDumpFileIndex = 0;
 
     std::filesystem::path GetBasePath() {
         return Plugin::GetInstance().GetHookInstaller()->localizationFilesDir;
     }
 
     void LoadJsonDataToMap(const std::filesystem::path& filePath, std::unordered_map<std::string, std::string>& dict,
-                           const bool insertToTranslated = false) {
+                           const bool insertToTranslated = false, const bool needClearDict = true) {
         if (!exists(filePath)) return;
         try {
-            dict.clear();
+            if (needClearDict) {
+                dict.clear();
+            }
             std::ifstream file(filePath);
             if (!file.is_open()) {
                 Log::ErrorFmt("Load %s failed.\n", filePath.c_str());
@@ -106,15 +113,113 @@ namespace GakumasLocal::Local {
         }
     }
 
+    std::string to_lower(const std::string& str) {
+        std::string lower_str = str;
+        std::transform(lower_str.begin(), lower_str.end(), lower_str.begin(), ::tolower);
+        return lower_str;
+    }
+
+    bool IsPureStringValue(const std::string& str) {
+        static std::unordered_set<char> notDeeds = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':',
+                                                    '/', ' ', '.', '%', ',', '+', '-', 'x', '\n'};
+        for (const auto& i : str) {
+            if (!notDeeds.contains(i)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    std::vector<std::string> SplitByTags(const std::string& origText) {
+        static const std::regex tagsRe("<.*?>(.*?)</.*?>");
+        std::string text = origText;
+        std::smatch match;
+
+        std::vector<std::string> ret{};
+
+        std::string lastSuffix;
+        while (std::regex_search(text, match, tagsRe)) {
+            const auto tagValue = match[1].str();
+            if (IsPureStringValue(tagValue)) {
+                ret.push_back(match.prefix().str());
+                lastSuffix = match.suffix().str();
+            }
+            text = match.suffix().str();
+        }
+        if (!lastSuffix.empty()) {
+            ret.push_back(lastSuffix);
+        }
+
+        return ret;
+    }
+
+    void ProcessGenericTextLabels() {
+        std::unordered_map<std::string, std::string> appendsText{};
+
+        for (const auto& i : genericText) {
+            const auto origContents = SplitByTags(i.first);
+            if (origContents.empty()) {
+                continue;
+            }
+            const auto translatedContents = SplitByTags(i.second);
+            if (origContents.size() == translatedContents.size()) {
+                for (const auto& [orig, trans] : std::ranges::views::zip(origContents, translatedContents)) {
+                    appendsText.emplace(orig, trans);
+                }
+            }
+        }
+        genericText.insert(appendsText.begin(), appendsText.end());
+    }
+
+    bool ReplaceString(std::string* str, const std::string& oldSubstr, const std::string& newSubstr) {
+        size_t pos = str->find(oldSubstr);
+        if (pos != std::string::npos) {
+            str->replace(pos, oldSubstr.length(), newSubstr);
+            return true;
+        }
+        return false;
+    }
+
+    bool GetSplitTagsTranslation(const std::string& origText, std::string* newText, std::vector<std::string>& unTransResultRet) {
+        if (!origText.contains(L'<')) return false;
+        const auto splitResult = SplitByTags(origText);
+        if (splitResult.empty()) return false;
+
+        *newText = origText;
+        bool ret = true;
+        for (const auto& i : splitResult) {
+            if (const auto iter = genericText.find(i); iter != genericText.end()) {
+                ReplaceString(newText, i, iter->second);
+            }
+            else {
+                unTransResultRet.emplace_back(i);
+                ret = false;
+            }
+        }
+        return ret;
+    }
+
     void LoadData() {
         static auto localizationFile = GetBasePath() / "local-files" / "localization.json";
         static auto genericFile = GetBasePath() / "local-files" / "generic.json";
+        static auto genericDir = GetBasePath() / "local-files" / "genericTrans";
 
         if (!exists(localizationFile)) return;
         LoadJsonDataToMap(localizationFile, i18nData, true);
         Log::InfoFmt("%ld localization items loaded.", i18nData.size());
 
         LoadJsonDataToMap(genericFile, genericText, true);
+        if (std::filesystem::exists(genericDir) || std::filesystem::is_directory(genericDir)) {
+            for (const auto& entry : std::filesystem::recursive_directory_iterator(genericDir)) {
+                if (std::filesystem::is_regular_file(entry.path())) {
+                    const auto currFile = entry.path();
+                    if (to_lower(currFile.extension().string()) == ".json") {
+                        LoadJsonDataToMap(currFile, genericText, true, false);
+                    }
+                }
+            }
+        }
+        ProcessGenericTextLabels();
         Log::InfoFmt("%ld generic text items loaded.", genericText.size());
 
         static auto dumpBasePath = GetBasePath() / "dump-files";
@@ -132,6 +237,7 @@ namespace GakumasLocal::Local {
 
     bool inDump = false;
     void DumpI18nItem(const std::string& key, const std::string& value) {
+        if (!Config::dumpText) return;
         if (i18nDumpData.contains(key)) return;
         i18nDumpData[key] = value;
         Log::DebugFmt("DumpI18nItem: %s - %s", key.c_str(), value.c_str());
@@ -176,33 +282,78 @@ namespace GakumasLocal::Local {
         return false;
     }
 
+    std::string GetDumpGenericFileName() {
+        if (genericDumpFileIndex == 0) return "generic.json";
+        return Log::StringFormat("generic_%d.json", genericDumpFileIndex);
+    }
+
     bool inDumpGeneric = false;
+    void DumpGenericText(const std::string& origText) {
+        if (translatedText.contains(origText)) return;
+
+        if (std::find(genericTextDumpData.begin(), genericTextDumpData.end(), origText) != genericTextDumpData.end()) {
+            return;
+        }
+        if (IsPureStringValue(origText)) return;
+
+        genericTextDumpData.push_back(origText);
+        static auto dumpBasePath = GetBasePath() / "dump-files";
+
+        if (inDumpGeneric) return;
+        inDumpGeneric = true;
+        std::thread([](){
+            std::this_thread::sleep_for(std::chrono::seconds(5));
+            DumpVectorDataToJson(dumpBasePath, GetDumpGenericFileName(), genericTextDumpData);
+            genericTextDumpData.clear();
+            inDumpGeneric = false;
+        }).detach();
+    }
+
     bool GetGenericText(const std::string& origText, std::string* newStr) {
         if (const auto iter = genericText.find(origText); iter != genericText.end()) {
             *newStr = iter->second;
             return true;
         }
 
-        if (translatedText.contains(origText)) return false;
+        std::vector<std::string> unTransResultRet;
+        if (GetSplitTagsTranslation(origText, newStr, unTransResultRet)) {
+            return true;
+        }
 
-        if (std::find(genericTextDumpData.begin(), genericTextDumpData.end(), "") != genericTextDumpData.end()) {
+        if (!Config::dumpText) {
             return false;
         }
 
-        genericTextDumpData.push_back(origText);
-        static auto dumpBasePath = GetBasePath() / "dump-files";
-
-        if (inDumpGeneric) return false;
-        inDumpGeneric = true;
-        std::thread([](){
-            std::this_thread::sleep_for(std::chrono::seconds(5));
-            DumpVectorDataToJson(dumpBasePath, "generic.json", genericTextDumpData);
-            genericTextDumpData.clear();
-            inDumpGeneric = false;
-        }).detach();
+        if (unTransResultRet.empty()) {
+            DumpGenericText(origText);
+        }
+        else {
+            for (const auto& i : unTransResultRet) {
+                DumpGenericText(i);
+            }
+        }
 
         return false;
+    }
 
+    std::string ChangeDumpTextIndex(int changeValue) {
+        if (!Config::dumpText) return "";
+        genericDumpFileIndex += changeValue;
+        return Log::StringFormat("GenericDumpFile: %s", GetDumpGenericFileName().c_str());
+    }
+
+    std::string OnKeyDown(int message, int key) {
+        if (message == WM_KEYDOWN) {
+            switch (key) {
+                case KEY_ADD: {
+                    return ChangeDumpTextIndex(1);
+                } break;
+                case KEY_SUB: {
+                    return ChangeDumpTextIndex(-1);
+                } break;
+            }
+        }
+        return "";
     }
 
 }

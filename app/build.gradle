@@ -11,10 +11,10 @@ android {
 
     defaultConfig {
         applicationId "io.github.chinosk.gakumas.localify"
-        minSdk 24
+        minSdk 29
         targetSdk 34
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "v1.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -75,7 +75,8 @@ android {
         variant.mergeAssetsProvider.configure { mergeAssetsTask ->
             mergeAssetsTask.doLast {
                 delete(fileTree(dir: mergeAssetsTask.outputDir, includes: ['gakumas-local/gakuen-adapted-translation-data/**',
-                                                                           'gakumas-local/GakumasPreTranslation/**']))
+                                                                           'gakumas-local/GakumasPreTranslation/**',
+                                                                           'gakumas-local/raw/**']))
             }
         }
     }
