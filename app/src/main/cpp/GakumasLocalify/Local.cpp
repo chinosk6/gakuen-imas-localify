@@ -177,18 +177,23 @@ namespace GakumasLocal::Local {
         return false;
     }
 
-    bool GetSplitTagsTranslation(const std::string& origText, std::string* newText) {
+    bool GetSplitTagsTranslation(const std::string& origText, std::string* newText, std::vector<std::string>& unTransResultRet) {
         if (!origText.contains(L'<')) return false;
         const auto splitResult = SplitByTags(origText);
         if (splitResult.empty()) return false;
 
         *newText = origText;
+        bool ret = true;
         for (const auto& i : splitResult) {
             if (const auto iter = genericText.find(i); iter != genericText.end()) {
                 ReplaceString(newText, i, iter->second);
             }
+            else {
+                unTransResultRet.emplace_back(i);
+                ret = false;
+            }
         }
-        return true;
+        return ret;
     }
 
     void LoadData() {
@@ -274,28 +279,18 @@ namespace GakumasLocal::Local {
     }
 
     bool inDumpGeneric = false;
-    bool GetGenericText(const std::string& origText, std::string* newStr) {
-        if (const auto iter = genericText.find(origText); iter != genericText.end()) {
-            *newStr = iter->second;
-            return true;
-        }
-
-        if (GetSplitTagsTranslation(origText, newStr)) {
-            Log::DebugFmt("GetSplitTagsTranslation: %s -> %s", origText.c_str(), newStr->c_str());
-            return true;
-        }
-
-        if (translatedText.contains(origText)) return false;
+    void DumpGenericText(const std::string& origText) {
+        if (translatedText.contains(origText)) return;
 
         if (std::find(genericTextDumpData.begin(), genericTextDumpData.end(), origText) != genericTextDumpData.end()) {
-            return false;
+            return;
         }
-        if (IsPureStringValue(origText)) return false;
+        if (IsPureStringValue(origText)) return;
 
         genericTextDumpData.push_back(origText);
         static auto dumpBasePath = GetBasePath() / "dump-files";
 
-        if (inDumpGeneric) return false;
+        if (inDumpGeneric) return;
         inDumpGeneric = true;
         std::thread([](){
             std::this_thread::sleep_for(std::chrono::seconds(5));
@@ -303,6 +298,27 @@ namespace GakumasLocal::Local {
             genericTextDumpData.clear();
             inDumpGeneric = false;
         }).detach();
+    }
+
+    bool GetGenericText(const std::string& origText, std::string* newStr) {
+        if (const auto iter = genericText.find(origText); iter != genericText.end()) {
+            *newStr = iter->second;
+            return true;
+        }
+
+        std::vector<std::string> unTransResultRet;
+        if (GetSplitTagsTranslation(origText, newStr, unTransResultRet)) {
+            return true;
+        }
+
+        if (unTransResultRet.empty()) {
+            DumpGenericText(origText);
+        }
+        else {
+            for (const auto& i : unTransResultRet) {
+                DumpGenericText(i);
+            }
+        }
 
         return false;
     }
