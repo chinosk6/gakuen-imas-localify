@@ -1,20 +1,20 @@
 <resources>
     <string name="app_name">Gakumas Localify</string>
     <string name="gakumas_localify">Gakumas Localify</string>
-    <string name="enable_plugin">Enable Plugin (Can\'t Hot Reloading)</string>
+    <string name="enable_plugin">Enable Plugin (Not Hot Reloadable)</string>
     <string name="enable_free_camera">Enable Free Camera</string>
     <string name="start_game">Start Game / Hot Reload Config</string>
-    <string name="setFpsTitle">Max FPS (0 is Not Change)</string>
+    <string name="setFpsTitle">Max FPS (0 is Use Original Settings)</string>
     <string name="unlockAllLive">Unlock All Live</string>
     <string name="liveUseCustomeDress">Live Custom Character</string>
     <string name="live_costume_head_id">Live Custom Head ID (eg. costume_head_hski-cstm-0002)</string>
-    <string name="live_custome_dress_id">Live Custom Costume ID (eg. hski-cstm-0002)</string>
+    <string name="live_custome_dress_id">Live Custom Dress ID (eg. hski-cstm-0002)</string>
     <string name="useCustomeGraphicSettings">Use Custom Graphics Settings</string>
     <string name="renderscale">RenderScale (0.5/0.59/0.67/0.77/1.0)</string>
     <string name="text_hook_test_mode">Text Hook Test Mode</string>
     <string name="export_text">Export Text</string>
     <string name="force_export_resource">Force Update Resource</string>
-    <string name="max_high">Ex High</string>
+    <string name="max_high">Ultra</string>
     <string name="very_high">Very High</string>
     <string name="hign">High</string>
     <string name="middle">Mid</string>
