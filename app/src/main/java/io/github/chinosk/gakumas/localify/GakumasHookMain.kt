@@ -2,10 +2,12 @@ package io.github.chinosk.gakumas.localify
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.AlertDialog
 import android.app.AndroidAppHelper
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -23,6 +25,7 @@ import com.google.gson.Gson
 import de.robv.android.xposed.XposedBridge
 import io.github.chinosk.gakumas.localify.models.GakumasConfig
 import java.io.File
+import java.util.Locale
 
 val TAG = "GakumasLocalify"
 
@@ -34,6 +37,8 @@ class GakumasHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
     private val nativeLibName = "MarryKotone"
 
     private var gkmsDataInited = false
+
+    private var getConfigError: Exception? = null
 
     override fun handleLoadPackage(lpparam: XC_LoadPackage.LoadPackageParam) {
         if (lpparam.packageName != targetPackageName) {
@@ -62,7 +67,12 @@ class GakumasHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
                 super.beforeHookedMethod(param)
                 Log.d(TAG, "onStart")
                 val currActivity = param.thisObject as Activity
-                initGkmsConfig(currActivity)
+                if (getConfigError != null) {
+                    showGetConfigFailed(currActivity)
+                }
+                else {
+                    initGkmsConfig(currActivity)
+                }
             }
         })
 
@@ -70,7 +80,12 @@ class GakumasHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
             override fun beforeHookedMethod(param: MethodHookParam) {
                 Log.d(TAG, "onResume")
                 val currActivity = param.thisObject as Activity
-                initGkmsConfig(currActivity)
+                if (getConfigError != null) {
+                    showGetConfigFailed(currActivity)
+                }
+                else {
+                    initGkmsConfig(currActivity)
+                }
             }
         })
 
@@ -92,10 +107,10 @@ class GakumasHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
 
                     val app = AndroidAppHelper.currentApplication()
                     if (nativeLibLoadSuccess) {
-                        showToast("lib$nativeLibName.so 已加载")
+                        showToast("lib$nativeLibName.so loaded.")
                     }
                     else {
-                        showToast("加载 native 库 lib$nativeLibName.so 失败")
+                        showToast("Load native library lib$nativeLibName.so failed.")
                         return
                     }
 
@@ -137,14 +152,98 @@ class GakumasHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
         }
     }
 
-    fun requestConfig(activity: Context) {
-        val intent = Intent().apply {
-            setClassName("io.github.chinosk.gakumas.localify", "io.github.chinosk.gakumas.localify.MainActivity")
-            putExtra("gkmsData", "芜湖")
-            flags = FLAG_ACTIVITY_NEW_TASK
+    private fun showGetConfigFailedImpl(activity: Context, title: String, msg: String, infoButton: String, dlButton: String, okButton: String) {
+        if (getConfigError == null) return
+        val builder = AlertDialog.Builder(activity)
+        val infoBuilder = AlertDialog.Builder(activity)
+        val errConfigStr = getConfigError.toString()
+        builder.setTitle("$title: $errConfigStr")
+        getConfigError = null
+        builder.setCancelable(false)
+        builder.setMessage(msg)
+
+        builder.setPositiveButton(okButton) { dialog, _ ->
+            dialog.dismiss()
         }
-        // activity.startActivityForResult(intent, 114514)
-        activity.startActivity(intent)
+
+        builder.setNegativeButton(dlButton) { dialog, _ ->
+            dialog.dismiss()
+            val webpage = Uri.parse("https://github.com/chinosk6/gakuen-imas-localify")
+            val intent = Intent(Intent.ACTION_VIEW, webpage)
+            activity.startActivity(intent)
+        }
+
+        builder.setNeutralButton(infoButton) { _, _ ->
+            infoBuilder.setTitle("Error Info")
+            infoBuilder.setMessage(errConfigStr)
+            val infoDialog = infoBuilder.create()
+            infoDialog.show()
+        }
+
+        val dialog = builder.create()
+
+        infoBuilder.setOnCancelListener {
+            dialog.show()
+        }
+
+        dialog.show()
+    }
+
+    fun showGetConfigFailed(activity: Context) {
+        val langData = when (getCurrentLanguage(activity)) {
+            "zh" -> {
+                mapOf(
+                    "title" to "无法读取设置",
+                    "message" to "配置读取失败，将使用默认配置。\n" +
+                            "可能是您使用了 LSPatch 等工具的集成模式，也有可能是您拒绝了拉起插件的权限。\n" +
+                            "若您使用了 LSPatch 等工具的集成模式，且没有单独安装插件本体，请下载插件本体。\n" +
+                            "若您安装了插件本体，却弹出这个错误，请允许本应用拉起其他应用。",
+                    "infoButton" to "详情",
+                    "dlButton" to "下载",
+                    "okButton" to "确定"
+                )
+            }
+            else -> {
+                mapOf(
+                    "title" to "Get Config Failed",
+                    "message" to "Configuration loading failed, the default configuration will be used.\n" +
+                            "This might be due to the use the integration mode of LSPatch, or possibly because you denied the permission to launch the plugin.\n" +
+                            "If you used the integration mode of LSPatch and did not install the plugin itself separately, please download the plugin.\n" +
+                            "If you have installed the plugin but still see this error, please allow this application to launch other applications.",
+                    "infoButton" to "Info",
+                    "dlButton" to "Download",
+                    "okButton" to "OK"
+                )
+            }
+        }
+        showGetConfigFailedImpl(activity, langData["title"]!!, langData["message"]!!, langData["infoButton"]!!,
+            langData["dlButton"]!!, langData["okButton"]!!)
+    }
+
+    private fun getCurrentLanguage(context: Context): String {
+        val locale: Locale = context.resources.configuration.locales.get(0)
+        return locale.language
+    }
+
+    fun requestConfig(activity: Context) {
+        try {
+            val intent = Intent().apply {
+                setClassName("io.github.chinosk.gakumas.localify", "io.github.chinosk.gakumas.localify.MainActivity")
+                putExtra("gkmsData", "requestConfig")
+                flags = FLAG_ACTIVITY_NEW_TASK
+            }
+            activity.startActivity(intent)
+        }
+        catch (e: Exception) {
+            getConfigError = e
+            val fakeActivity = Activity().apply {
+                intent = Intent().apply {
+                    putExtra("gkmsData", "{}")
+                }
+            }
+            initGkmsConfig(fakeActivity)
+        }
+
     }
 
     override fun initZygote(startupParam: IXposedHookZygoteInit.StartupParam) {

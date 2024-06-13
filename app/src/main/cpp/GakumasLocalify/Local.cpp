@@ -204,7 +204,10 @@ namespace GakumasLocal::Local {
         static auto genericFile = GetBasePath() / "local-files" / "generic.json";
         static auto genericDir = GetBasePath() / "local-files" / "genericTrans";
 
-        if (!exists(localizationFile)) return;
+        if (!std::filesystem::is_regular_file(localizationFile)) {
+            Log::ErrorFmt("localizationFile: %s not found.", localizationFile.c_str());
+            return;
+        }
         LoadJsonDataToMap(localizationFile, i18nData, true);
         Log::InfoFmt("%ld localization items loaded.", i18nData.size());
 

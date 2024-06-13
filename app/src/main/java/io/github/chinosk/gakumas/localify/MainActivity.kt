@@ -59,8 +59,10 @@ class MainActivity : AppCompatActivity(), ConfigListener {
 
         val requestData = intent.getStringExtra("gkmsData")
         if (requestData != null) {
-            onClickStartGame()
-            finish()
+            if (requestData == "requestConfig") {
+                onClickStartGame()
+                finish()
+            }
         }
         showVersion()
     }
