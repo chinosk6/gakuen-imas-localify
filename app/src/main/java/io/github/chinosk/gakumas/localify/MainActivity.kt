@@ -3,17 +3,17 @@ package io.github.chinosk.gakumas.localify
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
+import android.view.View
+import android.view.ViewTreeObserver
+import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import androidx.databinding.ObservableField
-import com.google.android.material.switchmaterial.SwitchMaterial
-import com.google.android.material.textfield.TextInputEditText
-import com.google.android.material.textfield.TextInputLayout
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import io.github.chinosk.gakumas.localify.databinding.ActivityMainBinding
@@ -42,6 +42,7 @@ interface ConfigListener {
     fun onChangePresetQuality(level: Int)
     fun onReflectionQualityLevelChanged(s: CharSequence, start: Int, before: Int, count: Int)
     fun onLodQualityLevelChanged(s: CharSequence, start: Int, before: Int, count: Int)
+    fun onGameOrientationChanged(checkedId: Int)
     fun onDumpTextChanged(value: Boolean)
 }
 
@@ -65,6 +66,42 @@ class MainActivity : AppCompatActivity(), ConfigListener {
             }
         }
         showVersion()
+
+        val scrollView: ScrollView = findViewById(R.id.scrollView)
+        scrollView.viewTreeObserver.addOnScrollChangedListener { onScrollChanged() }
+        onScrollChanged()
+
+        val coordinatorLayout = findViewById<View>(R.id.coordinatorLayout)
+        coordinatorLayout.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+                onScrollChanged()
+                coordinatorLayout.viewTreeObserver.removeOnGlobalLayoutListener(this)
+            }
+        })
+    }
+
+    private fun onScrollChanged() {
+        val fab: FloatingActionButton = findViewById(R.id.fabStartGame)
+        val startGameButton: MaterialButton = findViewById(R.id.StartGameButton)
+        val scrollView: ScrollView = findViewById(R.id.scrollView)
+
+        val location = IntArray(2)
+        startGameButton.getLocationOnScreen(location)
+        val buttonTop = location[1]
+        val buttonBottom = buttonTop + startGameButton.height
+
+        val scrollViewLocation = IntArray(2)
+        scrollView.getLocationOnScreen(scrollViewLocation)
+        val scrollViewTop = scrollViewLocation[1]
+        val scrollViewBottom = scrollViewTop + scrollView.height
+
+        val isButtonVisible = buttonTop >= scrollViewTop && buttonBottom <= scrollViewBottom
+
+        if (isButtonVisible) {
+            fab.hide()
+        } else {
+            fab.show()
+        }
     }
 
     private fun showToast(message: String) {
@@ -301,18 +338,22 @@ class MainActivity : AppCompatActivity(), ConfigListener {
                 binding.config!!.reflectionQualityLevel = 5
             }
         }
-        binding.config = binding.config
-        binding.notifyChange()
+        checkConfigAndUpdateView()
         saveConfig()
     }
 
-    private fun showTextInputLayoutHint(view: TextInputLayout) {
-        showToast(view.hint.toString())
+    override fun onGameOrientationChanged(checkedId: Int) {
+        when (checkedId) {
+            R.id.radioButtonGameDefault -> binding.config!!.gameOrientation = 0
+            R.id.radioButtonGamePortrait -> binding.config!!.gameOrientation = 1
+            R.id.radioButtonGameLandscape -> binding.config!!.gameOrientation = 2
+        }
+        saveConfig()
     }
 
-    fun checkConfigAndUpdateView() {
-        val sw = findViewById<SwitchMaterial>(R.id.SwitchUnlockAllLive)
-        sw.visibility = if (binding.config!!.dbgMode) android.view.View.VISIBLE else android.view.View.GONE
+    private fun checkConfigAndUpdateView() {
+        binding.config = binding.config
+        binding.notifyChange()
     }
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
@@ -321,8 +362,7 @@ class MainActivity : AppCompatActivity(), ConfigListener {
             val origDbg = binding.config?.dbgMode
             if (origDbg != null) {
                 binding.config!!.dbgMode = !origDbg
-                binding.config = binding.config
-                binding.notifyChange()
+                checkConfigAndUpdateView()
                 saveConfig()
                 showToast("TestMode: ${!origDbg}")
             }

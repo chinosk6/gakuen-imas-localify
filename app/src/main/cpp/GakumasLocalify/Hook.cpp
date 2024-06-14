@@ -221,6 +221,15 @@ namespace GakumasLocal::HookMain {
         return Unity_set_position_Injected_Orig(_this, data);
     }
 
+    DEFINE_HOOK(void*, InternalSetOrientationAsync, (void* _this, int type, void* c, void* tc, void* mtd)) {
+        switch (Config::gameOrientation) {
+            case 1: type = 0x2; break;  // FixedPortrait
+            case 2: type = 0x3; break;  // FixedLandscape
+            default: break;
+        }
+        return InternalSetOrientationAsync_Orig(_this, type, c, tc, mtd);
+    }
+
     DEFINE_HOOK(void, EndCameraRendering, (void* ctx, void* camera, void* method)) {
         EndCameraRendering_Orig(ctx, camera, method);
 
@@ -796,6 +805,10 @@ namespace GakumasLocal::HookMain {
                 "UnityEngine.DebugLogHandler::Internal_LogException(System.Exception,UnityEngine.Object)"));
         ADD_HOOK(Internal_Log, Il2cppUtils::il2cpp_resolve_icall(
                 "UnityEngine.DebugLogHandler::Internal_Log(UnityEngine.LogType,UnityEngine.LogOption,System.String,UnityEngine.Object)"));
+
+        ADD_HOOK(InternalSetOrientationAsync,
+                 Il2cppUtils::GetMethodPointer("campus-submodule.Runtime.dll", "Campus.Common",
+                                               "ScreenOrientationControllerBase", "InternalSetOrientationAsync"));
 
         ADD_HOOK(Unity_set_position_Injected, Il2cppUtils::il2cpp_resolve_icall(
                 "UnityEngine.Transform::set_position_Injected(UnityEngine.Vector3&)"));

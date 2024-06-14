@@ -6,6 +6,7 @@ namespace GakumasLocal::Config {
     extern bool dbgMode;
     extern bool enabled;
     extern bool forceExportResource;
+    extern int gameOrientation;
     extern bool textTest;
     extern bool dumpText;
     extern bool enableFreeCamera;

@@ -19,4 +19,8 @@
     <string name="hign">高</string>
     <string name="middle">中</string>
     <string name="low">低</string>
+    <string name="orientation_orig">游戏原版</string>
+    <string name="orientation_portrait">竖屏</string>
+    <string name="orientation_landscape">横屏</string>
+    <string name="orientation_lock">方向锁定</string>
 </resources>

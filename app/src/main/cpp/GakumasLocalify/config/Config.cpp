@@ -9,6 +9,7 @@ namespace GakumasLocal::Config {
     bool enabled = true;
     bool forceExportResource = true;
     bool textTest = false;
+    int gameOrientation = 0;
     bool dumpText = false;
     bool enableFreeCamera = false;
     int targetFrameRate = 0;
@@ -35,6 +36,7 @@ namespace GakumasLocal::Config {
             GetConfigItem(dbgMode);
             GetConfigItem(enabled);
             GetConfigItem(forceExportResource);
+            GetConfigItem(gameOrientation);
             GetConfigItem(textTest);
             GetConfigItem(dumpText);
             GetConfigItem(targetFrameRate);

@@ -19,4 +19,9 @@
     <string name="hign">High</string>
     <string name="middle">Mid</string>
     <string name="low">Low</string>
+    <string name="orientation_orig">Original</string>
+    <string name="orientation_portrait">Portrait</string>
+    <string name="orientation_landscape">Landscape</string>
+    <string name="orientation_lock">Original Lock</string>
+
 </resources>

@@ -7,6 +7,7 @@ data class GakumasConfig (
     var enabled: Boolean = true,
     var textTest: Boolean = false,
     var dumpText: Boolean = false,
+    var gameOrientation: Int = 0,
     var forceExportResource: Boolean = false,
     var enableFreeCamera: Boolean = false,
     var targetFrameRate: Int = 0,
