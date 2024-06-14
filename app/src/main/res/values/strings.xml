@@ -22,6 +22,6 @@
     <string name="orientation_orig">Original</string>
     <string name="orientation_portrait">Portrait</string>
     <string name="orientation_landscape">Landscape</string>
-    <string name="orientation_lock">Original Lock</string>
+    <string name="orientation_lock">Orientation Lock</string>
 
 </resources>

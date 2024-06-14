@@ -1,6 +1,6 @@
 name: Android CI
 
-on: [push, pull_request]
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
   build:
@@ -37,6 +37,11 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew build
 
+    - uses: actions/upload-artifact@v4
+      with:
+        name: GakumasLocalify-Unsigned-apk
+        path: app/build/outputs/apk/debug/app-debug.apk
+
     - uses: ilharp/sign-android-release@v1
       name: Sign app APK
       id: sign_app
@@ -50,5 +55,5 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: GakumasLocalify
+        name: GakumasLocalify-Signed-apk
         path: ${{steps.sign_app.outputs.signedFile}}

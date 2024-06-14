@@ -5,7 +5,7 @@
 
 
 
-# How to use
+# Usage
 
 - 这是一个 XPosed 插件，已 Root 用户可以使用 [LSPosed](https://github.com/LSPosed/LSPosed)，未 Root 用户可以使用 [LSPatch](https://github.com/LSPosed/LSPatch)。
 
@@ -29,6 +29,20 @@
 - `local-files/generic.json` 为 localization 未覆盖部分的翻译
 - `local-files/genericTrans` 文件夹内所有 `.json` 文件作用同 `generic.json`，文件夹名/文件名可自定义，方便区分翻译内容
 - `local-files/resource` 文件夹存放资源文件，目前可以替换所有同名的 txt 文件。获取游戏原始资源可以查看：[gkmasToolkit](https://github.com/kishidanatsumi/gkmasToolkit)
+
+
+
+# 翻译仓库贡献列表
+
+<a href="https://github.com/chinosk6/GakumasTranslationData">
+  <img src="https://contrib.rocks/image?repo=chinosk6/GakumasTranslationData" />
+</a>
+
+
+
+# Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=chinosk6/gakuen-imas-localify&type=Date)](https://star-history.com/#chinosk6/gakuen-imas-localify&Date)
 
 
 
