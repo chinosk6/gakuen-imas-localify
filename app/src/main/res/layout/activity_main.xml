@@ -82,6 +82,19 @@
                             android:layout_height="match_parent">
 
                             <com.google.android.material.switchmaterial.SwitchMaterial
+                                android:id="@+id/replaceFontSwitch"
+                                android:layout_width="match_parent"
+                                android:layout_height="48dp"
+                                android:checked="@={config.replaceFont}"
+                                android:onCheckedChanged="@{(view, value) -> listener.onReplaceFontChanged(value)}"
+                                android:text="@string/replace_font" />
+                        </TableRow>
+
+                        <TableRow
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent">
+
+                            <com.google.android.material.switchmaterial.SwitchMaterial
                                 android:id="@+id/textTestMode"
                                 android:layout_width="match_parent"
                                 android:layout_height="48dp"
@@ -583,6 +596,385 @@
 
                                     </TableLayout>
                                 </TableRow>
+                            </TableLayout>
+
+                        </TableRow>
+
+                        <TableRow
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_marginTop="4sp"
+                            android:background="@drawable/table_row_border">
+
+                            <TableLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:orientation="vertical"
+                                android:paddingLeft="10sp"
+                                android:paddingRight="10sp"
+                                android:paddingBottom="10sp"
+                                android:stretchColumns="0">
+
+                                <TableRow
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent">
+
+                                    <com.google.android.material.switchmaterial.SwitchMaterial
+                                        android:id="@+id/SwitchEnableBreastParam"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="48dp"
+                                        android:checked="@={config.enableBreastParam}"
+                                        android:onCheckedChanged="@{(view, value) -> listener.onEnableBreastParamChanged(value)}"
+                                        android:text="@string/enable_breast_param" />
+                                </TableRow>
+
+                                <TableRow
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:visibility="@{config.enableBreastParam ? android.view.View.VISIBLE : android.view.View.GONE}">
+
+                                    <LinearLayout
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:orientation="horizontal"
+                                        app:layout_constraintBottom_toBottomOf="parent"
+                                        app:layout_constraintEnd_toEndOf="parent"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        app:layout_constraintTop_toTopOf="parent">
+
+                                        <com.google.android.material.button.MaterialButton
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="48dp"
+                                            android:layout_margin="1sp"
+                                            android:layout_weight="1"
+                                            android:minWidth="1sp"
+                                            android:onClick="@{() -> listener.onBClickPresetChanged(5)}"
+                                            android:text="\??" />
+
+                                        <com.google.android.material.button.MaterialButton
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="48dp"
+                                            android:layout_margin="1sp"
+                                            android:layout_weight="1"
+                                            android:minWidth="1sp"
+                                            android:onClick="@{() -> listener.onBClickPresetChanged(4)}"
+                                            android:text="+5" />
+
+                                        <com.google.android.material.button.MaterialButton
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="48dp"
+                                            android:layout_margin="1sp"
+                                            android:layout_weight="1"
+                                            android:minWidth="1sp"
+                                            android:onClick="@{() -> listener.onBClickPresetChanged(3)}"
+                                            android:text="+4" />
+
+                                        <com.google.android.material.button.MaterialButton
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="48dp"
+                                            android:layout_margin="1sp"
+                                            android:layout_weight="1"
+                                            android:minWidth="1sp"
+                                            android:onClick="@{() -> listener.onBClickPresetChanged(2)}"
+                                            android:text="+3" />
+
+                                        <com.google.android.material.button.MaterialButton
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="48dp"
+                                            android:layout_weight="1"
+                                            android:minWidth="1sp"
+                                            android:onClick="@{() -> listener.onBClickPresetChanged(1)}"
+                                            android:text="+2" />
+
+                                        <com.google.android.material.button.MaterialButton
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="48dp"
+                                            android:layout_weight="1"
+                                            android:layout_marginStart="1sp"
+                                            android:minWidth="1sp"
+                                            android:onClick="@{() -> listener.onBClickPresetChanged(0)}"
+                                            android:text="+1" />
+
+                                    </LinearLayout>
+
+                                </TableRow>
+
+                                <TableRow
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:visibility="@{config.enableBreastParam ? android.view.View.VISIBLE : android.view.View.GONE}">
+
+                                    <TableLayout
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="match_parent"
+                                        android:orientation="vertical">
+
+                                        <TableRow
+                                            android:layout_width="match_parent"
+                                            android:layout_height="match_parent"
+                                            android:weightSum="2">
+
+                                            <com.google.android.material.textfield.TextInputLayout
+                                                android:layout_width="match_parent"
+                                                android:layout_height="48dp"
+                                                android:layout_weight="1"
+                                                android:background="@android:color/transparent"
+                                                android:hint="@string/damping"
+                                                app:boxBackgroundColor="@android:color/transparent">
+
+                                                <com.google.android.material.textfield.TextInputEditText
+                                                    android:layout_width="match_parent"
+                                                    android:layout_height="match_parent"
+                                                    android:ems="10"
+                                                    android:inputType="numberDecimal|numberSigned"
+                                                    android:onTextChanged="@{(s, st, b, a) -> listener.onBDampingChanged(s, st, b, a)}"
+                                                    android:paddingStart="0dp"
+                                                    android:paddingEnd="0dp"
+                                                    android:paddingBottom="0dp"
+                                                    android:text="@={`` + config.bDamping}" />
+
+                                            </com.google.android.material.textfield.TextInputLayout>
+
+                                            <com.google.android.material.textfield.TextInputLayout
+                                                android:layout_width="match_parent"
+                                                android:layout_height="48dp"
+                                                android:layout_weight="1"
+                                                android:background="@android:color/transparent"
+                                                android:hint="@string/stiffness"
+                                                app:boxBackgroundColor="@android:color/transparent">
+
+                                                <com.google.android.material.textfield.TextInputEditText
+                                                    android:layout_width="match_parent"
+                                                    android:layout_height="match_parent"
+                                                    android:ems="10"
+                                                    android:inputType="numberDecimal|numberSigned"
+                                                    android:onTextChanged="@{(s, st, b, a) -> listener.onBStiffnessChanged(s, st, b, a)}"
+                                                    android:paddingStart="0dp"
+                                                    android:paddingEnd="0dp"
+                                                    android:paddingBottom="0dp"
+                                                    android:text="@={`` + config.bStiffness}" />
+
+                                            </com.google.android.material.textfield.TextInputLayout>
+
+
+                                        </TableRow>
+
+                                        <TableRow
+                                            android:layout_width="match_parent"
+                                            android:layout_height="match_parent"
+                                            android:weightSum="2">
+
+                                            <com.google.android.material.textfield.TextInputLayout
+                                                android:layout_width="match_parent"
+                                                android:layout_height="48dp"
+                                                android:layout_weight="1"
+                                                android:background="@android:color/transparent"
+                                                android:hint="@string/spring"
+                                                app:boxBackgroundColor="@android:color/transparent">
+
+                                                <com.google.android.material.textfield.TextInputEditText
+                                                    android:layout_width="match_parent"
+                                                    android:layout_height="match_parent"
+                                                    android:ems="10"
+                                                    android:inputType="numberDecimal|numberSigned"
+                                                    android:onTextChanged="@{(s, st, b, a) -> listener.onBSpringChanged(s, st, b, a)}"
+                                                    android:paddingStart="0dp"
+                                                    android:paddingEnd="0dp"
+                                                    android:paddingBottom="0dp"
+                                                    android:text="@={`` + config.bSpring}" />
+
+                                            </com.google.android.material.textfield.TextInputLayout>
+
+                                            <com.google.android.material.textfield.TextInputLayout
+                                                android:layout_width="match_parent"
+                                                android:layout_height="48dp"
+                                                android:layout_weight="1"
+                                                android:background="@android:color/transparent"
+                                                android:hint="@string/pendulum"
+                                                app:boxBackgroundColor="@android:color/transparent">
+
+                                                <com.google.android.material.textfield.TextInputEditText
+                                                    android:layout_width="match_parent"
+                                                    android:layout_height="match_parent"
+                                                    android:ems="10"
+                                                    android:inputType="numberDecimal|numberSigned"
+                                                    android:onTextChanged="@{(s, st, b, a) -> listener.onBPendulumChanged(s, st, b, a)}"
+                                                    android:paddingStart="0dp"
+                                                    android:paddingEnd="0dp"
+                                                    android:paddingBottom="0dp"
+                                                    android:text="@={`` + config.bPendulum}" />
+
+                                            </com.google.android.material.textfield.TextInputLayout>
+
+
+                                        </TableRow>
+
+                                        <TableRow
+                                            android:layout_width="match_parent"
+                                            android:layout_height="match_parent"
+                                            android:weightSum="2">
+
+                                            <com.google.android.material.textfield.TextInputLayout
+                                                android:layout_width="match_parent"
+                                                android:layout_height="48dp"
+                                                android:layout_weight="1"
+                                                android:background="@android:color/transparent"
+                                                android:hint="@string/pendulumrange"
+                                                app:boxBackgroundColor="@android:color/transparent">
+
+                                                <com.google.android.material.textfield.TextInputEditText
+                                                    android:layout_width="match_parent"
+                                                    android:layout_height="match_parent"
+                                                    android:ems="10"
+                                                    android:inputType="numberDecimal|numberSigned"
+                                                    android:onTextChanged="@{(s, st, b, a) -> listener.onBPendulumRangeChanged(s, st, b, a)}"
+                                                    android:paddingStart="0dp"
+                                                    android:paddingEnd="0dp"
+                                                    android:paddingBottom="0dp"
+                                                    android:text="@={`` + config.bPendulumRange}" />
+
+                                            </com.google.android.material.textfield.TextInputLayout>
+
+                                            <com.google.android.material.textfield.TextInputLayout
+                                                android:layout_width="match_parent"
+                                                android:layout_height="48dp"
+                                                android:layout_weight="1"
+                                                android:background="@android:color/transparent"
+                                                android:hint="@string/average"
+                                                app:boxBackgroundColor="@android:color/transparent">
+
+                                                <com.google.android.material.textfield.TextInputEditText
+                                                    android:layout_width="match_parent"
+                                                    android:layout_height="match_parent"
+                                                    android:ems="10"
+                                                    android:inputType="numberDecimal|numberSigned"
+                                                    android:onTextChanged="@{(s, st, b, a) -> listener.onBAverageChanged(s, st, b, a)}"
+                                                    android:paddingStart="0dp"
+                                                    android:paddingEnd="0dp"
+                                                    android:paddingBottom="0dp"
+                                                    android:text="@={`` + config.bAverage}" />
+
+                                            </com.google.android.material.textfield.TextInputLayout>
+
+                                        </TableRow>
+
+                                        <TableRow
+                                            android:layout_width="match_parent"
+                                            android:layout_height="match_parent"
+                                            android:weightSum="2">
+
+                                            <com.google.android.material.textfield.TextInputLayout
+                                                android:layout_width="match_parent"
+                                                android:layout_height="48dp"
+                                                android:layout_weight="1"
+                                                android:background="@android:color/transparent"
+                                                android:hint="@string/rootweight"
+                                                app:boxBackgroundColor="@android:color/transparent">
+
+                                                <com.google.android.material.textfield.TextInputEditText
+                                                    android:layout_width="match_parent"
+                                                    android:layout_height="match_parent"
+                                                    android:ems="10"
+                                                    android:inputType="numberDecimal|numberSigned"
+                                                    android:onTextChanged="@{(s, st, b, a) -> listener.onBRootWeightChanged(s, st, b, a)}"
+                                                    android:paddingStart="0dp"
+                                                    android:paddingEnd="0dp"
+                                                    android:paddingBottom="0dp"
+                                                    android:text="@={`` + config.bRootWeight}" />
+
+                                            </com.google.android.material.textfield.TextInputLayout>
+
+
+                                            <com.google.android.material.textfield.TextInputLayout
+                                                android:layout_width="match_parent"
+                                                android:layout_height="48dp"
+                                                android:layout_weight="1"
+                                                android:background="@android:color/transparent"
+                                                android:hint="@string/uselimit_0_1"
+                                                app:boxBackgroundColor="@android:color/transparent">
+
+                                                <com.google.android.material.textfield.TextInputEditText
+                                                    android:layout_width="match_parent"
+                                                    android:layout_height="match_parent"
+                                                    android:ems="10"
+                                                    android:inputType="number"
+                                                    android:onTextChanged="@{(s, st, b, a) -> listener.onBUseLimitChanged(s, st, b, a)}"
+                                                    android:paddingStart="0dp"
+                                                    android:paddingEnd="0dp"
+                                                    android:paddingBottom="0dp"
+                                                    android:text="@={`` + config.bUseLimit}" />
+
+                                            </com.google.android.material.textfield.TextInputLayout>
+
+                                        </TableRow>
+
+                                    </TableLayout>
+                                </TableRow>
+
+                                <TableRow
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:visibility="@{config.enableBreastParam ? android.view.View.VISIBLE : android.view.View.GONE}">
+
+                                    <TableLayout
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="match_parent"
+                                        android:orientation="vertical">
+
+                                        <TableRow
+                                            android:layout_width="match_parent"
+                                            android:layout_height="match_parent" >
+
+                                            <com.google.android.material.textfield.TextInputLayout
+                                                android:layout_width="match_parent"
+                                                android:layout_height="48dp"
+                                                android:layout_weight="3"
+                                                android:background="@android:color/transparent"
+                                                android:hint="@string/breast_scale"
+                                                app:boxBackgroundColor="@android:color/transparent">
+
+                                                <com.google.android.material.textfield.TextInputEditText
+                                                    android:layout_width="match_parent"
+                                                    android:layout_height="match_parent"
+                                                    android:ems="10"
+                                                    android:inputType="numberDecimal|numberSigned"
+                                                    android:onTextChanged="@{(s, st, b, a) -> listener.onBScaleChanged(s, st, b, a)}"
+                                                    android:paddingStart="0dp"
+                                                    android:paddingEnd="0dp"
+                                                    android:paddingBottom="0dp"
+                                                    android:text="@={`` + config.bScale}" />
+
+                                            </com.google.android.material.textfield.TextInputLayout>
+
+
+                                            <com.google.android.material.checkbox.MaterialCheckBox
+                                                android:layout_width="match_parent"
+                                                android:layout_height="48dp"
+                                                android:layout_weight="1"
+                                                android:checked="@={config.bUseScale}"
+                                                android:onCheckedChanged="@{(view, value) -> listener.onBUseScaleChanged(value)}"
+                                                android:text="@string/usescale" />
+
+                                        </TableRow>
+
+                                    </TableLayout>
+                                </TableRow>
+
+                                <TableRow
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:visibility="@{config.enableBreastParam ? android.view.View.VISIBLE : android.view.View.GONE}">
+
+                                    <com.google.android.material.switchmaterial.SwitchMaterial
+                                        android:layout_width="match_parent"
+                                        android:layout_height="48dp"
+                                        android:layout_weight="1"
+                                        android:checked="@={config.bUseArmCorrection}"
+                                        android:onCheckedChanged="@{(view, value) -> listener.onBUseArmCorrectionChanged(value)}"
+                                        android:text="@string/usearmcorrection" />
+
+                                </TableRow>
+
                             </TableLayout>
 
                         </TableRow>

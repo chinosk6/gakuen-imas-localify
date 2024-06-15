@@ -157,7 +157,7 @@ namespace Il2cppUtils {
 
     template <typename RType>
     auto ClassSetFieldValue(void* obj, UnityResolve::Field* field, RType value) -> void {
-        return *reinterpret_cast<RType*>(reinterpret_cast<uintptr_t>(obj) + field->offset) = value;
+        *reinterpret_cast<RType*>(reinterpret_cast<uintptr_t>(obj) + field->offset) = value;
     }
 
 

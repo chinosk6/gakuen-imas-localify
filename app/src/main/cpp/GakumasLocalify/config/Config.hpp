@@ -5,6 +5,7 @@ namespace GakumasLocal::Config {
 
     extern bool dbgMode;
     extern bool enabled;
+    extern bool replaceFont;
     extern bool forceExportResource;
     extern int gameOrientation;
     extern bool textTest;
@@ -25,6 +26,19 @@ namespace GakumasLocal::Config {
 
     extern int reflectionQualityLevel;
     extern int lodQualityLevel;
+
+    extern bool enableBreastParam;
+    extern int bUseLimit;
+    extern float bDamping;
+    extern float bStiffness;
+    extern float bSpring;
+    extern float bPendulum;
+    extern float bPendulumRange;
+    extern float bAverage;
+    extern float bRootWeight;
+    extern bool bUseArmCorrection;
+    extern bool bUseScale;
+    extern float bScale;
 
     void LoadConfig(const std::string& configStr);
 }
