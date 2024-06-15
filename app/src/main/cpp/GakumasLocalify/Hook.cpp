@@ -323,6 +323,7 @@ namespace GakumasLocal::HookMain {
 
     std::unordered_set<void*> updatedFontPtrs{};
     void UpdateFont(void* TMP_Text_this) {
+        if (!Config::replaceFont) return;
         static auto get_font = Il2cppUtils::GetMethod("Unity.TextMeshPro.dll",
                                                       "TMPro", "TMP_Text", "get_font");
         static auto set_font = Il2cppUtils::GetMethod("Unity.TextMeshPro.dll",
@@ -341,6 +342,7 @@ namespace GakumasLocal::HookMain {
                 updatedFontPtrs.emplace(fontAsset);
                 UpdateFontAssetData->Invoke<void>(fontAsset);
             }
+            if (updatedFontPtrs.size() > 200) updatedFontPtrs.clear();
         }
         set_font->Invoke<void>(TMP_Text_this, fontAsset);
     }
@@ -772,8 +774,6 @@ namespace GakumasLocal::HookMain {
                 leftBreastEnd->SetLocalScale(setScale);
                 rightBreastEnd->SetLocalScale(setScale);
             }
-
-            // leftBreast->SetLocalScale({1.5, 1.5, 1.5});
 
             Log::DebugFmt("orig bone: damping: %f, stiffness: %f, spring: %f, pendulum: %f, "
                           "pendulumRange: %f, average: %f, rootWeight: %f, useLimit: %d, useArmCorrection: %d, isDirty: %d",

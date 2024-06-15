@@ -82,6 +82,19 @@
                             android:layout_height="match_parent">
 
                             <com.google.android.material.switchmaterial.SwitchMaterial
+                                android:id="@+id/replaceFontSwitch"
+                                android:layout_width="match_parent"
+                                android:layout_height="48dp"
+                                android:checked="@={config.replaceFont}"
+                                android:onCheckedChanged="@{(view, value) -> listener.onReplaceFontChanged(value)}"
+                                android:text="@string/replace_font" />
+                        </TableRow>
+
+                        <TableRow
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent">
+
+                            <com.google.android.material.switchmaterial.SwitchMaterial
                                 android:id="@+id/textTestMode"
                                 android:layout_width="match_parent"
                                 android:layout_height="48dp"

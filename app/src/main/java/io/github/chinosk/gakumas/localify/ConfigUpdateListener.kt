@@ -9,6 +9,7 @@ interface ConfigListener {
     fun onEnabledChanged(value: Boolean)
     fun onForceExportResourceChanged(value: Boolean)
     fun onTextTestChanged(value: Boolean)
+    fun onReplaceFontChanged(value: Boolean)
     fun onEnableFreeCameraChanged(value: Boolean)
     fun onTargetFpsChanged(s: CharSequence, start: Int, before: Int, count: Int)
     fun onUnlockAllLiveChanged(value: Boolean)
@@ -59,6 +60,12 @@ interface ConfigUpdateListener: ConfigListener {
 
     override fun onForceExportResourceChanged(value: Boolean) {
         binding.config!!.forceExportResource = value
+        saveConfig()
+        pushKeyEvent(KeyEvent(1145, 30))
+    }
+
+    override fun onReplaceFontChanged(value: Boolean) {
+        binding.config!!.replaceFont = value
         saveConfig()
         pushKeyEvent(KeyEvent(1145, 30))
     }

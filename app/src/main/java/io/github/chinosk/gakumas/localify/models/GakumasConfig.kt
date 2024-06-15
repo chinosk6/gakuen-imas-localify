@@ -4,6 +4,7 @@ package io.github.chinosk.gakumas.localify.models
 data class GakumasConfig (
     var dbgMode: Boolean = false,
     var enabled: Boolean = true,
+    var replaceFont: Boolean = true,
     var textTest: Boolean = false,
     var dumpText: Boolean = false,
     var gameOrientation: Int = 0,

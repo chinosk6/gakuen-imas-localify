@@ -2,6 +2,7 @@
     <string name="app_name">Gakumas Localify</string>
     <string name="gakumas_localify">Gakumas Localify</string>
     <string name="enable_plugin">启用插件 (不可热重载)</string>
+    <string name="replace_font">替换字体</string>
     <string name="enable_free_camera">启用自由视角（可热重载; 需使用实体键盘）</string>
     <string name="start_game">以上述配置启动游戏/重载配置</string>
     <string name="setFpsTitle">最大 FPS (0 为保持游戏原设置)</string>
