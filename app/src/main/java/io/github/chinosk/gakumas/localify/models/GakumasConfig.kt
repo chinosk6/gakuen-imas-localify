@@ -31,5 +31,8 @@ data class GakumasConfig (
     var bPendulum: Float = 0.055f,
     var bPendulumRange: Float = 0.15f,
     var bAverage: Float = 0.20f,
-    var bRootWeight: Float = 0.5f
+    var bRootWeight: Float = 0.5f,
+    var bUseArmCorrection: Boolean = true,
+    var bUseScale: Boolean = false,
+    var bScale: Float = 1.0f
 )

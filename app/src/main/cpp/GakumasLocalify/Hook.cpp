@@ -729,12 +729,15 @@ namespace GakumasLocal::HookMain {
         static auto pendulumRange_field = ActorSwingBreastBone_klass->Get<UnityResolve::Field>("pendulumRange");
         static auto average_field = ActorSwingBreastBone_klass->Get<UnityResolve::Field>("average");
         static auto rootWeight_field = ActorSwingBreastBone_klass->Get<UnityResolve::Field>("rootWeight");
+        static auto useArmCorrection_field = ActorSwingBreastBone_klass->Get<UnityResolve::Field>("useArmCorrection");
+        static auto isDirty_field = ActorSwingBreastBone_klass->Get<UnityResolve::Field>("<isDirty>k__BackingField");
+        static auto leftBreast_field = ActorSwingBreastBone_klass->Get<UnityResolve::Field>("leftBreast");
+        static auto rightBreast_field = ActorSwingBreastBone_klass->Get<UnityResolve::Field>("rightBreast");
+        static auto leftBreastEnd_field = ActorSwingBreastBone_klass->Get<UnityResolve::Field>("leftBreastEnd");
+        static auto rightBreastEnd_field = ActorSwingBreastBone_klass->Get<UnityResolve::Field>("rightBreastEnd");
         static auto limitInfo_field = ActorSwingBreastBone_klass->Get<UnityResolve::Field>("limitInfo");
 
         static auto limitInfo_useLimit_field = LimitInfo_klass->Get<UnityResolve::Field>("useLimit");
-        static auto limitInfo_axisX_field = LimitInfo_klass->Get<UnityResolve::Field>("axisX");
-        static auto limitInfo_axisY_field = LimitInfo_klass->Get<UnityResolve::Field>("axisY");
-        static auto limitInfo_axisZ_field = LimitInfo_klass->Get<UnityResolve::Field>("axisZ");
 
         auto swingBreastBones = Il2cppUtils::ClassGetFieldValue
                 <UnityResolve::UnityType::List<UnityResolve::UnityType::MonoBehaviour*>*>(initializeData, Data_swingBreastBones_field);
@@ -751,12 +754,30 @@ namespace GakumasLocal::HookMain {
             auto pendulumRange = Il2cppUtils::ClassGetFieldValue<float>(bone, pendulumRange_field);
             auto average = Il2cppUtils::ClassGetFieldValue<float>(bone, average_field);
             auto rootWeight = Il2cppUtils::ClassGetFieldValue<float>(bone, rootWeight_field);
+            auto useArmCorrection = Il2cppUtils::ClassGetFieldValue<bool>(bone, useArmCorrection_field);
+            auto isDirty = Il2cppUtils::ClassGetFieldValue<bool>(bone, isDirty_field);
 
             auto limitInfo = Il2cppUtils::ClassGetFieldValue<void*>(bone, limitInfo_field);
             auto useLimit = Il2cppUtils::ClassGetFieldValue<int>(limitInfo, limitInfo_useLimit_field);
 
-            Log::DebugFmt("orig bone: damping: %f, stiffness: %f, spring: %f, pendulum: %f, pendulumRange: %f, average: %f, rootWeight: %f, useLimit: %d",
-                          damping, stiffness, spring, pendulum, pendulumRange, average, rootWeight, useLimit);
+            if (Config::bUseScale) {
+                auto leftBreast = Il2cppUtils::ClassGetFieldValue<UnityResolve::UnityType::Transform*>(bone, leftBreast_field);
+                auto rightBreast = Il2cppUtils::ClassGetFieldValue<UnityResolve::UnityType::Transform*>(bone, rightBreast_field);
+                auto leftBreastEnd = Il2cppUtils::ClassGetFieldValue<UnityResolve::UnityType::Transform*>(bone, leftBreastEnd_field);
+                auto rightBreastEnd = Il2cppUtils::ClassGetFieldValue<UnityResolve::UnityType::Transform*>(bone, rightBreastEnd_field);
+
+                const auto setScale = UnityResolve::UnityType::Vector3(Config::bScale, Config::bScale, Config::bScale);
+                leftBreast->SetLocalScale(setScale);
+                rightBreast->SetLocalScale(setScale);
+                leftBreastEnd->SetLocalScale(setScale);
+                rightBreastEnd->SetLocalScale(setScale);
+            }
+
+            // leftBreast->SetLocalScale({1.5, 1.5, 1.5});
+
+            Log::DebugFmt("orig bone: damping: %f, stiffness: %f, spring: %f, pendulum: %f, "
+                          "pendulumRange: %f, average: %f, rootWeight: %f, useLimit: %d, useArmCorrection: %d, isDirty: %d",
+                          damping, stiffness, spring, pendulum, pendulumRange, average, rootWeight, useLimit, useArmCorrection, isDirty);
 
             Il2cppUtils::ClassSetFieldValue(limitInfo, limitInfo_useLimit_field, Config::bUseLimit);
             Il2cppUtils::ClassSetFieldValue(bone, damping_field, Config::bDamping);
@@ -766,6 +787,8 @@ namespace GakumasLocal::HookMain {
             Il2cppUtils::ClassSetFieldValue(bone, pendulumRange_field, Config::bPendulumRange);
             Il2cppUtils::ClassSetFieldValue(bone, average_field, Config::bAverage);
             Il2cppUtils::ClassSetFieldValue(bone, rootWeight_field, Config::bRootWeight);
+            Il2cppUtils::ClassSetFieldValue(bone, useArmCorrection_field, Config::bUseArmCorrection);
+            // Il2cppUtils::ClassSetFieldValue(bone, isDirty_field, Config::bIsDirty);
         }
         // Log::DebugFmt("\n");
     }

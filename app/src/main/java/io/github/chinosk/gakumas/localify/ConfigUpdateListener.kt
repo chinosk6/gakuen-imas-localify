@@ -35,6 +35,10 @@ interface ConfigListener {
     fun onBAverageChanged(s: CharSequence, start: Int, before: Int, count: Int)
     fun onBRootWeightChanged(s: CharSequence, start: Int, before: Int, count: Int)
     fun onBUseLimitChanged(s: CharSequence, start: Int, before: Int, count: Int)
+    fun onBScaleChanged(s: CharSequence, start: Int, before: Int, count: Int)
+    fun onBUseArmCorrectionChanged(value: Boolean)
+    fun onBUseScaleChanged(value: Boolean)
+    fun onBClickPresetChanged(index: Int)
 }
 
 
@@ -237,6 +241,18 @@ interface ConfigUpdateListener: ConfigListener {
     override fun onEnableBreastParamChanged(value: Boolean) {
         binding.config!!.enableBreastParam = value
         saveConfig()
+        checkConfigAndUpdateView()
+    }
+
+    override fun onBUseArmCorrectionChanged(value: Boolean) {
+        binding.config!!.bUseArmCorrection = value
+        saveConfig()
+    }
+
+    override fun onBUseScaleChanged(value: Boolean) {
+        binding.config!!.bUseScale = value
+        saveConfig()
+        checkConfigAndUpdateView()
     }
 
     override fun onBDampingChanged(s: CharSequence, start: Int, before: Int, count: Int) {
@@ -319,5 +335,41 @@ interface ConfigUpdateListener: ConfigListener {
         saveConfig()
     }
 
+    override fun onBScaleChanged(s: CharSequence, start: Int, before: Int, count: Int){
+        binding.config!!.bScale = try {
+            s.toString().toFloat()
+        }
+        catch (e: Exception) {
+            0f
+        }
+        saveConfig()
+    }
+    override fun onBClickPresetChanged(index: Int) {
+        val setData: FloatArray = when (index) {
+            // 0.33, 0.08, 0.7, 0.12, 0.25, 0.2, 0.8, 0, noUseArm 啥玩意
+            0 -> floatArrayOf(0.33f, 0.07f, 0.7f, 0.06f, 0.25f, 0.2f, 0.5f, 1f)
+            1 -> floatArrayOf(0.365f, 0.06f, 0.62f, 0.07f, 0.25f, 0.2f, 0.5f, 1f)
+            2 -> floatArrayOf(0.4f, 0.065f, 0.55f, 0.075f, 0.25f, 0.2f, 0.5f, 1f)
+            3 -> floatArrayOf(0.4f, 0.065f, 0.55f, 0.075f, 0.25f, 0.2f, 0.5f, 0f)
+            4 -> floatArrayOf(0.4f, 0.06f, 0.4f, 0.075f, 0.55f, 0.2f, 0.8f, 0f)
+
+            5 -> floatArrayOf(0.33f, 0.08f, 0.8f, 0.12f, 0.55f, 0.2f, 1.0f, 0f)
+
+            else -> floatArrayOf(0.33f, 0.08f, 1.0f, 0.055f, 0.15f, 0.2f, 0.5f, 1f)
+        }
+
+        binding.config!!.bDamping = setData[0]
+        binding.config!!.bStiffness = setData[1]
+        binding.config!!.bSpring = setData[2]
+        binding.config!!.bPendulum = setData[3]
+        binding.config!!.bPendulumRange = setData[4]
+        binding.config!!.bAverage = setData[5]
+        binding.config!!.bRootWeight = setData[6]
+        binding.config!!.bUseLimit = setData[7].toInt()
+        binding.config!!.bUseArmCorrection = true
+
+        checkConfigAndUpdateView()
+        saveConfig()
+    }
 
 }

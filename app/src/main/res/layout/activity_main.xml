@@ -612,12 +612,84 @@
                                         android:layout_height="48dp"
                                         android:checked="@={config.enableBreastParam}"
                                         android:onCheckedChanged="@{(view, value) -> listener.onEnableBreastParamChanged(value)}"
-                                        android:text="Enable Breast Param" />
+                                        android:text="@string/enable_breast_param" />
                                 </TableRow>
 
                                 <TableRow
                                     android:layout_width="match_parent"
-                                    android:layout_height="match_parent">
+                                    android:layout_height="match_parent"
+                                    android:visibility="@{config.enableBreastParam ? android.view.View.VISIBLE : android.view.View.GONE}">
+
+                                    <LinearLayout
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:orientation="horizontal"
+                                        app:layout_constraintBottom_toBottomOf="parent"
+                                        app:layout_constraintEnd_toEndOf="parent"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        app:layout_constraintTop_toTopOf="parent">
+
+                                        <com.google.android.material.button.MaterialButton
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="48dp"
+                                            android:layout_margin="1sp"
+                                            android:layout_weight="1"
+                                            android:minWidth="1sp"
+                                            android:onClick="@{() -> listener.onBClickPresetChanged(5)}"
+                                            android:text="\??" />
+
+                                        <com.google.android.material.button.MaterialButton
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="48dp"
+                                            android:layout_margin="1sp"
+                                            android:layout_weight="1"
+                                            android:minWidth="1sp"
+                                            android:onClick="@{() -> listener.onBClickPresetChanged(4)}"
+                                            android:text="+5" />
+
+                                        <com.google.android.material.button.MaterialButton
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="48dp"
+                                            android:layout_margin="1sp"
+                                            android:layout_weight="1"
+                                            android:minWidth="1sp"
+                                            android:onClick="@{() -> listener.onBClickPresetChanged(3)}"
+                                            android:text="+4" />
+
+                                        <com.google.android.material.button.MaterialButton
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="48dp"
+                                            android:layout_margin="1sp"
+                                            android:layout_weight="1"
+                                            android:minWidth="1sp"
+                                            android:onClick="@{() -> listener.onBClickPresetChanged(2)}"
+                                            android:text="+3" />
+
+                                        <com.google.android.material.button.MaterialButton
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="48dp"
+                                            android:layout_weight="1"
+                                            android:minWidth="1sp"
+                                            android:onClick="@{() -> listener.onBClickPresetChanged(1)}"
+                                            android:text="+2" />
+
+                                        <com.google.android.material.button.MaterialButton
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="48dp"
+                                            android:layout_weight="1"
+                                            android:layout_marginStart="1sp"
+                                            android:minWidth="1sp"
+                                            android:onClick="@{() -> listener.onBClickPresetChanged(0)}"
+                                            android:text="+1" />
+
+                                    </LinearLayout>
+
+                                </TableRow>
+
+                                <TableRow
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:visibility="@{config.enableBreastParam ? android.view.View.VISIBLE : android.view.View.GONE}">
 
                                     <TableLayout
                                         android:layout_width="wrap_content"
@@ -634,7 +706,7 @@
                                                 android:layout_height="48dp"
                                                 android:layout_weight="1"
                                                 android:background="@android:color/transparent"
-                                                android:hint="Damping"
+                                                android:hint="@string/damping"
                                                 app:boxBackgroundColor="@android:color/transparent">
 
                                                 <com.google.android.material.textfield.TextInputEditText
@@ -655,7 +727,7 @@
                                                 android:layout_height="48dp"
                                                 android:layout_weight="1"
                                                 android:background="@android:color/transparent"
-                                                android:hint="Stiffness"
+                                                android:hint="@string/stiffness"
                                                 app:boxBackgroundColor="@android:color/transparent">
 
                                                 <com.google.android.material.textfield.TextInputEditText
@@ -684,7 +756,7 @@
                                                 android:layout_height="48dp"
                                                 android:layout_weight="1"
                                                 android:background="@android:color/transparent"
-                                                android:hint="Spring"
+                                                android:hint="@string/spring"
                                                 app:boxBackgroundColor="@android:color/transparent">
 
                                                 <com.google.android.material.textfield.TextInputEditText
@@ -705,7 +777,7 @@
                                                 android:layout_height="48dp"
                                                 android:layout_weight="1"
                                                 android:background="@android:color/transparent"
-                                                android:hint="Pendulum"
+                                                android:hint="@string/pendulum"
                                                 app:boxBackgroundColor="@android:color/transparent">
 
                                                 <com.google.android.material.textfield.TextInputEditText
@@ -734,7 +806,7 @@
                                                 android:layout_height="48dp"
                                                 android:layout_weight="1"
                                                 android:background="@android:color/transparent"
-                                                android:hint="PendulumRange"
+                                                android:hint="@string/pendulumrange"
                                                 app:boxBackgroundColor="@android:color/transparent">
 
                                                 <com.google.android.material.textfield.TextInputEditText
@@ -755,7 +827,7 @@
                                                 android:layout_height="48dp"
                                                 android:layout_weight="1"
                                                 android:background="@android:color/transparent"
-                                                android:hint="Average"
+                                                android:hint="@string/average"
                                                 app:boxBackgroundColor="@android:color/transparent">
 
                                                 <com.google.android.material.textfield.TextInputEditText
@@ -783,7 +855,7 @@
                                                 android:layout_height="48dp"
                                                 android:layout_weight="1"
                                                 android:background="@android:color/transparent"
-                                                android:hint="RootWeight"
+                                                android:hint="@string/rootweight"
                                                 app:boxBackgroundColor="@android:color/transparent">
 
                                                 <com.google.android.material.textfield.TextInputEditText
@@ -805,7 +877,7 @@
                                                 android:layout_height="48dp"
                                                 android:layout_weight="1"
                                                 android:background="@android:color/transparent"
-                                                android:hint="UseLimit (0/1)"
+                                                android:hint="@string/uselimit_0_1"
                                                 app:boxBackgroundColor="@android:color/transparent">
 
                                                 <com.google.android.material.textfield.TextInputEditText
@@ -825,6 +897,71 @@
 
                                     </TableLayout>
                                 </TableRow>
+
+                                <TableRow
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:visibility="@{config.enableBreastParam ? android.view.View.VISIBLE : android.view.View.GONE}">
+
+                                    <TableLayout
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="match_parent"
+                                        android:orientation="vertical">
+
+                                        <TableRow
+                                            android:layout_width="match_parent"
+                                            android:layout_height="match_parent" >
+
+                                            <com.google.android.material.textfield.TextInputLayout
+                                                android:layout_width="match_parent"
+                                                android:layout_height="48dp"
+                                                android:layout_weight="3"
+                                                android:background="@android:color/transparent"
+                                                android:hint="@string/breast_scale"
+                                                app:boxBackgroundColor="@android:color/transparent">
+
+                                                <com.google.android.material.textfield.TextInputEditText
+                                                    android:layout_width="match_parent"
+                                                    android:layout_height="match_parent"
+                                                    android:ems="10"
+                                                    android:inputType="numberDecimal|numberSigned"
+                                                    android:onTextChanged="@{(s, st, b, a) -> listener.onBScaleChanged(s, st, b, a)}"
+                                                    android:paddingStart="0dp"
+                                                    android:paddingEnd="0dp"
+                                                    android:paddingBottom="0dp"
+                                                    android:text="@={`` + config.bScale}" />
+
+                                            </com.google.android.material.textfield.TextInputLayout>
+
+
+                                            <com.google.android.material.checkbox.MaterialCheckBox
+                                                android:layout_width="match_parent"
+                                                android:layout_height="48dp"
+                                                android:layout_weight="1"
+                                                android:checked="@={config.bUseScale}"
+                                                android:onCheckedChanged="@{(view, value) -> listener.onBUseScaleChanged(value)}"
+                                                android:text="@string/usescale" />
+
+                                        </TableRow>
+
+                                    </TableLayout>
+                                </TableRow>
+
+                                <TableRow
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:visibility="@{config.enableBreastParam ? android.view.View.VISIBLE : android.view.View.GONE}">
+
+                                    <com.google.android.material.switchmaterial.SwitchMaterial
+                                        android:layout_width="match_parent"
+                                        android:layout_height="48dp"
+                                        android:layout_weight="1"
+                                        android:checked="@={config.bUseArmCorrection}"
+                                        android:onCheckedChanged="@{(view, value) -> listener.onBUseArmCorrectionChanged(value)}"
+                                        android:text="@string/usearmcorrection" />
+
+                                </TableRow>
+
                             </TableLayout>
 
                         </TableRow>

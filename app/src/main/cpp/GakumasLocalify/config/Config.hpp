@@ -35,6 +35,9 @@ namespace GakumasLocal::Config {
     extern float bPendulumRange;
     extern float bAverage;
     extern float bRootWeight;
+    extern bool bUseArmCorrection;
+    extern bool bUseScale;
+    extern float bScale;
 
     void LoadConfig(const std::string& configStr);
 }

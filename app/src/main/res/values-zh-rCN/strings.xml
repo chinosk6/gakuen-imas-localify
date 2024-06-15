@@ -23,4 +23,17 @@
     <string name="orientation_portrait">竖屏</string>
     <string name="orientation_landscape">横屏</string>
     <string name="orientation_lock">方向锁定</string>
+    <string name="enable_breast_param">启用胸部参数</string>
+    <string name="damping">阻尼 (Damping)</string>
+    <string name="stiffness">刚度 (Stiffness)</string>
+    <string name="spring">弹簧系数 (Spring)</string>
+    <string name="pendulum">钟摆系数 (Pendulum)</string>
+    <string name="pendulumrange">钟摆范围 (PendulumRange)</string>
+    <string name="average">Average</string>
+    <string name="rootweight">RootWeight</string>
+    <string name="uselimit_0_1">限制范围 (0/1)</string>
+    <string name="usearmcorrection">使用手臂矫正</string>
+    <string name="isdirty">IsDirty</string>
+    <string name="usescale">应用缩放</string>
+    <string name="breast_scale">胸部缩放倍率</string>
 </resources>

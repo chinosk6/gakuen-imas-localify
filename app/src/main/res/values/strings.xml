@@ -23,5 +23,18 @@
     <string name="orientation_portrait">Portrait</string>
     <string name="orientation_landscape">Landscape</string>
     <string name="orientation_lock">Orientation Lock</string>
+    <string name="enable_breast_param">Enable Breast Param</string>
+    <string name="damping">Damping</string>
+    <string name="stiffness">Stiffness</string>
+    <string name="spring">Spring</string>
+    <string name="pendulum">Pendulum</string>
+    <string name="pendulumrange">Pendulum Range</string>
+    <string name="average">Average</string>
+    <string name="rootweight">Root Weight</string>
+    <string name="uselimit_0_1">Use Limit (0/1)</string>
+    <string name="usearmcorrection">Use Arm Correction</string>
+    <string name="isdirty">IsDirty</string>
+    <string name="usescale">Use Breast Scale</string>
+    <string name="breast_scale">Breast Scale</string>
 
 </resources>

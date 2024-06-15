@@ -36,6 +36,9 @@ namespace GakumasLocal::Config {
     float bPendulumRange = 0.15f;
     float bAverage = 0.20f;
     float bRootWeight = 0.5f;
+    bool bUseArmCorrection = true;
+    bool bUseScale = false;
+    float bScale = 1.0f;
 
     void LoadConfig(const std::string& configStr) {
         try {
@@ -71,6 +74,9 @@ namespace GakumasLocal::Config {
             GetConfigItem(bPendulumRange);
             GetConfigItem(bAverage);
             GetConfigItem(bRootWeight);
+            GetConfigItem(bUseArmCorrection);
+            GetConfigItem(bUseScale);
+            GetConfigItem(bScale);
 
         }
         catch (std::exception& e) {
