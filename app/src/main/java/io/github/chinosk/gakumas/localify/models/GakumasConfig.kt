@@ -1,6 +1,5 @@
 package io.github.chinosk.gakumas.localify.models
 
-import androidx.databinding.BaseObservable
 
 data class GakumasConfig (
     var dbgMode: Boolean = false,
@@ -23,4 +22,14 @@ data class GakumasConfig (
     var maxBufferPixel: Int = 3384,
     var reflectionQualityLevel: Int = 4,  // 0~5
     var lodQualityLevel: Int = 4,  // 0~5
+
+    var enableBreastParam: Boolean = false,
+    var bUseLimit: Int = 1,
+    var bDamping: Float = 0.33f,
+    var bStiffness: Float = 0.08f,
+    var bSpring: Float = 1.0f,
+    var bPendulum: Float = 0.055f,
+    var bPendulumRange: Float = 0.15f,
+    var bAverage: Float = 0.20f,
+    var bRootWeight: Float = 0.5f
 )

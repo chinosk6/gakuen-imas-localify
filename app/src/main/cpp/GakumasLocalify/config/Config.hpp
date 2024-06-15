@@ -26,5 +26,15 @@ namespace GakumasLocal::Config {
     extern int reflectionQualityLevel;
     extern int lodQualityLevel;
 
+    extern bool enableBreastParam;
+    extern int bUseLimit;
+    extern float bDamping;
+    extern float bStiffness;
+    extern float bSpring;
+    extern float bPendulum;
+    extern float bPendulumRange;
+    extern float bAverage;
+    extern float bRootWeight;
+
     void LoadConfig(const std::string& configStr);
 }

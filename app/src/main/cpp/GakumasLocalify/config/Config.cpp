@@ -27,6 +27,16 @@ namespace GakumasLocal::Config {
     int reflectionQualityLevel = 4;
     int lodQualityLevel = 4;
 
+    bool enableBreastParam = false;
+    int bUseLimit = 1;
+    float bDamping = 0.33f;
+    float bStiffness = 0.08f;
+    float bSpring = 1.0f;
+    float bPendulum = 0.055f;
+    float bPendulumRange = 0.15f;
+    float bAverage = 0.20f;
+    float bRootWeight = 0.5f;
+
     void LoadConfig(const std::string& configStr) {
         try {
             const auto config = nlohmann::json::parse(configStr);
@@ -52,6 +62,15 @@ namespace GakumasLocal::Config {
             GetConfigItem(maxBufferPixel);
             GetConfigItem(reflectionQualityLevel);
             GetConfigItem(lodQualityLevel);
+            GetConfigItem(enableBreastParam);
+            GetConfigItem(bUseLimit);
+            GetConfigItem(bDamping);
+            GetConfigItem(bStiffness);
+            GetConfigItem(bSpring);
+            GetConfigItem(bPendulum);
+            GetConfigItem(bPendulumRange);
+            GetConfigItem(bAverage);
+            GetConfigItem(bRootWeight);
 
         }
         catch (std::exception& e) {

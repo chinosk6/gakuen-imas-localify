@@ -644,6 +644,11 @@ namespace GakumasLocal::HookMain {
     }
 
     DEFINE_HOOK(void, CampusActorController_LateUpdate, (void* _this, void* mtd)) {
+        static auto CampusActorController_klass = Il2cppUtils::GetClass("campus-submodule.Runtime.dll",
+                                                                        "Campus.Common", "CampusActorController");
+        static auto rootBody_field = CampusActorController_klass->Get<UnityResolve::Field>("_rootBody");
+        static auto parentKlass = UnityResolve::Invoke<void*>("il2cpp_class_get_parent", CampusActorController_klass->address);
+
         if (!Config::enableFreeCamera || (GKCamera::GetCameraMode() == GKCamera::CameraMode::FREE)) {
             if (needRestoreHides) {
                 needRestoreHides = false;
@@ -653,10 +658,6 @@ namespace GakumasLocal::HookMain {
             return CampusActorController_LateUpdate_Orig(_this, mtd);
         }
 
-        static auto CampusActorController_klass = Il2cppUtils::GetClass("campus-submodule.Runtime.dll",
-                                                                        "Campus.Common", "CampusActorController");
-        static auto rootBody_field = CampusActorController_klass->Get<UnityResolve::Field>("_rootBody");
-        static auto parentKlass = UnityResolve::Invoke<void*>("il2cpp_class_get_parent", CampusActorController_klass->address);
         static auto GetHumanBodyBoneTransform_mtd = Il2cppUtils::il2cpp_class_get_method_from_name(parentKlass, "GetHumanBodyBoneTransform", 1);
         static auto GetHumanBodyBoneTransform = reinterpret_cast<UnityResolve::UnityType::Transform* (*)(void*, int)>(
                 GetHumanBodyBoneTransform_mtd->methodPointer
@@ -709,6 +710,69 @@ namespace GakumasLocal::HookMain {
         }
 
         CampusActorController_LateUpdate_Orig(_this, mtd);
+    }
+
+    void UpdateSwingBreastBonesData(void* initializeData) {
+        if (!Config::enableBreastParam) return;
+        static auto CampusActorAnimationInitializeData_klass = Il2cppUtils::GetClass("campus-submodule.Runtime.dll", "ActorAnimation",
+                                                                                     "CampusActorAnimationInitializeData");
+        static auto ActorSwingBreastBone_klass = Il2cppUtils::GetClass("ActorAnimation.Runtime.dll", "ActorAnimation",
+                                                                       "ActorSwingBreastBone");
+        static auto LimitInfo_klass = Il2cppUtils::GetClass("ActorAnimation.Runtime.dll", "ActorAnimation",
+                                                            "LimitInfo");
+
+        static auto Data_swingBreastBones_field = CampusActorAnimationInitializeData_klass->Get<UnityResolve::Field>("swingBreastBones");
+        static auto damping_field = ActorSwingBreastBone_klass->Get<UnityResolve::Field>("damping");
+        static auto stiffness_field = ActorSwingBreastBone_klass->Get<UnityResolve::Field>("stiffness");
+        static auto spring_field = ActorSwingBreastBone_klass->Get<UnityResolve::Field>("spring");
+        static auto pendulum_field = ActorSwingBreastBone_klass->Get<UnityResolve::Field>("pendulum");
+        static auto pendulumRange_field = ActorSwingBreastBone_klass->Get<UnityResolve::Field>("pendulumRange");
+        static auto average_field = ActorSwingBreastBone_klass->Get<UnityResolve::Field>("average");
+        static auto rootWeight_field = ActorSwingBreastBone_klass->Get<UnityResolve::Field>("rootWeight");
+        static auto limitInfo_field = ActorSwingBreastBone_klass->Get<UnityResolve::Field>("limitInfo");
+
+        static auto limitInfo_useLimit_field = LimitInfo_klass->Get<UnityResolve::Field>("useLimit");
+        static auto limitInfo_axisX_field = LimitInfo_klass->Get<UnityResolve::Field>("axisX");
+        static auto limitInfo_axisY_field = LimitInfo_klass->Get<UnityResolve::Field>("axisY");
+        static auto limitInfo_axisZ_field = LimitInfo_klass->Get<UnityResolve::Field>("axisZ");
+
+        auto swingBreastBones = Il2cppUtils::ClassGetFieldValue
+                <UnityResolve::UnityType::List<UnityResolve::UnityType::MonoBehaviour*>*>(initializeData, Data_swingBreastBones_field);
+
+        auto boneArr = swingBreastBones->ToArray();
+        for (int i = 0; i < boneArr->max_length; i++) {
+            auto bone = boneArr->At(i);
+            if (!bone) continue;
+
+            auto damping = Il2cppUtils::ClassGetFieldValue<float>(bone, damping_field);
+            auto stiffness = Il2cppUtils::ClassGetFieldValue<float>(bone, stiffness_field);
+            auto spring = Il2cppUtils::ClassGetFieldValue<float>(bone, spring_field);
+            auto pendulum = Il2cppUtils::ClassGetFieldValue<float>(bone, pendulum_field);
+            auto pendulumRange = Il2cppUtils::ClassGetFieldValue<float>(bone, pendulumRange_field);
+            auto average = Il2cppUtils::ClassGetFieldValue<float>(bone, average_field);
+            auto rootWeight = Il2cppUtils::ClassGetFieldValue<float>(bone, rootWeight_field);
+
+            auto limitInfo = Il2cppUtils::ClassGetFieldValue<void*>(bone, limitInfo_field);
+            auto useLimit = Il2cppUtils::ClassGetFieldValue<int>(limitInfo, limitInfo_useLimit_field);
+
+            Log::DebugFmt("orig bone: damping: %f, stiffness: %f, spring: %f, pendulum: %f, pendulumRange: %f, average: %f, rootWeight: %f, useLimit: %d",
+                          damping, stiffness, spring, pendulum, pendulumRange, average, rootWeight, useLimit);
+
+            Il2cppUtils::ClassSetFieldValue(limitInfo, limitInfo_useLimit_field, Config::bUseLimit);
+            Il2cppUtils::ClassSetFieldValue(bone, damping_field, Config::bDamping);
+            Il2cppUtils::ClassSetFieldValue(bone, stiffness_field, Config::bStiffness);
+            Il2cppUtils::ClassSetFieldValue(bone, spring_field, Config::bSpring);
+            Il2cppUtils::ClassSetFieldValue(bone, pendulum_field, Config::bPendulum);
+            Il2cppUtils::ClassSetFieldValue(bone, pendulumRange_field, Config::bPendulumRange);
+            Il2cppUtils::ClassSetFieldValue(bone, average_field, Config::bAverage);
+            Il2cppUtils::ClassSetFieldValue(bone, rootWeight_field, Config::bRootWeight);
+        }
+        // Log::DebugFmt("\n");
+    }
+
+    DEFINE_HOOK(void, CampusActorAnimation_Setup, (void* _this, void* rootTrans, void* initializeData)) {
+        UpdateSwingBreastBonesData(initializeData);
+        return CampusActorAnimation_Setup_Orig(_this, rootTrans, initializeData);
     }
 
     void StartInjectFunctions() {
@@ -796,6 +860,10 @@ namespace GakumasLocal::HookMain {
         for (const auto& i : CampusActorController_klass->methods) {
             Log::DebugFmt("CampusActorController.%s at %p", i->name.c_str(), i->function);
         }*/
+
+        ADD_HOOK(CampusActorAnimation_Setup,
+                 Il2cppUtils::GetMethodPointer("campus-submodule.Runtime.dll", "Campus.Common",
+                                               "CampusActorAnimation", "Setup"));
 
         ADD_HOOK(CampusQualityManager_set_TargetFrameRate,
                  Il2cppUtils::GetMethodPointer("campus-submodule.Runtime.dll", "Campus.Common",
