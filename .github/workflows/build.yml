@@ -30,7 +30,7 @@ jobs:
     - name: Update Assets
       run: |
         git submodule foreach --recursive git pull origin main
-        git clone https://$ACCESS_TOKEN_GITHUB@github.com/imas-tools/gakumas-raw-txts.git app/src/main/assets/gakumas-local/gakumas-raw-txts
+        git clone https://$GITHUB_TOKEN@github.com/imas-tools/gakumas-raw-txts.git app/src/main/assets/gakumas-local/gakumas-raw-txts
         mv app/src/main/assets/gakumas-local/gakumas-raw-txts/Resource app/src/main/assets/gakumas-local/raw
         rm -rf app/src/main/assets/gakumas-local/gakumas-raw-txts
 
