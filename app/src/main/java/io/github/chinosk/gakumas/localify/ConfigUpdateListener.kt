@@ -334,10 +334,10 @@ interface ConfigUpdateListener: ConfigListener {
 
     override fun onBUseLimitChanged(s: CharSequence, start: Int, before: Int, count: Int){
         binding.config!!.bUseLimit = try {
-            s.toString().toInt()
+            s.toString().toFloat()
         }
         catch (e: Exception) {
-            0
+            0f
         }
         saveConfig()
     }
@@ -372,7 +372,7 @@ interface ConfigUpdateListener: ConfigListener {
         binding.config!!.bPendulumRange = setData[4]
         binding.config!!.bAverage = setData[5]
         binding.config!!.bRootWeight = setData[6]
-        binding.config!!.bUseLimit = setData[7].toInt()
+        binding.config!!.bUseLimit = setData[7]
         binding.config!!.bUseArmCorrection = true
 
         checkConfigAndUpdateView()

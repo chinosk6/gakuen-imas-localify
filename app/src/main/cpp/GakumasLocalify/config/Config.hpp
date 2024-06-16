@@ -28,7 +28,7 @@ namespace GakumasLocal::Config {
     extern int lodQualityLevel;
 
     extern bool enableBreastParam;
-    extern int bUseLimit;
+    extern float bUseLimit;
     extern float bDamping;
     extern float bStiffness;
     extern float bSpring;

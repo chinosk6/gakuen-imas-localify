@@ -29,7 +29,7 @@ namespace GakumasLocal::Config {
     int lodQualityLevel = 4;
 
     bool enableBreastParam = false;
-    int bUseLimit = 1;
+    float bUseLimit = 1.0f;
     float bDamping = 0.33f;
     float bStiffness = 0.08f;
     float bSpring = 1.0f;

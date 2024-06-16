@@ -897,7 +897,7 @@
                                                     android:layout_width="match_parent"
                                                     android:layout_height="match_parent"
                                                     android:ems="10"
-                                                    android:inputType="number"
+                                                    android:inputType="numberDecimal|numberSigned"
                                                     android:onTextChanged="@{(s, st, b, a) -> listener.onBUseLimitChanged(s, st, b, a)}"
                                                     android:paddingStart="0dp"
                                                     android:paddingEnd="0dp"

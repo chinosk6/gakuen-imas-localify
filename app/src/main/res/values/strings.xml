@@ -32,7 +32,7 @@
     <string name="pendulumrange">Pendulum Range</string>
     <string name="average">Average</string>
     <string name="rootweight">Root Weight</string>
-    <string name="uselimit_0_1">Use Limit (0/1)</string>
+    <string name="uselimit_0_1">Limit Range Multiplier (0 is Unlimited)</string>
     <string name="usearmcorrection">Use Arm Correction</string>
     <string name="isdirty">IsDirty</string>
     <string name="usescale">Use Breast Scale</string>

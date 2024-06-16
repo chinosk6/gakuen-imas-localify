@@ -25,7 +25,7 @@ data class GakumasConfig (
     var lodQualityLevel: Int = 4,  // 0~5
 
     var enableBreastParam: Boolean = false,
-    var bUseLimit: Int = 1,
+    var bUseLimit: Float = 1.0f,
     var bDamping: Float = 0.33f,
     var bStiffness: Float = 0.08f,
     var bSpring: Float = 1.0f,

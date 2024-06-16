@@ -740,6 +740,9 @@ namespace GakumasLocal::HookMain {
         static auto limitInfo_field = ActorSwingBreastBone_klass->Get<UnityResolve::Field>("limitInfo");
 
         static auto limitInfo_useLimit_field = LimitInfo_klass->Get<UnityResolve::Field>("useLimit");
+        static auto limitInfo_axisX_field = LimitInfo_klass->Get<UnityResolve::Field>("axisX");
+        static auto limitInfo_axisY_field = LimitInfo_klass->Get<UnityResolve::Field>("axisY");
+        static auto limitInfo_axisZ_field = LimitInfo_klass->Get<UnityResolve::Field>("axisZ");
 
         auto swingBreastBones = Il2cppUtils::ClassGetFieldValue
                 <UnityResolve::UnityType::List<UnityResolve::UnityType::MonoBehaviour*>*>(initializeData, Data_swingBreastBones_field);
@@ -778,8 +781,21 @@ namespace GakumasLocal::HookMain {
             Log::DebugFmt("orig bone: damping: %f, stiffness: %f, spring: %f, pendulum: %f, "
                           "pendulumRange: %f, average: %f, rootWeight: %f, useLimit: %d, useArmCorrection: %d, isDirty: %d",
                           damping, stiffness, spring, pendulum, pendulumRange, average, rootWeight, useLimit, useArmCorrection, isDirty);
+            if (Config::bUseLimit == 0.0f) {
+                Il2cppUtils::ClassSetFieldValue(limitInfo, limitInfo_useLimit_field, 0);
+            }
+            else {
+                Il2cppUtils::ClassSetFieldValue(limitInfo, limitInfo_useLimit_field, 1);
+                if (Config::bUseLimit != 1.0f) {
+                    auto axisX = Il2cppUtils::ClassGetFieldValue<UnityResolve::UnityType::Vector2>(limitInfo, limitInfo_axisX_field);
+                    auto axisY = Il2cppUtils::ClassGetFieldValue<UnityResolve::UnityType::Vector2>(limitInfo, limitInfo_axisY_field);
+                    auto axisZ = Il2cppUtils::ClassGetFieldValue<UnityResolve::UnityType::Vector2>(limitInfo, limitInfo_axisZ_field);
+                    Il2cppUtils::ClassSetFieldValue(limitInfo, limitInfo_axisX_field, axisX * Config::bUseLimit);
+                    Il2cppUtils::ClassSetFieldValue(limitInfo, limitInfo_axisY_field, axisY * Config::bUseLimit);
+                    Il2cppUtils::ClassSetFieldValue(limitInfo, limitInfo_axisZ_field, axisZ * Config::bUseLimit);
+                }
+            }
 
-            Il2cppUtils::ClassSetFieldValue(limitInfo, limitInfo_useLimit_field, Config::bUseLimit);
             Il2cppUtils::ClassSetFieldValue(bone, damping_field, Config::bDamping);
             Il2cppUtils::ClassSetFieldValue(bone, stiffness_field, Config::bStiffness);
             Il2cppUtils::ClassSetFieldValue(bone, spring_field, Config::bSpring);
