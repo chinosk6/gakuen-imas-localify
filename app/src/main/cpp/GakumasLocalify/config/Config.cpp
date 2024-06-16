@@ -29,7 +29,6 @@ namespace GakumasLocal::Config {
     int lodQualityLevel = 4;
 
     bool enableBreastParam = false;
-    float bUseLimit = 1.0f;
     float bDamping = 0.33f;
     float bStiffness = 0.08f;
     float bSpring = 1.0f;
@@ -40,6 +39,13 @@ namespace GakumasLocal::Config {
     bool bUseArmCorrection = true;
     bool bUseScale = false;
     float bScale = 1.0f;
+    bool bUseLimit = true;
+    float bLimitXx = 1.0f;
+    float bLimitXy = 1.0f;
+    float bLimitYx = 1.0f;
+    float bLimitYy = 1.0f;
+    float bLimitZx = 1.0f;
+    float bLimitZy = 1.0f;
 
     void LoadConfig(const std::string& configStr) {
         try {
@@ -68,7 +74,6 @@ namespace GakumasLocal::Config {
             GetConfigItem(reflectionQualityLevel);
             GetConfigItem(lodQualityLevel);
             GetConfigItem(enableBreastParam);
-            GetConfigItem(bUseLimit);
             GetConfigItem(bDamping);
             GetConfigItem(bStiffness);
             GetConfigItem(bSpring);
@@ -79,6 +84,13 @@ namespace GakumasLocal::Config {
             GetConfigItem(bUseArmCorrection);
             GetConfigItem(bUseScale);
             GetConfigItem(bScale);
+            GetConfigItem(bUseLimit);
+            GetConfigItem(bLimitXx);
+            GetConfigItem(bLimitXy);
+            GetConfigItem(bLimitYx);
+            GetConfigItem(bLimitYy);
+            GetConfigItem(bLimitZx);
+            GetConfigItem(bLimitZy);
 
         }
         catch (std::exception& e) {

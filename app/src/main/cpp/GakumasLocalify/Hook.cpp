@@ -781,19 +781,24 @@ namespace GakumasLocal::HookMain {
             Log::DebugFmt("orig bone: damping: %f, stiffness: %f, spring: %f, pendulum: %f, "
                           "pendulumRange: %f, average: %f, rootWeight: %f, useLimit: %d, useArmCorrection: %d, isDirty: %d",
                           damping, stiffness, spring, pendulum, pendulumRange, average, rootWeight, useLimit, useArmCorrection, isDirty);
-            if (Config::bUseLimit == 0.0f) {
+            if (!Config::bUseLimit) {
                 Il2cppUtils::ClassSetFieldValue(limitInfo, limitInfo_useLimit_field, 0);
             }
             else {
                 Il2cppUtils::ClassSetFieldValue(limitInfo, limitInfo_useLimit_field, 1);
-                if (Config::bUseLimit != 1.0f) {
-                    auto axisX = Il2cppUtils::ClassGetFieldValue<UnityResolve::UnityType::Vector2>(limitInfo, limitInfo_axisX_field);
-                    auto axisY = Il2cppUtils::ClassGetFieldValue<UnityResolve::UnityType::Vector2>(limitInfo, limitInfo_axisY_field);
-                    auto axisZ = Il2cppUtils::ClassGetFieldValue<UnityResolve::UnityType::Vector2>(limitInfo, limitInfo_axisZ_field);
-                    Il2cppUtils::ClassSetFieldValue(limitInfo, limitInfo_axisX_field, axisX * Config::bUseLimit);
-                    Il2cppUtils::ClassSetFieldValue(limitInfo, limitInfo_axisY_field, axisY * Config::bUseLimit);
-                    Il2cppUtils::ClassSetFieldValue(limitInfo, limitInfo_axisZ_field, axisZ * Config::bUseLimit);
-                }
+                auto axisX = Il2cppUtils::ClassGetFieldValue<UnityResolve::UnityType::Vector2Int>(limitInfo, limitInfo_axisX_field);
+                auto axisY = Il2cppUtils::ClassGetFieldValue<UnityResolve::UnityType::Vector2Int>(limitInfo, limitInfo_axisY_field);
+                auto axisZ = Il2cppUtils::ClassGetFieldValue<UnityResolve::UnityType::Vector2Int>(limitInfo, limitInfo_axisZ_field);
+                axisX.m_X *= Config::bLimitXx;
+                axisX.m_Y *= Config::bLimitXy;
+                axisY.m_X *= Config::bLimitYx;
+                axisY.m_Y *= Config::bLimitYy;
+                axisZ.m_X *= Config::bLimitZx;
+                axisZ.m_Y *= Config::bLimitZy;
+                Il2cppUtils::ClassSetFieldValue(limitInfo, limitInfo_axisX_field, axisX);
+                Il2cppUtils::ClassSetFieldValue(limitInfo, limitInfo_axisY_field, axisY);
+                Il2cppUtils::ClassSetFieldValue(limitInfo, limitInfo_axisZ_field, axisZ);
+
             }
 
             Il2cppUtils::ClassSetFieldValue(bone, damping_field, Config::bDamping);

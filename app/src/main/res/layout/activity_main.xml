@@ -883,29 +883,6 @@
                                                     android:text="@={`` + config.bRootWeight}" />
 
                                             </com.google.android.material.textfield.TextInputLayout>
-
-
-                                            <com.google.android.material.textfield.TextInputLayout
-                                                android:layout_width="match_parent"
-                                                android:layout_height="48dp"
-                                                android:layout_weight="1"
-                                                android:background="@android:color/transparent"
-                                                android:hint="@string/uselimit_0_1"
-                                                app:boxBackgroundColor="@android:color/transparent">
-
-                                                <com.google.android.material.textfield.TextInputEditText
-                                                    android:layout_width="match_parent"
-                                                    android:layout_height="match_parent"
-                                                    android:ems="10"
-                                                    android:inputType="numberDecimal|numberSigned"
-                                                    android:onTextChanged="@{(s, st, b, a) -> listener.onBUseLimitChanged(s, st, b, a)}"
-                                                    android:paddingStart="0dp"
-                                                    android:paddingEnd="0dp"
-                                                    android:paddingBottom="0dp"
-                                                    android:text="@={`` + config.bUseLimit}" />
-
-                                            </com.google.android.material.textfield.TextInputLayout>
-
                                         </TableRow>
 
                                     </TableLayout>
@@ -974,6 +951,189 @@
                                         android:text="@string/usearmcorrection" />
 
                                 </TableRow>
+
+                                <TableRow
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:background="@drawable/table_row_border"
+                                    android:visibility="@{config.enableBreastParam ? android.view.View.VISIBLE : android.view.View.GONE}">
+
+                                    <LinearLayout
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:paddingLeft="10sp"
+                                        android:paddingRight="10sp"
+                                        android:paddingBottom="10sp"
+                                        android:orientation="vertical">
+
+                                        <com.google.android.material.switchmaterial.SwitchMaterial
+                                            android:layout_width="match_parent"
+                                            android:layout_height="0dp"
+                                            android:layout_weight="1"
+                                            android:checked="@={config.bUseLimit}"
+                                            android:onCheckedChanged="@{(view, value) -> listener.onBUseLimitChanged(value)}"
+                                            android:text="@string/uselimitmultiplier" />
+
+                                        <TableRow
+                                            android:layout_width="match_parent"
+                                            android:layout_height="match_parent"
+                                            android:visibility="@{config.bUseLimit ? android.view.View.VISIBLE : android.view.View.GONE}">
+
+                                            <TableLayout
+                                                android:layout_width="match_parent"
+                                                android:layout_height="match_parent"
+                                                android:orientation="vertical">
+
+                                                <TableRow
+                                                    android:layout_width="match_parent"
+                                                    android:layout_height="match_parent"
+                                                    android:weightSum="3">
+
+                                                    <com.google.android.material.textfield.TextInputLayout
+                                                        android:layout_width="match_parent"
+                                                        android:layout_height="48dp"
+                                                        android:layout_weight="1"
+                                                        android:background="@android:color/transparent"
+                                                        android:hint="@string/axisx_x"
+                                                        app:boxBackgroundColor="@android:color/transparent">
+
+                                                        <com.google.android.material.textfield.TextInputEditText
+                                                            android:layout_width="match_parent"
+                                                            android:layout_height="match_parent"
+                                                            android:ems="10"
+                                                            android:inputType="numberDecimal|numberSigned"
+                                                            android:onTextChanged="@{(s, st, b, a) -> listener.onBLimitXxChanged(s, st, b, a)}"
+                                                            android:paddingStart="0dp"
+                                                            android:paddingEnd="0dp"
+                                                            android:paddingBottom="0dp"
+                                                            android:text="@={`` + config.bLimitXx}" />
+
+                                                    </com.google.android.material.textfield.TextInputLayout>
+
+                                                    <com.google.android.material.textfield.TextInputLayout
+                                                        android:layout_width="match_parent"
+                                                        android:layout_height="48dp"
+                                                        android:layout_weight="1"
+                                                        android:background="@android:color/transparent"
+                                                        android:hint="@string/axisy_x"
+                                                        app:boxBackgroundColor="@android:color/transparent">
+
+                                                        <com.google.android.material.textfield.TextInputEditText
+                                                            android:layout_width="match_parent"
+                                                            android:layout_height="match_parent"
+                                                            android:ems="10"
+                                                            android:inputType="numberDecimal|numberSigned"
+                                                            android:onTextChanged="@{(s, st, b, a) -> listener.onBLimitYxChanged(s, st, b, a)}"
+                                                            android:paddingStart="0dp"
+                                                            android:paddingEnd="0dp"
+                                                            android:paddingBottom="0dp"
+                                                            android:text="@={`` + config.bLimitYx}" />
+
+                                                    </com.google.android.material.textfield.TextInputLayout>
+
+                                                    <com.google.android.material.textfield.TextInputLayout
+                                                        android:layout_width="match_parent"
+                                                        android:layout_height="48dp"
+                                                        android:layout_weight="1"
+                                                        android:background="@android:color/transparent"
+                                                        android:hint="@string/axisz_x"
+                                                        app:boxBackgroundColor="@android:color/transparent">
+
+                                                        <com.google.android.material.textfield.TextInputEditText
+                                                            android:layout_width="match_parent"
+                                                            android:layout_height="match_parent"
+                                                            android:ems="10"
+                                                            android:inputType="numberDecimal|numberSigned"
+                                                            android:onTextChanged="@{(s, st, b, a) -> listener.onBLimitZxChanged(s, st, b, a)}"
+                                                            android:paddingStart="0dp"
+                                                            android:paddingEnd="0dp"
+                                                            android:paddingBottom="0dp"
+                                                            android:text="@={`` + config.bLimitZx}" />
+
+                                                    </com.google.android.material.textfield.TextInputLayout>
+
+
+                                                </TableRow>
+
+                                                <TableRow
+                                                    android:layout_width="match_parent"
+                                                    android:layout_height="match_parent"
+                                                    android:weightSum="3">
+
+                                                    <com.google.android.material.textfield.TextInputLayout
+                                                        android:layout_width="match_parent"
+                                                        android:layout_height="48dp"
+                                                        android:layout_weight="1"
+                                                        android:background="@android:color/transparent"
+                                                        android:hint="@string/axisx_y"
+                                                        app:boxBackgroundColor="@android:color/transparent">
+
+                                                        <com.google.android.material.textfield.TextInputEditText
+                                                            android:layout_width="match_parent"
+                                                            android:layout_height="match_parent"
+                                                            android:ems="10"
+                                                            android:inputType="numberDecimal|numberSigned"
+                                                            android:onTextChanged="@{(s, st, b, a) -> listener.onBLimitXyChanged(s, st, b, a)}"
+                                                            android:paddingStart="0dp"
+                                                            android:paddingEnd="0dp"
+                                                            android:paddingBottom="0dp"
+                                                            android:text="@={`` + config.bLimitXy}" />
+
+                                                    </com.google.android.material.textfield.TextInputLayout>
+
+                                                    <com.google.android.material.textfield.TextInputLayout
+                                                        android:layout_width="match_parent"
+                                                        android:layout_height="48dp"
+                                                        android:layout_weight="1"
+                                                        android:background="@android:color/transparent"
+                                                        android:hint="@string/axisy_y"
+                                                        app:boxBackgroundColor="@android:color/transparent">
+
+                                                        <com.google.android.material.textfield.TextInputEditText
+                                                            android:layout_width="match_parent"
+                                                            android:layout_height="match_parent"
+                                                            android:ems="10"
+                                                            android:inputType="numberDecimal|numberSigned"
+                                                            android:onTextChanged="@{(s, st, b, a) -> listener.onBLimitYyChanged(s, st, b, a)}"
+                                                            android:paddingStart="0dp"
+                                                            android:paddingEnd="0dp"
+                                                            android:paddingBottom="0dp"
+                                                            android:text="@={`` + config.bLimitYy}" />
+
+                                                    </com.google.android.material.textfield.TextInputLayout>
+
+                                                    <com.google.android.material.textfield.TextInputLayout
+                                                        android:layout_width="match_parent"
+                                                        android:layout_height="48dp"
+                                                        android:layout_weight="1"
+                                                        android:background="@android:color/transparent"
+                                                        android:hint="@string/axisz_y"
+                                                        app:boxBackgroundColor="@android:color/transparent">
+
+                                                        <com.google.android.material.textfield.TextInputEditText
+                                                            android:layout_width="match_parent"
+                                                            android:layout_height="match_parent"
+                                                            android:ems="10"
+                                                            android:inputType="numberDecimal|numberSigned"
+                                                            android:onTextChanged="@{(s, st, b, a) -> listener.onBLimitZyChanged(s, st, b, a)}"
+                                                            android:paddingStart="0dp"
+                                                            android:paddingEnd="0dp"
+                                                            android:paddingBottom="0dp"
+                                                            android:text="@={`` + config.bLimitZy}" />
+
+                                                    </com.google.android.material.textfield.TextInputLayout>
+
+
+                                                </TableRow>
+
+                                            </TableLayout>
+                                        </TableRow>
+
+                                    </LinearLayout>
+
+                                </TableRow>
+
+
 
                             </TableLayout>
 

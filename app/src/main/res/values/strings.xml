@@ -37,5 +37,12 @@
     <string name="isdirty">IsDirty</string>
     <string name="usescale">Use Breast Scale</string>
     <string name="breast_scale">Breast Scale</string>
+    <string name="uselimitmultiplier">Use Limit Multiplier</string>
+    <string name="axisx_x">axisX.x</string>
+    <string name="axisy_x">axisY.x</string>
+    <string name="axisz_x">axisZ.x</string>
+    <string name="axisx_y">axisX.y</string>
+    <string name="axisy_y">axisY.y</string>
+    <string name="axisz_y">axisZ.y</string>
 
 </resources>
