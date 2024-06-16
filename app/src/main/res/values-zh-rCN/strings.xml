@@ -32,9 +32,16 @@
     <string name="pendulumrange">钟摆范围 (PendulumRange)</string>
     <string name="average">Average</string>
     <string name="rootweight">RootWeight</string>
-    <string name="uselimit_0_1">限制范围 (0/1)</string>
+    <string name="uselimit_0_1">范围限制倍率 (0 为不限制, 1 为原版)</string>
     <string name="usearmcorrection">使用手臂矫正</string>
     <string name="isdirty">IsDirty</string>
     <string name="usescale">应用缩放</string>
     <string name="breast_scale">胸部缩放倍率</string>
+    <string name="uselimitmultiplier">启用范围限制倍率</string>
+    <string name="axisx_x">axisX.x</string>
+    <string name="axisy_x">axisY.x</string>
+    <string name="axisz_x">axisZ.x</string>
+    <string name="axisx_y">axisX.y</string>
+    <string name="axisy_y">axisY.y</string>
+    <string name="axisz_y">axisZ.y</string>
 </resources>

@@ -983,7 +983,75 @@ public:
 			auto operator ==(const Vector2 x) const -> bool { return this->x == x.x && this->y == x.y; }
 		};
 
-		struct Vector4 {
+        struct Vector2Int {
+            int m_X, m_Y;
+
+            Vector2Int() { m_X = m_Y = 0; }
+
+            Vector2Int(const int f1, const int f2) {
+                m_X = f1;
+                m_Y = f2;
+            }
+
+            [[nodiscard]] auto Distance(const Vector2Int& event) const -> float {
+                const auto dx = this->m_X - event.m_X;
+                const auto dy = this->m_Y - event.m_Y;
+                return std::sqrt(dx * dx + dy * dy);
+            }
+
+            auto operator*(const int x) -> Vector2Int {
+                this->m_X *= x;
+                this->m_Y *= x;
+                return *this;
+            }
+
+            auto operator/(const int x) -> Vector2Int {
+                this->m_X /= x;
+                this->m_Y /= x;
+                return *this;
+            }
+
+            auto operator+(const int x) -> Vector2Int {
+                this->m_X += x;
+                this->m_Y += x;
+                return *this;
+            }
+
+            auto operator-(const int x) -> Vector2Int {
+                this->m_X -= x;
+                this->m_Y -= x;
+                return *this;
+            }
+
+            auto operator*(const Vector2Int x) -> Vector2Int {
+                this->m_X *= x.m_X;
+                this->m_Y *= x.m_Y;
+                return *this;
+            }
+
+            auto operator-(const Vector2Int x) -> Vector2Int {
+                this->m_X -= x.m_X;
+                this->m_Y -= x.m_Y;
+                return *this;
+            }
+
+            auto operator+(const Vector2Int x) -> Vector2Int {
+                this->m_X += x.m_X;
+                this->m_Y += x.m_Y;
+                return *this;
+            }
+
+            auto operator/(const Vector2Int x) -> Vector2Int {
+                this->m_X /= x.m_X;
+                this->m_Y /= x.m_Y;
+                return *this;
+            }
+
+            auto operator ==(const Vector2Int x) const -> bool { return this->m_X == x.m_X && this->m_Y == x.m_Y; }
+        };
+
+
+        struct Vector4 {
 			float x, y, z, w;
 
 			Vector4() { x = y = z = w = 0.F; }

@@ -35,7 +35,13 @@ interface ConfigListener {
     fun onBPendulumRangeChanged(s: CharSequence, start: Int, before: Int, count: Int)
     fun onBAverageChanged(s: CharSequence, start: Int, before: Int, count: Int)
     fun onBRootWeightChanged(s: CharSequence, start: Int, before: Int, count: Int)
-    fun onBUseLimitChanged(s: CharSequence, start: Int, before: Int, count: Int)
+    fun onBUseLimitChanged(value: Boolean)
+    fun onBLimitXxChanged(s: CharSequence, start: Int, before: Int, count: Int)
+    fun onBLimitXyChanged(s: CharSequence, start: Int, before: Int, count: Int)
+    fun onBLimitYxChanged(s: CharSequence, start: Int, before: Int, count: Int)
+    fun onBLimitYyChanged(s: CharSequence, start: Int, before: Int, count: Int)
+    fun onBLimitZxChanged(s: CharSequence, start: Int, before: Int, count: Int)
+    fun onBLimitZyChanged(s: CharSequence, start: Int, before: Int, count: Int)
     fun onBScaleChanged(s: CharSequence, start: Int, before: Int, count: Int)
     fun onBUseArmCorrectionChanged(value: Boolean)
     fun onBUseScaleChanged(value: Boolean)
@@ -332,17 +338,74 @@ interface ConfigUpdateListener: ConfigListener {
         saveConfig()
     }
 
-    override fun onBUseLimitChanged(s: CharSequence, start: Int, before: Int, count: Int){
-        binding.config!!.bUseLimit = try {
-            s.toString().toInt()
+    override fun onBUseLimitChanged(value: Boolean){
+        binding.config!!.bUseLimit = value
+        saveConfig()
+        checkConfigAndUpdateView()
+    }
+
+    override fun onBLimitXxChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+        binding.config!!.bLimitXx = try {
+            s.toString().toFloat()
         }
         catch (e: Exception) {
-            0
+            0f
         }
         saveConfig()
     }
 
-    override fun onBScaleChanged(s: CharSequence, start: Int, before: Int, count: Int){
+    override fun onBLimitXyChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+        binding.config!!.bLimitXy = try {
+            s.toString().toFloat()
+        }
+        catch (e: Exception) {
+            0f
+        }
+        saveConfig()
+    }
+
+    override fun onBLimitYxChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+        binding.config!!.bLimitYx = try {
+            s.toString().toFloat()
+        }
+        catch (e: Exception) {
+            0f
+        }
+        saveConfig()
+    }
+
+    override fun onBLimitYyChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+        binding.config!!.bLimitYy = try {
+            s.toString().toFloat()
+        }
+        catch (e: Exception) {
+            0f
+        }
+        saveConfig()
+    }
+
+    override fun onBLimitZxChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+        binding.config!!.bLimitZx = try {
+            s.toString().toFloat()
+        }
+        catch (e: Exception) {
+            0f
+        }
+        saveConfig()
+    }
+
+    override fun onBLimitZyChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+        binding.config!!.bLimitZy = try {
+            s.toString().toFloat()
+        }
+        catch (e: Exception) {
+            0f
+        }
+        saveConfig()
+    }
+
+
+    override fun onBScaleChanged(s: CharSequence, start: Int, before: Int, count: Int) {
         binding.config!!.bScale = try {
             s.toString().toFloat()
         }
@@ -351,18 +414,26 @@ interface ConfigUpdateListener: ConfigListener {
         }
         saveConfig()
     }
+
     override fun onBClickPresetChanged(index: Int) {
         val setData: FloatArray = when (index) {
             // 0.33, 0.08, 0.7, 0.12, 0.25, 0.2, 0.8, 0, noUseArm 啥玩意
-            0 -> floatArrayOf(0.33f, 0.07f, 0.7f, 0.06f, 0.25f, 0.2f, 0.5f, 1f)
-            1 -> floatArrayOf(0.365f, 0.06f, 0.62f, 0.07f, 0.25f, 0.2f, 0.5f, 1f)
-            2 -> floatArrayOf(0.4f, 0.065f, 0.55f, 0.075f, 0.25f, 0.2f, 0.5f, 1f)
-            3 -> floatArrayOf(0.4f, 0.065f, 0.55f, 0.075f, 0.25f, 0.2f, 0.5f, 0f)
-            4 -> floatArrayOf(0.4f, 0.06f, 0.4f, 0.075f, 0.55f, 0.2f, 0.8f, 0f)
+            0 -> floatArrayOf(0.33f, 0.07f, 0.7f, 0.06f, 0.25f, 0.2f, 0.5f,
+                1f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f)
+            1 -> floatArrayOf(0.365f, 0.06f, 0.62f, 0.07f, 0.25f, 0.2f, 0.5f,
+                1f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f)
+            2 -> floatArrayOf(0.4f, 0.065f, 0.55f, 0.075f, 0.25f, 0.2f, 0.5f,
+                1f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f)
+            3 -> floatArrayOf(0.4f, 0.065f, 0.55f, 0.075f, 0.25f, 0.2f, 0.5f,
+                1f, 4.0f, 4.0f, 4.0f, 4.0f, 4.0f, 3.0f)
+            4 -> floatArrayOf(0.4f, 0.06f, 0.4f, 0.075f, 0.55f, 0.2f, 0.8f,
+                1f, 6.0f, 6.0f, 6.0f, 6.0f, 6.0f, 3.5f)
 
-            5 -> floatArrayOf(0.33f, 0.08f, 0.8f, 0.12f, 0.55f, 0.2f, 1.0f, 0f)
+            5 -> floatArrayOf(0.33f, 0.08f, 0.8f, 0.12f, 0.55f, 0.2f, 1.0f,
+                0f)
 
-            else -> floatArrayOf(0.33f, 0.08f, 1.0f, 0.055f, 0.15f, 0.2f, 0.5f, 1f)
+            else -> floatArrayOf(0.33f, 0.08f, 1.0f, 0.055f, 0.15f, 0.2f, 0.5f,
+                1f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f)
         }
 
         binding.config!!.bDamping = setData[0]
@@ -372,7 +443,19 @@ interface ConfigUpdateListener: ConfigListener {
         binding.config!!.bPendulumRange = setData[4]
         binding.config!!.bAverage = setData[5]
         binding.config!!.bRootWeight = setData[6]
-        binding.config!!.bUseLimit = setData[7].toInt()
+        binding.config!!.bUseLimit = if (setData[7] == 0f) {
+            false
+        }
+        else {
+            binding.config!!.bLimitXx = setData[8]
+            binding.config!!.bLimitXy = setData[9]
+            binding.config!!.bLimitYx = setData[10]
+            binding.config!!.bLimitYy = setData[11]
+            binding.config!!.bLimitZx = setData[12]
+            binding.config!!.bLimitZy = setData[13]
+            true
+        }
+
         binding.config!!.bUseArmCorrection = true
 
         checkConfigAndUpdateView()

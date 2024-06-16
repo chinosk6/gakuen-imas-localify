@@ -11,6 +11,7 @@ jobs:
     - uses: actions/checkout@v3
       with:
         submodules: recursive
+
     - name: set up android development environment
       uses: android-actions/setup-android@v2
 
@@ -18,12 +19,25 @@ jobs:
       run: |
         sdkmanager --install "cmake;3.22.1"
         echo "cmake.dir=/usr/local/lib/android/sdk/cmake/3.22.1" > local.properties
+        npm install -g pnpm
 
     - name: Setup Java JDK
       uses: actions/setup-java@v4.2.1
       with:
         distribution: 'temurin'
         java-version: '21'
+
+    - name: Update Assets
+      run: |
+        git submodule foreach --recursive git pull origin main
+        git clone https://${{ secrets.ACCESS_TOKEN_GITHUB }}@github.com/imas-tools/gakumas-raw-txts.git app/src/main/assets/gakumas-local/gakumas-raw-txts
+        mv app/src/main/assets/gakumas-local/gakumas-raw-txts/Resource app/src/main/assets/gakumas-local/raw
+        rm -rf app/src/main/assets/gakumas-local/gakumas-raw-txts
+
+    - name: Build Assets
+      run: |
+        mv app/src/main/assets/gakumas-local/GakumasPreTranslation/.env.sample app/src/main/assets/gakumas-local/GakumasPreTranslation/.env
+        cd app/src/main/assets/gakumas-local && make build-resource
 
     - name: Write branch and commit info
       run: |
