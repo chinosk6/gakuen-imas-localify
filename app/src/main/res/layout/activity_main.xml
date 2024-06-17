@@ -283,7 +283,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="@string/orientation_lock"
-                                    android:textColor="@color/material_dynamic_neutral0"/>
+                                    android:textColor="#000000"/>
 
                                 <RadioGroup
                                     android:layout_width="match_parent"
