@@ -27,9 +27,13 @@ jobs:
         distribution: 'temurin'
         java-version: '21'
 
-    - name: Update Assets
+    - name: Update Submodules
       run: |
         git submodule foreach --recursive 'git pull --rebase origin main --allow-unrelated-histories'
+      continue-on-error: true
+
+    - name: Pull Assets
+      run: |
         git clone https://${{ secrets.ACCESS_TOKEN_GITHUB }}@github.com/imas-tools/gakumas-raw-txts.git app/src/main/assets/gakumas-local/gakumas-raw-txts
         mv app/src/main/assets/gakumas-local/gakumas-raw-txts/Resource app/src/main/assets/gakumas-local/raw
         rm -rf app/src/main/assets/gakumas-local/gakumas-raw-txts
