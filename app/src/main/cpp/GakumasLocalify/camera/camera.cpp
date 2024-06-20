@@ -16,6 +16,8 @@ namespace GKCamera {
     UnityResolve::UnityType::Vector2 followLookAtOffset{0, 0};
     float offsetMoveStep = 0.008;
     int followCharaIndex = 0;
+    float l_sensitivity = 0.5f;
+    float r_sensitivity = 0.5f;
     GakumasLocal::Misc::CSEnum bodyPartsEnum("Head", 0xa);
 
 	// bool rMousePressFlg = false;
@@ -59,16 +61,16 @@ namespace GKCamera {
         }
 
 	}
-	void camera_back() {  // 后退
+	void camera_back(float multiplier = 1.0f) {  // 后退
         switch (cameraMode) {
             case CameraMode::FREE: {
-                baseCamera.set_lon_move(180, LonMoveHState::LonMoveBack);
+                baseCamera.set_lon_move(180, LonMoveHState::LonMoveBack, multiplier);
             } break;
             case CameraMode::FIRST_PERSON: {
-                firstPersonPosOffset.z -= offsetMoveStep;
+                firstPersonPosOffset.z -= offsetMoveStep * multiplier;
             } break;
             case CameraMode::FOLLOW: {
-                followPosOffset.z += offsetMoveStep;
+                followPosOffset.z += offsetMoveStep * multiplier;
             }
         }
 	}
@@ -86,24 +88,24 @@ namespace GKCamera {
         }
 
 	}
-	void camera_right() {  // 向右
+	void camera_right(float multiplier = 1.0f) {  // 向右
         switch (cameraMode) {
             case CameraMode::FREE: {
-                baseCamera.set_lon_move(-90);
+                baseCamera.set_lon_move(-90, LonMoveLeftAndRight, multiplier);
             } break;
             case CameraMode::FOLLOW: {
                 // followPosOffset.x -= 0.8;
-                followLookAtOffset.x -= offsetMoveStep;
+                followLookAtOffset.x -= offsetMoveStep * multiplier;
             }
             default:
                 break;
         }
 	}
 
-	void camera_down() {  // 向下
+	void camera_down(float multiplier = 1.0f) {  // 向下
         switch (cameraMode) {
             case CameraMode::FREE: {
-                float preStep = BaseCamera::moveStep / BaseCamera::smoothLevel;
+                float preStep = BaseCamera::moveStep / BaseCamera::smoothLevel * multiplier;
 
                 for (int i = 0; i < BaseCamera::smoothLevel; i++) {
                     baseCamera.pos.y -= preStep;
@@ -112,19 +114,19 @@ namespace GKCamera {
                 }
             } break;
             case CameraMode::FIRST_PERSON: {
-                firstPersonPosOffset.y -= offsetMoveStep;
+                firstPersonPosOffset.y -= offsetMoveStep * multiplier;
             } break;
             case CameraMode::FOLLOW: {
                 // followPosOffset.y -= offsetMoveStep;
-                followLookAtOffset.y -= offsetMoveStep;
+                followLookAtOffset.y -= offsetMoveStep * multiplier;
             }
         }
 	}
 
-	void camera_up() {  // 向上
+	void camera_up(float multiplier = 1.0f) {  // 向上
         switch (cameraMode) {
             case CameraMode::FREE: {
-                float preStep = BaseCamera::moveStep / BaseCamera::smoothLevel;
+                float preStep = BaseCamera::moveStep / BaseCamera::smoothLevel * multiplier;
 
                 for (int i = 0; i < BaseCamera::smoothLevel; i++) {
                     baseCamera.pos.y += preStep;
@@ -133,11 +135,11 @@ namespace GKCamera {
                 }
             } break;
             case CameraMode::FIRST_PERSON: {
-                firstPersonPosOffset.y += offsetMoveStep;
+                firstPersonPosOffset.y += offsetMoveStep * multiplier;
             } break;
             case CameraMode::FOLLOW: {
                 // followPosOffset.y += offsetMoveStep;
-                followLookAtOffset.y += offsetMoveStep;
+                followLookAtOffset.y += offsetMoveStep * multiplier;
             }
         }
 	}
@@ -350,14 +352,50 @@ namespace GKCamera {
 		bool k = false;
 		bool j = false;
 		bool l = false;
+        float thumb_l_right = 0.0f;
+        float thumb_l_down = 0.0f;
+        bool thumb_l_button = false;
+        float thumb_r_right = 0.0f;
+        float thumb_r_down = 0.0f;
+        bool thumb_r_button = false;
+        bool dpad_up = false;
+        bool dpad_down = false;
+        bool dpad_left = false;
+        bool dpad_right = false;
+        bool a_button = false;
+        bool b_button = false;
+        bool x_button = false;
+        bool y_button = false;
+        bool lb_button = false;
+        float lt_button = 0.0f;
+        bool rb_button = false;
+        float rt_button = 0.0f;
+        bool select_button = false;
+        bool start_button = false;
+        bool share_button = false;
+        bool xbox_button = false;
 		bool threadRunning = false;
 
 		void resetAll() {
-			auto p = reinterpret_cast<bool*>(this);
-			const auto numMembers = sizeof(*this) / sizeof(bool);
-			for (size_t idx = 0; idx < numMembers; ++idx) {
-				p[idx] = false;
-			}
+            // 获取当前对象的指针并转换为 unsigned char* 类型
+            unsigned char* p = reinterpret_cast<unsigned char*>(this);
+
+            // 遍历对象的每个字节
+            for (size_t offset = 0; offset < sizeof(*this); ) {
+                if (offset + sizeof(bool) <= sizeof(*this) && reinterpret_cast<bool*>(p + offset) == reinterpret_cast<bool*>(this) + offset / sizeof(bool)) {
+                    // 如果当前偏移量适用于 bool 类型，则将其设置为 false
+                    *reinterpret_cast<bool*>(p + offset) = false;
+                    offset += sizeof(bool);
+                } else if (offset + sizeof(float) <= sizeof(*this) && reinterpret_cast<float*>(p + offset) == reinterpret_cast<float*>(this) + offset / sizeof(float)) {
+                    // 如果当前偏移量适用于 float 类型，则将其设置为 0.0
+                    *reinterpret_cast<float*>(p + offset) = 0.0f;
+                    offset += sizeof(float);
+                } else {
+                    // 处理未定义的情况（例如混合类型数组或其他类型成员）
+                    // 可以根据实际情况调整逻辑或添加更多类型检查
+                    offset += 1; // 跳过一个字节
+                }
+            }
 		}
 	} cameraMoveState;
 
@@ -385,6 +423,24 @@ namespace GKCamera {
 				if (cameraMoveState.k) ChangeLiveFollowCameraOffsetY(-offsetMoveStep);
 				if (cameraMoveState.j) ChangeLiveFollowCameraOffsetX(0.8);
 				if (cameraMoveState.l) ChangeLiveFollowCameraOffsetX(-0.8);
+                if (std::abs(cameraMoveState.thumb_l_right) > 0.1f)
+                    camera_right(cameraMoveState.thumb_l_right * l_sensitivity);
+                if (std::abs(cameraMoveState.thumb_l_down) > 0.1f)
+                    camera_back(cameraMoveState.thumb_l_down * l_sensitivity);
+                if (std::abs(cameraMoveState.thumb_r_right) > 0.1f)
+                    cameraLookat_right(cameraMoveState.thumb_r_right * r_sensitivity);
+                if (std::abs(cameraMoveState.thumb_r_down) > 0.1f)
+                    cameraLookat_down(cameraMoveState.thumb_r_down * r_sensitivity);
+                if (std::abs(cameraMoveState.lt_button) > 0.1f)
+                    camera_down(cameraMoveState.lt_button * 0.5f);
+                if (std::abs(cameraMoveState.rt_button) > 0.1f)
+                    camera_up(cameraMoveState.rt_button * 0.5f);
+                if (cameraMoveState.dpad_up) ChangeLiveFollowCameraOffsetY(offsetMoveStep);
+                if (cameraMoveState.dpad_down) ChangeLiveFollowCameraOffsetY(-offsetMoveStep);
+                if (cameraMoveState.dpad_left) ChangeLiveFollowCameraOffsetX(offsetMoveStep);
+                if (cameraMoveState.dpad_right) ChangeLiveFollowCameraOffsetX(-offsetMoveStep);
+                if (cameraMoveState.lb_button) changeCameraFOV(0.5f);
+                if (cameraMoveState.rb_button) changeCameraFOV(-0.5f);
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
 			}
 			}).detach();
@@ -446,10 +502,99 @@ namespace GKCamera {
 			} break;
             case KEY_F: if (message == WM_KEYDOWN) SwitchCameraMode(); break;
             case KEY_V: if (message == WM_KEYDOWN) SwitchCameraSubMode(); break;
+                case BTN_A:
+                    cameraMoveState.a_button = message == WM_KEYDOWN;
+                    if (message == WM_KEYDOWN) r_sensitivity *= 0.8f;
+                    break;
+                case BTN_B:
+                    cameraMoveState.b_button = message == WM_KEYDOWN;
+                    if (message == WM_KEYDOWN) r_sensitivity *= 1.2f;
+                    break;
+                case BTN_X:
+                    cameraMoveState.x_button = message == WM_KEYDOWN;
+                    if (message == WM_KEYDOWN) l_sensitivity *= 0.8f;
+                    break;
+                case BTN_Y:
+                    cameraMoveState.y_button = message == WM_KEYDOWN;
+                    if (message == WM_KEYDOWN) l_sensitivity *= 1.2f;
+                    break;
+                case BTN_LB:
+                    cameraMoveState.lb_button = message == WM_KEYDOWN;
+                    break;
+                case BTN_RB:
+                    cameraMoveState.rb_button = message == WM_KEYDOWN;
+                    break;
+                case BTN_THUMBL:
+                    cameraMoveState.thumb_l_button = message == WM_KEYDOWN;
+                    if (message == WM_KEYDOWN) reset_camera();
+                    break;
+                case BTN_THUMBR:
+                    cameraMoveState.thumb_r_button = message == WM_KEYDOWN;
+                    if (message == WM_KEYDOWN) {
+                        l_sensitivity = 1.0f;
+                        r_sensitivity = 1.0f;
+                    }
+                    break;
+                case BTN_SELECT:
+                    cameraMoveState.select_button = message == WM_KEYDOWN;
+                    if (message == WM_KEYDOWN) SwitchCameraMode();
+                    break;
+                case BTN_START:
+                    cameraMoveState.start_button = message == WM_KEYDOWN;
+                    if (message == WM_KEYDOWN) SwitchCameraSubMode();
+                    break;
+                case BTN_SHARE:
+                    cameraMoveState.share_button = message == WM_KEYDOWN;
+                    break;
+                case BTN_XBOX:
+                    cameraMoveState.xbox_button = message == WM_KEYDOWN;
+                    break;
+
 			default: break;
 			}
 		}
 	}
+
+    void
+    on_cam_rawinput_joystick(JoystickEvent event) {
+        int message = event.getMessage();
+        float leftStickX = event.getLeftStickX();
+        float leftStickY = event.getLeftStickY();
+        float rightStickX = event.getRightStickX();
+        float rightStickY = event.getRightStickY();
+        float leftTrigger = event.getLeftTrigger();
+        float rightTrigger = event.getRightTrigger();
+        float hatX = event.getHatX();
+        float hatY = event.getHatY();
+
+        cameraMoveState.thumb_l_right = (std::abs(leftStickX) > 0.1f) ? leftStickX : 0;
+        cameraMoveState.thumb_l_down = (std::abs(leftStickY) > 0.1f) ? leftStickY : 0;
+        cameraMoveState.thumb_r_right = (std::abs(rightStickX) > 0.1f) ? rightStickX : 0;
+        cameraMoveState.thumb_r_down = (std::abs(rightStickY) > 0.1f) ? rightStickY : 0;
+        cameraMoveState.lt_button = (std::abs(leftTrigger) > 0.1f) ? leftTrigger : 0;
+        cameraMoveState.rt_button = (std::abs(rightTrigger) > 0.1f) ? rightTrigger : 0;
+        cameraMoveState.dpad_up = hatY == -1.0f;
+        cameraMoveState.dpad_down = hatY == 1.0f;
+        cameraMoveState.dpad_left = hatX == -1.0f;
+        cameraMoveState.dpad_right = hatX == 1.0f;
+
+        if (rightStickX == 1.0f) {
+            OnRightDown();
+        } else if (rightStickX == -1.0f) {
+            OnLeftDown();
+        }
+
+        if (rightStickY == 1.0f) {
+            OnDownDown();
+        } else if (rightStickY == -1.0f) {
+            OnUpDown();
+        }
+
+//        GakumasLocal::Log::InfoFmt(
+//                "Motion event: action=%d, leftStickX=%.2f, leftStickY=%.2f, rightStickX=%.2f, rightStickY=%.2f, leftTrigger=%.2f, rightTrigger=%.2f, hatX=%.2f, hatY=%.2f",
+//                message, leftStickX, leftStickY, rightStickX, rightStickY, leftTrigger,
+//                rightTrigger, hatX, hatY);
+    }
 
 	void initCameraSettings() {
 		reset_camera();
