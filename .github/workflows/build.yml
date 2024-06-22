@@ -27,6 +27,11 @@ jobs:
         distribution: 'temurin'
         java-version: '21'
 
+    - name: Update Submodules
+      run: |
+        git submodule foreach --recursive 'git pull --rebase origin main --allow-unrelated-histories'
+      continue-on-error: true
+
     - name: Write branch and commit info
       run: |
         branch=$(git rev-parse --abbrev-ref HEAD)
@@ -57,5 +62,24 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: GakumasLocalify-Signed-apk
+        name: GakumasLocalify-zh-TW-apk
         path: ${{steps.sign_app.outputs.signedFile}}
+
+    - name: Send Notification to Discord
+      uses: sarisia/actions-status-discord@v1
+      if: always()
+      with:
+        webhook: ${{ secrets.DISCORD_WEBHOOK }}
+        status: ${{ job.status }}
+        title: "Android CI"
+
+    - name: Send New Build Notification to Discord
+      uses: sarisia/actions-status-discord@v1
+      if: success()
+      with:
+        webhook: ${{ secrets.DISCORD_WEBHOOK }}
+        nodetail: true
+        title: New Build
+        color: 0xffd1dc
+        description: |
+          [下載](https://nightly.link/yotv2000tw/Gakumas-Localify-zh-TW/workflows/build/main/GakumasLocalify-zh-TW-apk.zip)
