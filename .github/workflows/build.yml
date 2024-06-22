@@ -29,7 +29,7 @@ jobs:
 
     - name: Update Submodules
       run: |
-        git submodule foreach --recursive 'git pull --rebase origin main --allow-unrelated-histories'
+        git submodule update --recursive --remote
       continue-on-error: true
 
     - name: Write branch and commit info
