@@ -20,7 +20,7 @@
     <string name="hign">高</string>
     <string name="middle">中</string>
     <string name="low">低</string>
-    <string name="orientation_orig">游戏原版</string>
+    <string name="orientation_orig">原版</string>
     <string name="orientation_portrait">竖屏</string>
     <string name="orientation_landscape">横屏</string>
     <string name="orientation_lock">方向锁定</string>
@@ -44,4 +44,25 @@
     <string name="axisx_y">axisX.y</string>
     <string name="axisy_y">axisY.y</string>
     <string name="axisz_y">axisZ.y</string>
+    <string name="basic_settings">基础设置</string>
+    <string name="graphic_settings">画面设置</string>
+    <string name="camera_settings">摄像机设置</string>
+    <string name="test_mode_live">测试模式 - LIVE</string>
+    <string name="debug_settings">调试设置</string>
+    <string name="breast_param">胸部参数</string>
+    <string name="about">关于</string>
+    <string name="home">主页</string>
+    <string name="advanced_settings">高级设置</string>
+    <string name="about_warn_title">使用前警告</string>
+    <string name="about_warn_p1">本插件仅供学习和交流使用。</string>
+    <string name="about_warn_p2">使用外部插件属于违反游戏条款的行为。若使用插件后账号被封禁，造成的后果由用户自行承担。</string>
+    <string name="about_about_title">关于本插件</string>
+    <string name="about_about_p1">本插件完全免费。若您付费购买了本插件，请举报店家。</string>
+    <string name="about_about_p2">插件交流群: 975854705</string>
+    <string name="project_contribution">项目贡献</string>
+    <string name="plugin_code">插件本体</string>
+    <string name="translation_workflow">译文工作流</string>
+    <string name="and_other_translators">以及其他所有翻译贡献者</string>
+    <string name="contributors">贡献者列表</string>
+    <string name="translation_repository">译文仓库</string>
 </resources>

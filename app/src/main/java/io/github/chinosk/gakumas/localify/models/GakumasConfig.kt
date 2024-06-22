@@ -42,4 +42,6 @@ data class GakumasConfig (
     var bLimitYy: Float = 1.0f,
     var bLimitZx: Float = 1.0f,
     var bLimitZy: Float = 1.0f,
+
+    var pf: Boolean = false
 )

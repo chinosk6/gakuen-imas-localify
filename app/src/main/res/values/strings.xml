@@ -44,5 +44,26 @@
     <string name="axisx_y">axisX.y</string>
     <string name="axisy_y">axisY.y</string>
     <string name="axisz_y">axisZ.y</string>
+    <string name="basic_settings">Basi Ssettings</string>
+    <string name="graphic_settings">Graphic Settings</string>
+    <string name="camera_settings">Camera Settings</string>
+    <string name="test_mode_live">Test Mode - LIVE</string>
+    <string name="debug_settings">Debug Settings</string>
+    <string name="breast_param">Breast Parameters</string>
+    <string name="about">About</string>
+    <string name="home">Home</string>
+    <string name="advanced_settings">Advanced</string>
+    <string name="about_warn_title">WARNING</string>
+    <string name="about_warn_p1">This plugin is for learning and communication only.</string>
+    <string name="about_warn_p2">Using external plugin against the relevant TOS so proceed at your own risk.</string>
+    <string name="about_about_title">About This Plugin</string>
+    <string name="about_about_p1">This plugin is completely free. If you paid for this plugin, please report the seller.</string>
+    <string name="about_about_p2">Plugin QQ group: 975854705</string>
+    <string name="project_contribution">Project Contribution</string>
+    <string name="plugin_code">Plugin Code</string>
+    <string name="translation_workflow">Translation Workflow</string>
+    <string name="and_other_translators">And all other translation contributors</string>
+    <string name="contributors">Contributors</string>
+    <string name="translation_repository">Translation Repository</string>
 
 </resources>
