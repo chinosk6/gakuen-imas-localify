@@ -82,4 +82,4 @@ jobs:
         title: New Build
         color: 0xffd1dc
         description: |
-          [下載](https://nightly.link/yotv2000tw/Gakumas-Localify-zh-TW/workflows/build/main/GakumasLocalify-zh-TW-apk.zip)
+          [下載](https://nightly.link/yotv2000tw/gakumas-localify-zh-TW/workflows/build/main/GakumasLocalify-zh-TW-apk.zip)
