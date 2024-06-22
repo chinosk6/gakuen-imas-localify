@@ -82,9 +82,8 @@ jobs:
       with:
         webhook: ${{ secrets.DISCORD_WEBHOOK }}
         nodetail: true
-        title: New Build
+        title: New version of Gakuen-IMAS-Localify-zh-TW is already!
         color: 0xffd1dc
         description: |
-          ### Gakuen-IMAS-Localify-zh-TW Update
           * Version: `${{ env.VERSION }}`
           * [下載](https://nightly.link/yotv2000tw/gakuen-imas-localify-zh-TW/workflows/build/main/GakumasLocalify-zh-TW.zip)
