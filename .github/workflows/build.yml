@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         submodules: recursive
 
@@ -27,16 +27,12 @@ jobs:
         distribution: 'temurin'
         java-version: '21'
 
-    - name: Update Submodules
-      run: |
-        git submodule update --force --recursive --init --remote
-      continue-on-error: true
-
     - name: Write branch and commit info
       run: |
         branch=$(git rev-parse --abbrev-ref HEAD)
         hash=$(git rev-parse --short=8 HEAD)
         echo "$branch.$hash" > app/src/main/assets/gakumas-local/version.txt
+        echo "VERSION=$branch.$hash" >> $GITHUB_ENV
               
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
@@ -60,10 +56,17 @@ jobs:
         keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
         buildToolsVersion: 33.0.0
 
+    - name: Rename Signed APK
+      run: |
+        branch=$(git rev-parse --abbrev-ref HEAD)
+        hash=$(git rev-parse --short=7 HEAD)
+        mv ${{steps.sign_app.outputs.signedFile}} app/build/outputs/apk/debug/GakumasLocalify-zh-TW_$branch.$hash.apk
+        echo "SIGNED_APK=app/build/outputs/apk/debug/GakumasLocalify-zh-TW_$branch.$hash.apk" >> $GITHUB_ENV
+
     - uses: actions/upload-artifact@v4
       with:
-        name: GakumasLocalify-zh-TW-apk
-        path: ${{steps.sign_app.outputs.signedFile}}
+        name: GakumasLocalify-zh-TW
+        path: ${{ env.SIGNED_APK }}
 
     - name: Send Notification to Discord
       uses: sarisia/actions-status-discord@v1
