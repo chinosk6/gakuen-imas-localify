@@ -27,22 +27,6 @@ jobs:
         distribution: 'temurin'
         java-version: '21'
 
-    - name: Update Submodules
-      run: |
-        git submodule foreach --recursive 'git pull --rebase origin main --allow-unrelated-histories'
-      continue-on-error: true
-
-    - name: Pull Assets
-      run: |
-        git clone https://${{ secrets.ACCESS_TOKEN_GITHUB }}@github.com/imas-tools/gakumas-raw-txts.git app/src/main/assets/gakumas-local/gakumas-raw-txts
-        mv app/src/main/assets/gakumas-local/gakumas-raw-txts/Resource app/src/main/assets/gakumas-local/raw
-        rm -rf app/src/main/assets/gakumas-local/gakumas-raw-txts
-
-    - name: Build Assets
-      run: |
-        mv app/src/main/assets/gakumas-local/GakumasPreTranslation/.env.sample app/src/main/assets/gakumas-local/GakumasPreTranslation/.env
-        cd app/src/main/assets/gakumas-local && make build-resource
-
     - name: Write branch and commit info
       run: |
         branch=$(git rev-parse --abbrev-ref HEAD)
