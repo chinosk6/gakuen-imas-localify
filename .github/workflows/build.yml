@@ -26,7 +26,14 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: '21'
-              
+    
+    - name: Write branch and commit info
+      run: |
+        branch=$(git rev-parse --abbrev-ref HEAD)
+        hash=$(git rev-parse --short=8 HEAD)
+        echo "$branch.$hash" > app/src/main/assets/gakumas-local/version.txt
+        echo "VERSION=$branch.$hash" >> $GITHUB_ENV
+
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
