@@ -1,24 +1,11 @@
-# gakuen-imas-localify
+# gakuen-imas-localify-zh-TW
 
-- 学园偶像大师 本地化插件
+- 學園偶像大師 本地化插件
 - **开发中**
-
-
 
 # Usage
 
 - 这是一个 XPosed 插件，已 Root 用户可以使用 [LSPosed](https://github.com/LSPosed/LSPosed)，未 Root 用户可以使用 [LSPatch](https://github.com/LSPosed/LSPatch)。
-
-
-
-# TODO
-
-- [x] 卡片信息、TIPS 等部分的文本 hook (`generic`)
-- [ ] 更多类型的文件替换
-- [ ] LSPatch 集成模式无效
-
-... and more
-
 
 
 # 本地化相关
@@ -31,23 +18,16 @@
 - `local-files/resource` 文件夹存放资源文件，目前可以替换所有同名的 txt 文件。获取游戏原始资源可以查看：[gkmasToolkit](https://github.com/kishidanatsumi/gkmasToolkit)
 
 
-
-# 翻译仓库贡献列表
-
-<a href="https://github.com/chinosk6/GakumasTranslationData">
-  <img src="https://contrib.rocks/image?repo=chinosk6/GakumasTranslationData" />
-</a>
-
-
-
 # Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=chinosk6/gakuen-imas-localify&type=Date)](https://star-history.com/#chinosk6/gakuen-imas-localify&Date)
 
 
 
-# 特别鸣谢
+# 特別感謝
 
+- [gakuen-imas-localify](https://github.com/chinosk6/gakuen-imas-localify)
+- [Gakumas-Localify-EN](https://github.com/NatsumeLS/Gakumas-Localify-EN)
 - [gkmasToolkit](https://github.com/kishidanatsumi/gkmasToolkit)
 - [UmaPyogin-Android](https://github.com/akemimadoka/UmaPyogin-Android)
 - [UnityResolve.hpp](https://github.com/issuimo/UnityResolve.hpp)
