@@ -99,4 +99,4 @@ jobs:
         color: 0xffd1dc
         description: |
           版本：${{ env.VERSION }}
-          [下載](https://nightly.link/yotv2000tw/gakuen-imas-localify-zh-TW/workflows/build/main/GakumasLocalify-zh-TW-apk.zip)
+          [下載](https://nightly.link/yotv2000tw/gakuen-imas-localify-zh-TW/workflows/build/main/GakumasLocalify-zh-TW.zip)

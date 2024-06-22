@@ -1,26 +1,31 @@
-# gakuen-imas-localify-zh-TW
+<div align="center">
 
-- 學園偶像大師 本地化插件
-- **开发中**
+# gakuen-imas-localify-zh-TW
+> 學園偶像大師 本地化插件（開發中）
+
+[![Discord](https://dcbadge.limes.pink/api/server/https://discord.gg/gkmas)](https://discord.gg/gkmas)
+
+</div>
 
 # Usage
 
-- 这是一个 XPosed 插件，已 Root 用户可以使用 [LSPosed](https://github.com/LSPosed/LSPosed)，未 Root 用户可以使用 [LSPatch](https://github.com/LSPosed/LSPatch)。
+- 這是一個 XPosed 插件，已 Root 用戶可以使用 [LSPosed](https://github.com/LSPosed/LSPosed)，未 Root 用戶可以使用 [LSPatch](https://github.com/LSPosed/LSPatch)。
 
 
-# 本地化相关
+# Download
+[下載最新版 zip](https://nightly.link/yotv2000tw/gakuen-imas-localify-zh-TW/workflows/build/main/GakumasLocalify-zh-TW.zip)
 
-- 本地化文件放在 `app/src/main/assets/gakumas-local` 内
-- `version.txt` 记录翻译版本号。每次插件启动都会检查 `asset` 内的版本和本地的版本是否一致。不一致会覆盖文件到 `/data/data/com.bandainamcoent.idolmaster_gakuen/files/gakumas-lical/` 文件夹内
-- `local-files/localization.json` 为 localization 翻译
-- `local-files/generic.json` 为 localization 未覆盖部分的翻译
-- `local-files/genericTrans` 文件夹内所有 `.json` 文件作用同 `generic.json`，文件夹名/文件名可自定义，方便区分翻译内容
-- `local-files/resource` 文件夹存放资源文件，目前可以替换所有同名的 txt 文件。获取游戏原始资源可以查看：[gkmasToolkit](https://github.com/kishidanatsumi/gkmasToolkit)
+# Translate
+[GakumasTranslationData_zh-TW](https://github.com/yotv2000tw/GakumasTranslationData_zh-TW)
 
+# 本地化相關
 
-# Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=chinosk6/gakuen-imas-localify&type=Date)](https://star-history.com/#chinosk6/gakuen-imas-localify&Date)
+- 本地化文件放在 `app/src/main/assets/gakumas-local` 內
+- `version.txt` 記錄翻譯版本號。每次插件啟動都會檢查 `asset` 內的版本和本地的版本是否一致。不一致會覆蓋文件到 `/data/data/com.bandainamcoent.idolmaster_gakuen/files/gakumas-lical/` 文件夾內
+- `local-files/localization.json` 為 localization 翻譯
+- `local-files/generic.json` 為 localization 未覆蓋部分的翻譯
+- `local-files/genericTrans` 文件夾內所有 `.json` 文件作用同 `generic.json`，文件夾名/檔案名可自訂，方便區分翻譯內容
+- `local-files/resource` 文件夾存放資源文件，目前可以替換所有同名的 txt 文件。獲取遊戲原始資源可以查看：[gkmasToolkit](https://github.com/kishidanatsumi/gkmasToolkit)
 
 
 
