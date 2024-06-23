@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
+import io.github.chinosk.gakumas.localify.ui.components.base.AutoSizeText
 
 
 @Composable
@@ -25,7 +26,7 @@ fun GakuSwitch(modifier: Modifier = Modifier,
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically) {
         if (text.isNotEmpty()) {
-            Text(modifier = Modifier, text = text, fontSize = 16.sp)
+            AutoSizeText(text = text, fontSize = 16.sp)
         }
         leftPart?.invoke()
         Switch(checked = checked,

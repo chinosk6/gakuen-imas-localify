@@ -17,6 +17,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -28,7 +29,7 @@ import io.github.chinosk.gakumas.localify.MainActivity
 import io.github.chinosk.gakumas.localify.R
 import io.github.chinosk.gakumas.localify.getConfigState
 import io.github.chinosk.gakumas.localify.models.GakumasConfig
-import io.github.chinosk.gakumas.localify.ui.components.CollapsibleBox
+import io.github.chinosk.gakumas.localify.ui.components.base.CollapsibleBox
 import io.github.chinosk.gakumas.localify.ui.components.GakuButton
 import io.github.chinosk.gakumas.localify.ui.components.GakuRadio
 import io.github.chinosk.gakumas.localify.ui.components.GakuSwitch
@@ -56,7 +57,8 @@ fun HomePage(modifier: Modifier = Modifier,
         // .fillMaxHeight()
         // .verticalScroll(scrollState)
         // .width(IntrinsicSize.Max)
-        .fillMaxWidth()
+        .fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         item {
             GakuGroupBox(modifier = modifier, stringResource(R.string.basic_settings)) {
@@ -261,7 +263,7 @@ fun HomePage(modifier: Modifier = Modifier,
 }
 
 
-@Preview(showBackground = true, uiMode = UI_MODE_NIGHT_NO)
+@Preview(showBackground = true, uiMode = UI_MODE_NIGHT_NO, widthDp = 880)
 @Composable
 fun HomePagePreview(modifier: Modifier = Modifier, data: GakumasConfig = GakumasConfig()) {
     HomePage(modifier, previewData = data)

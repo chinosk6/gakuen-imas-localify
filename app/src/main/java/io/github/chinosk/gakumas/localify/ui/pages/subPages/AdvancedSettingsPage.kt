@@ -17,6 +17,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -31,7 +32,7 @@ import io.github.chinosk.gakumas.localify.getConfigState
 import io.github.chinosk.gakumas.localify.models.CollapsibleBoxViewModel
 import io.github.chinosk.gakumas.localify.models.CollapsibleBoxViewModelFactory
 import io.github.chinosk.gakumas.localify.models.GakumasConfig
-import io.github.chinosk.gakumas.localify.ui.components.CollapsibleBox
+import io.github.chinosk.gakumas.localify.ui.components.base.CollapsibleBox
 import io.github.chinosk.gakumas.localify.ui.components.GakuButton
 import io.github.chinosk.gakumas.localify.ui.components.GakuSwitch
 import io.github.chinosk.gakumas.localify.ui.components.GakuTextInput
@@ -56,7 +57,8 @@ fun AdvanceSettingsPage(modifier: Modifier = Modifier,
         .sizeIn(maxHeight = screenH)
         // .fillMaxHeight()
         // .verticalScroll(scrollState)
-        .fillMaxWidth()
+        .fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         item {
             GakuGroupBox(modifier, stringResource(R.string.camera_settings)) {

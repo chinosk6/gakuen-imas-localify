@@ -8,16 +8,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.chinosk.gakumas.localify.ui.components.base.AutoSizeText
 
 @Composable
 fun GakuRadio(
@@ -47,7 +48,7 @@ fun GakuRadio(
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = modifier.padding(start = 0.dp, end = 16.dp)
+            modifier = modifier.padding(start = 0.dp, end = 4.dp)
         ) {
             RadioButton(
                 modifier = Modifier.padding(start = 0.dp),
@@ -59,15 +60,18 @@ fun GakuRadio(
                 )
             )
             // Spacer(modifier = modifier.width(16.dp))
-            Text(text = text, color = MaterialTheme.colorScheme.onSurface, fontSize = fontSize)
+            AutoSizeText(text = text,
+                textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = fontSize))
+            // Text(text = text, color = MaterialTheme.colorScheme.onSurface, fontSize = fontSize)
         }
     }
 }
 
 
 
-@Preview(showBackground = true, uiMode = UI_MODE_NIGHT_NO)
+@Preview(showBackground = true, uiMode = UI_MODE_NIGHT_NO, widthDp = 100, heightDp = 40)
 @Composable
 fun GakuRadioPreview() {
-    GakuRadio(text = "GakuRadio", selected = true, onClick = {})
+    GakuRadio(text = "GakuRadioooo", selected = true, onClick = {})
 }

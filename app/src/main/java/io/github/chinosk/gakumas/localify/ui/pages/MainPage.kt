@@ -101,7 +101,7 @@ fun imageRepeater(
 }
 
 
-@Preview(showBackground = true, uiMode = UI_MODE_NIGHT_NO)
+@Preview(showBackground = true, uiMode = UI_MODE_NIGHT_NO, widthDp = 380)
 @Composable
 fun MainUIPreview(modifier: Modifier = Modifier) {
     val previewConfig = GakumasConfig()

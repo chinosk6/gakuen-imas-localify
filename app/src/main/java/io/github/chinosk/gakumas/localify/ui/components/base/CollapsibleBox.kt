@@ -1,4 +1,4 @@
-package io.github.chinosk.gakumas.localify.ui.components
+package io.github.chinosk.gakumas.localify.ui.components.base
 
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import androidx.compose.animation.animateContentSize

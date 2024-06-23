@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.HorizontalDivider
@@ -76,7 +77,7 @@ fun AboutPage(modifier: Modifier = Modifier,
                 .padding(
                     start = 8.dp, end = 8.dp, top = 8.dp, bottom = 0.dp
                 )) {
-                GakuButton(text = "Github", modifier = modifier.weight(1f), onClick = {
+                GakuButton(text = "Github", modifier = modifier.weight(1f).sizeIn(maxWidth = 600.dp), onClick = {
                     context?.openUrl("https://github.com/chinosk6/gakuen-imas-localify")
                 })
             }

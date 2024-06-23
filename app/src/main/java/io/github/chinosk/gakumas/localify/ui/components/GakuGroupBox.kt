@@ -53,8 +53,8 @@ fun GakuGroupBox(
                     painter = painterResource(id = R.drawable.bg_h1),
                     contentDescription = null,
                     // modifier = Modifier.fillMaxSize(),
-                    modifier = Modifier.fillMaxWidth(),
-                    contentScale = ContentScale.FillWidth
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.FillBounds
                 )
                 Text(
                     text = title,
