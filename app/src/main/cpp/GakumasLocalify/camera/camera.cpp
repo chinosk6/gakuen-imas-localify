@@ -18,6 +18,7 @@ namespace GKCamera {
     int followCharaIndex = 0;
     float l_sensitivity = 0.5f;
     float r_sensitivity = 0.5f;
+    bool showToast = true;
     GakumasLocal::Misc::CSEnum bodyPartsEnum("Head", 0xa);
 
 	// bool rMousePressFlg = false;
@@ -251,6 +252,142 @@ namespace GKCamera {
         }
     }
 
+    void ShowToast(const char *text) {
+        if (showToast) {
+            GakumasLocal::Log::ShowToast(text);
+        }
+    }
+
+    void JLThumbRight(float value) {
+        camera_right(value * l_sensitivity * baseCamera.fov / 60);
+    }
+
+    void JLThumbDown(float value) {
+        camera_back(value * l_sensitivity * baseCamera.fov / 60);
+    }
+
+    void JRThumbRight(float value) {
+        cameraLookat_right(value * r_sensitivity * baseCamera.fov / 60);
+        ChangeLiveFollowCameraOffsetX(-1 * value * r_sensitivity * baseCamera.fov / 60);
+    }
+
+    void JRThumbDown(float value) {
+        cameraLookat_down(value * r_sensitivity * baseCamera.fov / 60);
+        ChangeLiveFollowCameraOffsetY(-0.1 * value * r_sensitivity * baseCamera.fov / 60);
+    }
+
+    void JDadUp(){
+        reset_camera();
+        ShowToast("重置镜头");
+    }
+
+    void JDadDown(){
+        ShowToast("关闭通知，再次点击开启");
+        showToast = !showToast;
+    }
+
+    void JDadLeft(){
+        l_sensitivity = 1.0f;
+        ShowToast("重置移动灵敏度");
+    }
+
+    void JDadRight(){
+        r_sensitivity = 1.0f;
+        ShowToast("重置镜头灵敏度");
+    }
+
+    void JAKeyDown() {
+        if (cameraMode == CameraMode::FOLLOW) {
+            const auto currPart = bodyPartsEnum.Next();
+            if (showToast) {
+                GakumasLocal::Log::ShowToastFmt("看向：%s (0x%x)", currPart.first.c_str(),
+                                                currPart.second);
+            }
+        } else {
+            r_sensitivity *= 0.8f;
+        }
+    }
+
+    void JBKeyDown() {
+        if (cameraMode == CameraMode::FOLLOW) {
+            const auto currPart = bodyPartsEnum.Last();
+            if (showToast) {
+                GakumasLocal::Log::ShowToastFmt("看向：%s (0x%x)", currPart.first.c_str(),
+                                                currPart.second);
+            }
+        } else {
+            r_sensitivity *= 1.2f;
+        }
+    }
+
+    void JXKeyDown() {
+        if (cameraMode == CameraMode::FOLLOW) {
+            OnLeftDown();
+            if (showToast) {
+                GakumasLocal::Log::ShowToastFmt("注视：%d", followCharaIndex);
+            }
+        } else {
+            l_sensitivity *= 0.8f;
+        }
+    }
+
+    void JYKeyDown() {
+        if (cameraMode == CameraMode::FOLLOW) {
+            OnRightDown();
+            if (showToast) {
+                GakumasLocal::Log::ShowToastFmt("注视：%d", followCharaIndex);
+            }
+        } else {
+            l_sensitivity *= 1.2f;
+        }
+    }
+
+    void JSelectKeyDown() {
+        switch (cameraMode) {
+            case CameraMode::FREE: {
+                cameraMode = CameraMode::FOLLOW;
+                ShowToast("跟随模式");
+            } break;
+            case CameraMode::FOLLOW: {
+                cameraMode = CameraMode::FIRST_PERSON;
+                ShowToast("第一人称模式");
+            } break;
+            case CameraMode::FIRST_PERSON: {
+                cameraMode = CameraMode::FREE;
+                ShowToast("无人机模式");
+
+            } break;
+        }
+    }
+
+    void JStartKeyDown() {
+        switch (cameraMode) {
+            case CameraMode::FIRST_PERSON: {
+                if (firstPersonRoll == FirstPersonRoll::ENABLE_ROLL) {
+                    firstPersonRoll = FirstPersonRoll::DISABLE_ROLL;
+                    ShowToast("镜头水平固定");
+                }
+                else {
+                    firstPersonRoll = FirstPersonRoll::ENABLE_ROLL;
+                    ShowToast("镜头水平摇动");
+                }
+            } break;
+
+            case CameraMode::FOLLOW: {
+                if (followModeY == FollowModeY::APPLY_Y) {
+                    followModeY = FollowModeY::SMOOTH_Y;
+                    ShowToast("平滑升降");
+                }
+                else {
+                    followModeY = FollowModeY::APPLY_Y;
+                    ShowToast("即时升降");
+                }
+            } break;
+
+            default: break;
+        }
+    }
+
     UnityResolve::UnityType::Vector3 CalcPositionFromLookAt(const UnityResolve::UnityType::Vector3& target,
                                                             const UnityResolve::UnityType::Vector3& offset) {
         // offset: z 远近, y 高低, x角度
@@ -423,24 +560,32 @@ namespace GKCamera {
 				if (cameraMoveState.k) ChangeLiveFollowCameraOffsetY(-offsetMoveStep);
 				if (cameraMoveState.j) ChangeLiveFollowCameraOffsetX(0.8);
 				if (cameraMoveState.l) ChangeLiveFollowCameraOffsetX(-0.8);
+                // 手柄操作响应
+                // 左摇杆
                 if (std::abs(cameraMoveState.thumb_l_right) > 0.1f)
-                    camera_right(cameraMoveState.thumb_l_right * l_sensitivity);
+                    JLThumbRight(cameraMoveState.thumb_l_right);
                 if (std::abs(cameraMoveState.thumb_l_down) > 0.1f)
-                    camera_back(cameraMoveState.thumb_l_down * l_sensitivity);
+                    JLThumbDown(cameraMoveState.thumb_l_down);
+                // 右摇杆
                 if (std::abs(cameraMoveState.thumb_r_right) > 0.1f)
-                    cameraLookat_right(cameraMoveState.thumb_r_right * r_sensitivity);
+                    JRThumbRight(cameraMoveState.thumb_r_right);
                 if (std::abs(cameraMoveState.thumb_r_down) > 0.1f)
-                    cameraLookat_down(cameraMoveState.thumb_r_down * r_sensitivity);
+                    JRThumbDown(cameraMoveState.thumb_r_down);
+                // 左扳机
                 if (std::abs(cameraMoveState.lt_button) > 0.1f)
-                    camera_down(cameraMoveState.lt_button * 0.5f);
+                    camera_down(cameraMoveState.lt_button * l_sensitivity * baseCamera.fov / 60);
+                // 右扳机
                 if (std::abs(cameraMoveState.rt_button) > 0.1f)
-                    camera_up(cameraMoveState.rt_button * 0.5f);
-                if (cameraMoveState.dpad_up) ChangeLiveFollowCameraOffsetY(offsetMoveStep);
-                if (cameraMoveState.dpad_down) ChangeLiveFollowCameraOffsetY(-offsetMoveStep);
-                if (cameraMoveState.dpad_left) ChangeLiveFollowCameraOffsetX(offsetMoveStep);
-                if (cameraMoveState.dpad_right) ChangeLiveFollowCameraOffsetX(-offsetMoveStep);
-                if (cameraMoveState.lb_button) changeCameraFOV(0.5f);
-                if (cameraMoveState.rb_button) changeCameraFOV(-0.5f);
+                    camera_up(cameraMoveState.rt_button * l_sensitivity * baseCamera.fov / 60);
+                // 左肩键
+                if (cameraMoveState.lb_button) changeCameraFOV(0.5f * r_sensitivity);
+                // 右肩键
+                if (cameraMoveState.rb_button) changeCameraFOV(-0.5f * r_sensitivity);
+                // 十字键
+                if (cameraMoveState.dpad_up) JDadUp();
+//                if (cameraMoveState.dpad_down) JDadDown();
+                if (cameraMoveState.dpad_left) JDadLeft();
+                if (cameraMoveState.dpad_right) JDadRight();
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
 			}
 			}).detach();
@@ -502,21 +647,22 @@ namespace GKCamera {
 			} break;
             case KEY_F: if (message == WM_KEYDOWN) SwitchCameraMode(); break;
             case KEY_V: if (message == WM_KEYDOWN) SwitchCameraSubMode(); break;
+                // 手柄操作响应
                 case BTN_A:
                     cameraMoveState.a_button = message == WM_KEYDOWN;
-                    if (message == WM_KEYDOWN) r_sensitivity *= 0.8f;
+                    if (message == WM_KEYDOWN) JAKeyDown();
                     break;
                 case BTN_B:
                     cameraMoveState.b_button = message == WM_KEYDOWN;
-                    if (message == WM_KEYDOWN) r_sensitivity *= 1.2f;
+                    if (message == WM_KEYDOWN) JBKeyDown();
                     break;
                 case BTN_X:
                     cameraMoveState.x_button = message == WM_KEYDOWN;
-                    if (message == WM_KEYDOWN) l_sensitivity *= 0.8f;
+                    if (message == WM_KEYDOWN) JXKeyDown();
                     break;
                 case BTN_Y:
                     cameraMoveState.y_button = message == WM_KEYDOWN;
-                    if (message == WM_KEYDOWN) l_sensitivity *= 1.2f;
+                    if (message == WM_KEYDOWN) JYKeyDown();
                     break;
                 case BTN_LB:
                     cameraMoveState.lb_button = message == WM_KEYDOWN;
@@ -526,22 +672,17 @@ namespace GKCamera {
                     break;
                 case BTN_THUMBL:
                     cameraMoveState.thumb_l_button = message == WM_KEYDOWN;
-                    if (message == WM_KEYDOWN) reset_camera();
                     break;
                 case BTN_THUMBR:
                     cameraMoveState.thumb_r_button = message == WM_KEYDOWN;
-                    if (message == WM_KEYDOWN) {
-                        l_sensitivity = 1.0f;
-                        r_sensitivity = 1.0f;
-                    }
                     break;
                 case BTN_SELECT:
                     cameraMoveState.select_button = message == WM_KEYDOWN;
-                    if (message == WM_KEYDOWN) SwitchCameraMode();
+                    if (message == WM_KEYDOWN) JSelectKeyDown();
                     break;
                 case BTN_START:
                     cameraMoveState.start_button = message == WM_KEYDOWN;
-                    if (message == WM_KEYDOWN) SwitchCameraSubMode();
+                    if (message == WM_KEYDOWN) JStartKeyDown();
                     break;
                 case BTN_SHARE:
                     cameraMoveState.share_button = message == WM_KEYDOWN;
@@ -578,16 +719,8 @@ namespace GKCamera {
         cameraMoveState.dpad_left = hatX == -1.0f;
         cameraMoveState.dpad_right = hatX == 1.0f;
 
-        if (rightStickX == 1.0f) {
-            OnRightDown();
-        } else if (rightStickX == -1.0f) {
-            OnLeftDown();
-        }
-
-        if (rightStickY == 1.0f) {
-            OnDownDown();
-        } else if (rightStickY == -1.0f) {
-            OnUpDown();
+        if (cameraMoveState.dpad_down) {
+            JDadDown();
         }
 
 //        GakumasLocal::Log::InfoFmt(

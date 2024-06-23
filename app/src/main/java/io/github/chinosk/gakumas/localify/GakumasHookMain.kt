@@ -315,6 +315,9 @@ class GakumasHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
         @JvmStatic
         external fun loadConfig(configJsonStr: String)
 
+        // Toast快速切换内容
+        private var toast: Toast? = null
+
         @JvmStatic
         fun showToast(message: String) {
             val app = AndroidAppHelper.currentApplication()
@@ -322,7 +325,12 @@ class GakumasHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
             if (context != null) {
                 val handler = Handler(Looper.getMainLooper())
                 handler.post {
-                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                    // 取消之前的 Toast
+                    toast?.cancel()
+                    // 创建新的 Toast
+                    toast = Toast.makeText(context, message, Toast.LENGTH_SHORT)
+                    // 展示新的 Toast
+                    toast?.show()
                 }
             }
             else {
