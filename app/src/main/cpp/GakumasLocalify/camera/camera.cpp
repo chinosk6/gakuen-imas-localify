@@ -278,29 +278,29 @@ namespace GKCamera {
 
     void JDadUp(){
         reset_camera();
-        ShowToast("重置镜头");
+        ShowToast("Reset Camera");
     }
 
     void JDadDown(){
-        ShowToast("关闭通知，再次点击开启");
+        ShowToast("Notification off, click again to turn it on.");
         showToast = !showToast;
     }
 
     void JDadLeft(){
         l_sensitivity = 1.0f;
-        ShowToast("重置移动灵敏度");
+        ShowToast("Reset Movement Sensitivity");
     }
 
     void JDadRight(){
         r_sensitivity = 1.0f;
-        ShowToast("重置镜头灵敏度");
+        ShowToast("Reset Camera Sensitivity");
     }
 
     void JAKeyDown() {
         if (cameraMode == CameraMode::FOLLOW) {
             const auto currPart = bodyPartsEnum.Next();
             if (showToast) {
-                GakumasLocal::Log::ShowToastFmt("看向：%s (0x%x)", currPart.first.c_str(),
+                GakumasLocal::Log::ShowToastFmt("Look at: %s (0x%x)", currPart.first.c_str(),
                                                 currPart.second);
             }
         } else {
@@ -312,7 +312,7 @@ namespace GKCamera {
         if (cameraMode == CameraMode::FOLLOW) {
             const auto currPart = bodyPartsEnum.Last();
             if (showToast) {
-                GakumasLocal::Log::ShowToastFmt("看向：%s (0x%x)", currPart.first.c_str(),
+                GakumasLocal::Log::ShowToastFmt("Look at: %s (0x%x)", currPart.first.c_str(),
                                                 currPart.second);
             }
         } else {
@@ -324,7 +324,7 @@ namespace GKCamera {
         if (cameraMode == CameraMode::FOLLOW) {
             OnLeftDown();
             if (showToast) {
-                GakumasLocal::Log::ShowToastFmt("注视：%d", followCharaIndex);
+                GakumasLocal::Log::ShowToastFmt("Look at position: %d", followCharaIndex);
             }
         } else {
             l_sensitivity *= 0.8f;
@@ -335,7 +335,7 @@ namespace GKCamera {
         if (cameraMode == CameraMode::FOLLOW) {
             OnRightDown();
             if (showToast) {
-                GakumasLocal::Log::ShowToastFmt("注视：%d", followCharaIndex);
+                GakumasLocal::Log::ShowToastFmt("Look at position: %d", followCharaIndex);
             }
         } else {
             l_sensitivity *= 1.2f;
@@ -346,15 +346,15 @@ namespace GKCamera {
         switch (cameraMode) {
             case CameraMode::FREE: {
                 cameraMode = CameraMode::FOLLOW;
-                ShowToast("跟随模式");
+                ShowToast("Follow Mode");
             } break;
             case CameraMode::FOLLOW: {
                 cameraMode = CameraMode::FIRST_PERSON;
-                ShowToast("第一人称模式");
+                ShowToast("First-person Mode");
             } break;
             case CameraMode::FIRST_PERSON: {
                 cameraMode = CameraMode::FREE;
-                ShowToast("无人机模式");
+                ShowToast("Free Mode");
 
             } break;
         }
@@ -365,22 +365,22 @@ namespace GKCamera {
             case CameraMode::FIRST_PERSON: {
                 if (firstPersonRoll == FirstPersonRoll::ENABLE_ROLL) {
                     firstPersonRoll = FirstPersonRoll::DISABLE_ROLL;
-                    ShowToast("镜头水平固定");
+                    ShowToast("Camera Horizontal Fixed");
                 }
                 else {
                     firstPersonRoll = FirstPersonRoll::ENABLE_ROLL;
-                    ShowToast("镜头水平摇动");
+                    ShowToast("Camera Horizontal Rollable");
                 }
             } break;
 
             case CameraMode::FOLLOW: {
                 if (followModeY == FollowModeY::APPLY_Y) {
                     followModeY = FollowModeY::SMOOTH_Y;
-                    ShowToast("平滑升降");
+                    ShowToast("Smooth Lift");
                 }
                 else {
                     followModeY = FollowModeY::APPLY_Y;
-                    ShowToast("即时升降");
+                    ShowToast("Instant Lift");
                 }
             } break;
 
