@@ -4,6 +4,7 @@
 #include <sstream>
 #include <string>
 #include <thread>
+#include <queue>
 
 extern JavaVM* g_javaVM;
 extern jclass g_gakumasHookMainClass;
@@ -24,9 +25,13 @@ extern jmethodID showToastMethodId;
 
 
 namespace GakumasLocal::Log {
+    namespace {
+        std::queue<std::string> showingToasts{};
+    }
+
     std::string StringFormat(const char* fmt, ...) {
         GetParamStringResult(result);
-        return result.c_str();
+        return result;
     }
 
     void Log(int prio, const char* msg) {
@@ -70,38 +75,7 @@ namespace GakumasLocal::Log {
         __android_log_write(prio, "GakumasLog", result.c_str());
     }
 
-    void ShowToast(const std::string& text) {
-        DebugFmt("Toast: %s", text.c_str());
-
-        std::thread([text](){
-            auto env = Misc::GetJNIEnv();
-            if (!env) {
-                return;
-            }
-
-            jclass& kotlinClass = g_gakumasHookMainClass;
-            if (!kotlinClass) {
-                g_javaVM->DetachCurrentThread();
-                return;
-            }
-            jmethodID& methodId = showToastMethodId;
-            if (!methodId) {
-                g_javaVM->DetachCurrentThread();
-                return;
-            }
-            jstring param = env->NewStringUTF(text.c_str());
-            env->CallStaticVoidMethod(kotlinClass, methodId, param);
-
-            g_javaVM->DetachCurrentThread();
-        }).detach();
-    }
-
-    void ShowToastFmt(const char* fmt, ...) {
-        GetParamStringResult(result);
-        ShowToast(result);
-    }
-
-    void ShowToast(const char* text) {
+    void ShowToastJNI(const char* text) {
         DebugFmt("Toast: %s", text);
 
         std::thread([text](){
@@ -125,5 +99,45 @@ namespace GakumasLocal::Log {
 
             g_javaVM->DetachCurrentThread();
         }).detach();
+    }
+
+
+    void ShowToast(const std::string& text) {
+        showingToasts.push(text);
+    }
+
+    void ShowToast(const char* text) {
+        DebugFmt("Toast: %s", text);
+        return ShowToast(std::string(text));
+    }
+
+    void ShowToastFmt(const char* fmt, ...) {
+        GetParamStringResult(result);
+        ShowToast(result);
+    }
+
+    std::string GetQueuedToast() {
+        if (showingToasts.empty()) {
+            return "";
+        }
+        const auto ret = showingToasts.front();
+        showingToasts.pop();
+        return ret;
+    }
+
+    void ToastLoop(JNIEnv *env, jclass clazz) {
+        const auto toastString = GetQueuedToast();
+        if (toastString.empty()) return;
+
+        static auto _showToastMethodId = env->GetStaticMethodID(clazz, "showToast", "(Ljava/lang/String;)V");
+
+        if (env && clazz && _showToastMethodId) {
+            jstring param = env->NewStringUTF(toastString.c_str());
+            env->CallStaticVoidMethod(clazz, _showToastMethodId, param);
+            env->DeleteLocalRef(param);
+        }
+        else {
+            _showToastMethodId = env->GetStaticMethodID(clazz, "showToast", "(Ljava/lang/String;)V");
+        }
     }
 }

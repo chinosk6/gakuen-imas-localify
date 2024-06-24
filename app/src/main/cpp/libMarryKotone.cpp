@@ -112,3 +112,10 @@ Java_io_github_chinosk_gakumas_localify_GakumasHookMain_loadConfig(JNIEnv *env, 
     const std::string configJson = configJsonStrChars;
     GakumasLocal::Config::LoadConfig(configJson);
 }
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_io_github_chinosk_gakumas_localify_GakumasHookMain_pluginCallbackLooper(JNIEnv *env,
+                                                                             jclass clazz) {
+    GakumasLocal::Log::ToastLoop(env, clazz);
+}

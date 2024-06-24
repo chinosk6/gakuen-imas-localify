@@ -25,8 +25,14 @@ import android.widget.Toast
 import com.google.gson.Gson
 import de.robv.android.xposed.XposedBridge
 import io.github.chinosk.gakumas.localify.models.GakumasConfig
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import java.io.File
 import java.util.Locale
+import kotlin.system.measureTimeMillis
 
 val TAG = "GakumasLocalify"
 
@@ -42,6 +48,20 @@ class GakumasHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
     private var getConfigError: Exception? = null
 
     override fun handleLoadPackage(lpparam: XC_LoadPackage.LoadPackageParam) {
+//        if (lpparam.packageName == "io.github.chinosk.gakumas.localify") {
+//            XposedHelpers.findAndHookMethod(
+//                "io.github.chinosk.gakumas.localify.MainActivity",
+//                lpparam.classLoader,
+//                "showToast",
+//                String::class.java,
+//                object : XC_MethodHook() {
+//                    override fun beforeHookedMethod(param: MethodHookParam) {
+//                        Log.d(TAG, "beforeHookedMethod hooked: ${param.args}")
+//                    }
+//                }
+//            )
+//        }
+
         if (lpparam.packageName != targetPackageName) {
             return
         }
@@ -175,6 +195,21 @@ class GakumasHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
                     alreadyInitialized = true
                 }
             })
+
+        startLoop()
+    }
+
+    @OptIn(DelicateCoroutinesApi::class)
+    private fun startLoop() {
+        GlobalScope.launch {
+            val interval = 1000L / 30
+            while (isActive) {
+                val timeTaken = measureTimeMillis {
+                    pluginCallbackLooper()
+                }
+                delay(interval - timeTaken)
+            }
+        }
     }
 
     fun initGkmsConfig(activity: Activity) {
@@ -337,6 +372,9 @@ class GakumasHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
                 Log.e(TAG, "showToast: $message failed: applicationContext is null")
             }
         }
+
+        @JvmStatic
+        external fun pluginCallbackLooper()
     }
 
     init {
