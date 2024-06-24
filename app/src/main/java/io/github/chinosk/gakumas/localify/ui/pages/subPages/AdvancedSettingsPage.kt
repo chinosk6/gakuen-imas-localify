@@ -107,6 +107,12 @@ fun AdvanceSettingsPage(modifier: Modifier = Modifier,
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         item {
+                            GakuSwitch(modifier = modifier,
+                                checked = config.value.enableBreastParam,
+                                text = stringResource(R.string.enable_breast_param)
+                            ) { v -> context?.onEnableBreastParamChanged(v) }
+                        }
+                        item {
                             Row(modifier = modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                                 val buttonModifier = remember {
