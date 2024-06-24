@@ -24,3 +24,16 @@
 
 #define WM_KEYDOWN 0
 #define WM_KEYUP 1
+
+#define BTN_A 96
+#define BTN_B 97
+#define BTN_X 99
+#define BTN_Y 100
+#define BTN_LB 102
+#define BTN_RB 103
+#define BTN_THUMBL 106
+#define BTN_THUMBR 107
+#define BTN_SELECT 109
+#define BTN_START 108
+#define BTN_SHARE 130
+#define BTN_XBOX 110

@@ -1,7 +1,16 @@
 package io.github.chinosk.gakumas.localify
 
 import android.view.KeyEvent
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import io.github.chinosk.gakumas.localify.databinding.ActivityMainBinding
+import io.github.chinosk.gakumas.localify.models.GakumasConfig
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 
 interface ConfigListener {
@@ -48,9 +57,26 @@ interface ConfigListener {
     fun onBClickPresetChanged(index: Int)
 }
 
+class UserConfigViewModelFactory(private val initialValue: GakumasConfig) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(UserConfigViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return UserConfigViewModel(initialValue) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
+    }
+}
+
+class UserConfigViewModel(initValue: GakumasConfig) : ViewModel() {
+    val configState = MutableStateFlow(initValue)
+    val config: StateFlow<GakumasConfig> = configState.asStateFlow()
+}
+
 
 interface ConfigUpdateListener: ConfigListener {
     var binding: ActivityMainBinding
+    var factory: UserConfigViewModelFactory
+    var viewModel: UserConfigViewModel
 
     fun pushKeyEvent(event: KeyEvent): Boolean
     fun getConfigContent(): String
@@ -247,6 +273,11 @@ interface ConfigUpdateListener: ConfigListener {
             R.id.radioButtonGameDefault -> binding.config!!.gameOrientation = 0
             R.id.radioButtonGamePortrait -> binding.config!!.gameOrientation = 1
             R.id.radioButtonGameLandscape -> binding.config!!.gameOrientation = 2
+            else -> {
+                if (listOf(0, 1, 2).contains(checkedId)) {
+                    binding.config!!.gameOrientation = checkedId
+                }
+            }
         }
         saveConfig()
     }

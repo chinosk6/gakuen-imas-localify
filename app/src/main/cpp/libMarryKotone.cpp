@@ -9,6 +9,7 @@
 #include "xdl.h"
 #include "GakumasLocalify/camera/camera.hpp"
 #include "GakumasLocalify/config/Config.hpp"
+#include "Joystick/JoystickEvent.h"
 
 JavaVM* g_javaVM = nullptr;
 jclass g_gakumasHookMainClass = nullptr;
@@ -89,9 +90,32 @@ Java_io_github_chinosk_gakumas_localify_GakumasHookMain_keyboardEvent(JNIEnv *en
 
 extern "C"
 JNIEXPORT void JNICALL
+Java_io_github_chinosk_gakumas_localify_GakumasHookMain_joystickEvent(JNIEnv *env, jclass clazz,
+                                                                      jint action,
+                                                                      jfloat leftStickX,
+                                                                      jfloat leftStickY,
+                                                                      jfloat rightStickX,
+                                                                      jfloat rightStickY,
+                                                                      jfloat leftTrigger,
+                                                                      jfloat rightTrigger,
+                                                                      jfloat hatX,
+                                                                      jfloat hatY) {
+    JoystickEvent event(action, leftStickX, leftStickY, rightStickX, rightStickY, leftTrigger, rightTrigger, hatX, hatY);
+    GKCamera::on_cam_rawinput_joystick(event);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
 Java_io_github_chinosk_gakumas_localify_GakumasHookMain_loadConfig(JNIEnv *env, jclass clazz,
                                                                    jstring config_json_str) {
     const auto configJsonStrChars = env->GetStringUTFChars(config_json_str, nullptr);
     const std::string configJson = configJsonStrChars;
     GakumasLocal::Config::LoadConfig(configJson);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_io_github_chinosk_gakumas_localify_GakumasHookMain_pluginCallbackLooper(JNIEnv *env,
+                                                                             jclass clazz) {
+    GakumasLocal::Log::ToastLoop(env, clazz);
 }

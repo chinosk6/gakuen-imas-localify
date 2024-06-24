@@ -87,7 +87,7 @@ namespace GakumasLocal::HookMain {
     }
 
     bool IsNativeObjectAlive(void* obj) {
-        static UnityResolve::Method* IsNativeObjectAliveMtd = NULL;
+        static UnityResolve::Method* IsNativeObjectAliveMtd = nullptr;
         if (!IsNativeObjectAliveMtd) IsNativeObjectAliveMtd = Il2cppUtils::GetMethod("UnityEngine.CoreModule.dll", "UnityEngine",
                                                                                      "Object", "IsNativeObjectAlive");
         return IsNativeObjectAliveMtd->Invoke<bool>(obj);
@@ -109,18 +109,18 @@ namespace GakumasLocal::HookMain {
         return GetResolution->Invoke<Il2cppUtils::Resolution_t>();
     }
 
-    DEFINE_HOOK(void, Unity_set_fieldOfView, (UnityResolve::UnityType::Camera* _this, float value)) {
+    DEFINE_HOOK(void, Unity_set_fieldOfView, (UnityResolve::UnityType::Camera* self, float value)) {
         if (Config::enableFreeCamera) {
-            if (_this == mainCameraCache) {
+            if (self == mainCameraCache) {
                 value = GKCamera::baseCamera.fov;
             }
         }
-        Unity_set_fieldOfView_Orig(_this, value);
+        Unity_set_fieldOfView_Orig(self, value);
     }
 
-    DEFINE_HOOK(float, Unity_get_fieldOfView, (UnityResolve::UnityType::Camera* _this)) {
+    DEFINE_HOOK(float, Unity_get_fieldOfView, (UnityResolve::UnityType::Camera* self)) {
         if (Config::enableFreeCamera) {
-            if (_this == mainCameraCache) {
+            if (self == mainCameraCache) {
                 static auto get_orthographic = reinterpret_cast<bool (*)(void*)>(Il2cppUtils::il2cpp_resolve_icall(
                         "UnityEngine.Camera::get_orthographic()"
                 ));
@@ -133,30 +133,30 @@ namespace GakumasLocal::HookMain {
                     // set_orthographic(i, false);
                     Unity_set_fieldOfView_Orig(i, GKCamera::baseCamera.fov);
                 }
-                Unity_set_fieldOfView_Orig(_this, GKCamera::baseCamera.fov);
+                Unity_set_fieldOfView_Orig(self, GKCamera::baseCamera.fov);
 
-                // Log::DebugFmt("main - get_orthographic: %d", get_orthographic(_this));
+                // Log::DebugFmt("main - get_orthographic: %d", get_orthographic(self));
                 return GKCamera::baseCamera.fov;
             }
         }
-        return Unity_get_fieldOfView_Orig(_this);
+        return Unity_get_fieldOfView_Orig(self);
     }
 
-    UnityResolve::UnityType::Transform* cacheTrans = NULL;
+    UnityResolve::UnityType::Transform* cacheTrans = nullptr;
     UnityResolve::UnityType::Quaternion cacheRotation{};
     UnityResolve::UnityType::Vector3 cachePosition{};
     UnityResolve::UnityType::Vector3 cacheForward{};
     UnityResolve::UnityType::Vector3 cacheLookAt{};
 
-    DEFINE_HOOK(void, Unity_set_rotation_Injected, (UnityResolve::UnityType::Transform* _this, UnityResolve::UnityType::Quaternion* value)) {
+    DEFINE_HOOK(void, Unity_set_rotation_Injected, (UnityResolve::UnityType::Transform* self, UnityResolve::UnityType::Quaternion* value)) {
         if (Config::enableFreeCamera) {
-            static auto lookat_injected = reinterpret_cast<void (*)(void*_this,
+            static auto lookat_injected = reinterpret_cast<void (*)(void*self,
                                                                     UnityResolve::UnityType::Vector3* worldPosition, UnityResolve::UnityType::Vector3* worldUp)>(
                     Il2cppUtils::il2cpp_resolve_icall(
                             "UnityEngine.Transform::Internal_LookAt_Injected(UnityEngine.Vector3&,UnityEngine.Vector3&)"));
             static auto worldUp = UnityResolve::UnityType::Vector3(0, 1, 0);
 
-            if (cameraTransformCache == _this) {
+            if (cameraTransformCache == self) {
                 const auto cameraMode = GKCamera::GetCameraMode();
                 if (cameraMode == GKCamera::CameraMode::FIRST_PERSON) {
                     if (cacheTrans && IsNativeObjectAlive(cacheTrans)) {
@@ -167,7 +167,7 @@ namespace GakumasLocal::HookMain {
                             static GakumasLocal::Misc::FixedSizeQueue<float> recordsY(60);
                             const auto newY = GKCamera::CheckNewY(cacheLookAt, true, recordsY);
                             UnityResolve::UnityType::Vector3 newCacheLookAt{cacheLookAt.x, newY, cacheLookAt.z};
-                            lookat_injected(_this, &newCacheLookAt, &worldUp);
+                            lookat_injected(self, &newCacheLookAt, &worldUp);
                             return;
                         }
                     }
@@ -175,25 +175,25 @@ namespace GakumasLocal::HookMain {
                 else if (cameraMode == GKCamera::CameraMode::FOLLOW) {
                     auto newLookAtPos = GKCamera::CalcFollowModeLookAt(cachePosition,
                                                                        GKCamera::followPosOffset, true);
-                    lookat_injected(_this, &newLookAtPos, &worldUp);
+                    lookat_injected(self, &newLookAtPos, &worldUp);
                     return;
                 }
                 else {
                     auto& origCameraLookat = GKCamera::baseCamera.lookAt;
-                    lookat_injected(_this, &origCameraLookat, &worldUp);
+                    lookat_injected(self, &origCameraLookat, &worldUp);
                     // Log::DebugFmt("fov: %f, target: %f", Unity_get_fieldOfView_Orig(mainCameraCache), GKCamera::baseCamera.fov);
                     return;
                 }
             }
         }
-        return Unity_set_rotation_Injected_Orig(_this, value);
+        return Unity_set_rotation_Injected_Orig(self, value);
     }
 
-    DEFINE_HOOK(void, Unity_set_position_Injected, (UnityResolve::UnityType::Transform* _this, UnityResolve::UnityType::Vector3* data)) {
+    DEFINE_HOOK(void, Unity_set_position_Injected, (UnityResolve::UnityType::Transform* self, UnityResolve::UnityType::Vector3* data)) {
         if (Config::enableFreeCamera) {
             CheckAndUpdateMainCamera();
 
-            if (cameraTransformCache == _this) {
+            if (cameraTransformCache == self) {
                 const auto cameraMode = GKCamera::GetCameraMode();
                 if (cameraMode == GKCamera::CameraMode::FIRST_PERSON) {
                     if (cacheTrans && IsNativeObjectAlive(cacheTrans)) {
@@ -218,16 +218,16 @@ namespace GakumasLocal::HookMain {
             }
         }
 
-        return Unity_set_position_Injected_Orig(_this, data);
+        return Unity_set_position_Injected_Orig(self, data);
     }
 
-    DEFINE_HOOK(void*, InternalSetOrientationAsync, (void* _this, int type, void* c, void* tc, void* mtd)) {
+    DEFINE_HOOK(void*, InternalSetOrientationAsync, (void* self, int type, void* c, void* tc, void* mtd)) {
         switch (Config::gameOrientation) {
             case 1: type = 0x2; break;  // FixedPortrait
             case 2: type = 0x3; break;  // FixedLandscape
             default: break;
         }
-        return InternalSetOrientationAsync_Orig(_this, type, c, tc, mtd);
+        return InternalSetOrientationAsync_Orig(self, type, c, tc, mtd);
     }
 
     DEFINE_HOOK(void, EndCameraRendering, (void* ctx, void* camera, void* method)) {
@@ -248,16 +248,16 @@ namespace GakumasLocal::HookMain {
 
     std::unordered_map<void*, std::string> loadHistory{};
 
-    DEFINE_HOOK(void*, AssetBundle_LoadAssetAsync, (void* _this, Il2cppString* name, void* type)) {
+    DEFINE_HOOK(void*, AssetBundle_LoadAssetAsync, (void* self, Il2cppString* name, void* type)) {
         // Log::InfoFmt("AssetBundle_LoadAssetAsync: %s, type: %s", name->ToString().c_str());
-        auto ret = AssetBundle_LoadAssetAsync_Orig(_this, name, type);
+        auto ret = AssetBundle_LoadAssetAsync_Orig(self, name, type);
         loadHistory.emplace(ret, name->ToString());
         return ret;
     }
 
-    DEFINE_HOOK(void*, AssetBundleRequest_GetResult, (void* _this)) {
-        auto result = AssetBundleRequest_GetResult_Orig(_this);
-        if (const auto iter = loadHistory.find(_this); iter != loadHistory.end()) {
+    DEFINE_HOOK(void*, AssetBundleRequest_GetResult, (void* self)) {
+        auto result = AssetBundleRequest_GetResult_Orig(self);
+        if (const auto iter = loadHistory.find(self); iter != loadHistory.end()) {
             const auto name = iter->second;
             loadHistory.erase(iter);
 
@@ -275,25 +275,25 @@ namespace GakumasLocal::HookMain {
         return ret;
     }
 
-    DEFINE_HOOK(void, I18nHelper_SetUpI18n, (void* _this, Il2cppString* lang, Il2cppString* localizationText, int keyComparison)) {
+    DEFINE_HOOK(void, I18nHelper_SetUpI18n, (void* self, Il2cppString* lang, Il2cppString* localizationText, int keyComparison)) {
         // Log::InfoFmt("SetUpI18n lang: %s, key: %d text: %s", lang->ToString().c_str(), keyComparison, localizationText->ToString().c_str());
         // TODO 此处为 dump 原文 csv
-        I18nHelper_SetUpI18n_Orig(_this, lang, localizationText, keyComparison);
+        I18nHelper_SetUpI18n_Orig(self, lang, localizationText, keyComparison);
     }
 
-    DEFINE_HOOK(void, I18nHelper_SetValue, (void* _this, Il2cppString* key, Il2cppString* value)) {
+    DEFINE_HOOK(void, I18nHelper_SetValue, (void* self, Il2cppString* key, Il2cppString* value)) {
         // Log::InfoFmt("I18nHelper_SetValue: %s - %s", key->ToString().c_str(), value->ToString().c_str());
         std::string local;
         if (Local::GetI18n(key->ToString(), &local)) {
-            I18nHelper_SetValue_Orig(_this, key, UnityResolve::UnityType::String::New(local));
+            I18nHelper_SetValue_Orig(self, key, UnityResolve::UnityType::String::New(local));
             return;
         }
         Local::DumpI18nItem(key->ToString(), value->ToString());
         if (Config::textTest) {
-            I18nHelper_SetValue_Orig(_this, key, Il2cppString::New("[I18]" + value->ToString()));
+            I18nHelper_SetValue_Orig(self, key, Il2cppString::New("[I18]" + value->ToString()));
         }
         else {
-            I18nHelper_SetValue_Orig(_this, key, value);
+            I18nHelper_SetValue_Orig(self, key, value);
         }
     }
 
@@ -322,7 +322,7 @@ namespace GakumasLocal::HookMain {
     }
 
     std::unordered_set<void*> updatedFontPtrs{};
-    void UpdateFont(void* TMP_Text_this) {
+    void UpdateFont(void* TMP_Textself) {
         if (!Config::replaceFont) return;
         static auto get_font = Il2cppUtils::GetMethod("Unity.TextMeshPro.dll",
                                                       "TMPro", "TMP_Text", "get_font");
@@ -334,7 +334,7 @@ namespace GakumasLocal::HookMain {
         static auto UpdateFontAssetData = Il2cppUtils::GetMethod("Unity.TextMeshPro.dll", "TMPro",
                                                                  "TMP_FontAsset", "UpdateFontAssetData");
 
-        auto fontAsset = get_font->Invoke<void*>(TMP_Text_this);
+        auto fontAsset = get_font->Invoke<void*>(TMP_Textself);
         auto newFont = GetReplaceFont();
         if (fontAsset && newFont) {
             set_sourceFontFile->Invoke<void>(fontAsset, newFont);
@@ -344,12 +344,12 @@ namespace GakumasLocal::HookMain {
             }
             if (updatedFontPtrs.size() > 200) updatedFontPtrs.clear();
         }
-        set_font->Invoke<void>(TMP_Text_this, fontAsset);
+        set_font->Invoke<void>(TMP_Textself, fontAsset);
     }
 
-    DEFINE_HOOK(void, TMP_Text_PopulateTextBackingArray, (void* _this, UnityResolve::UnityType::String* text, int start, int length)) {
+    DEFINE_HOOK(void, TMP_Text_PopulateTextBackingArray, (void* self, UnityResolve::UnityType::String* text, int start, int length)) {
         if (!text) {
-            return TMP_Text_PopulateTextBackingArray_Orig(_this, text, start, length);
+            return TMP_Text_PopulateTextBackingArray_Orig(self, text, start, length);
         }
 
         static auto Substring = Il2cppUtils::GetMethod("mscorlib.dll", "System", "String", "Substring",
@@ -359,48 +359,48 @@ namespace GakumasLocal::HookMain {
         std::string transText;
         if (Local::GetGenericText(origText, &transText)) {
             const auto newText = UnityResolve::UnityType::String::New(transText);
-            return TMP_Text_PopulateTextBackingArray_Orig(_this, newText, 0, newText->length);
+            return TMP_Text_PopulateTextBackingArray_Orig(self, newText, 0, newText->length);
         }
 
         if (Config::textTest) {
-            TMP_Text_PopulateTextBackingArray_Orig(_this, UnityResolve::UnityType::String::New("[TP]" + text->ToString()), start, length + 4);
+            TMP_Text_PopulateTextBackingArray_Orig(self, UnityResolve::UnityType::String::New("[TP]" + text->ToString()), start, length + 4);
         }
         else {
-            TMP_Text_PopulateTextBackingArray_Orig(_this, text, start, length);
+            TMP_Text_PopulateTextBackingArray_Orig(self, text, start, length);
         }
-        UpdateFont(_this);
+        UpdateFont(self);
     }
 
-    DEFINE_HOOK(void, TextMeshProUGUI_Awake, (void* _this, void* method)) {
-        // Log::InfoFmt("TextMeshProUGUI_Awake at %p, _this at %p", TextMeshProUGUI_Awake_Orig, _this);
+    DEFINE_HOOK(void, TextMeshProUGUI_Awake, (void* self, void* method)) {
+        // Log::InfoFmt("TextMeshProUGUI_Awake at %p, self at %p", TextMeshProUGUI_Awake_Orig, self);
 
         const auto TMP_Text_klass = Il2cppUtils::GetClass("Unity.TextMeshPro.dll",
                                                                      "TMPro", "TMP_Text");
         const auto get_Text_method = TMP_Text_klass->Get<UnityResolve::Method>("get_text");
         const auto set_Text_method = TMP_Text_klass->Get<UnityResolve::Method>("set_text");
-        const auto currText = get_Text_method->Invoke<UnityResolve::UnityType::String*>(_this);
+        const auto currText = get_Text_method->Invoke<UnityResolve::UnityType::String*>(self);
         if (currText) {
             //Log::InfoFmt("TextMeshProUGUI_Awake: %s", currText->ToString().c_str());
             std::string transText;
             if (Local::GetGenericText(currText->ToString(), &transText)) {
                 if (Config::textTest) {
-                    set_Text_method->Invoke<void>(_this, UnityResolve::UnityType::String::New("[TA]" + transText));
+                    set_Text_method->Invoke<void>(self, UnityResolve::UnityType::String::New("[TA]" + transText));
                 }
                 else {
-                    set_Text_method->Invoke<void>(_this, UnityResolve::UnityType::String::New(transText));
+                    set_Text_method->Invoke<void>(self, UnityResolve::UnityType::String::New(transText));
                 }
             }
         }
 
-        // set_font->Invoke<void>(_this, font);
-        UpdateFont(_this);
-        TextMeshProUGUI_Awake_Orig(_this, method);
+        // set_font->Invoke<void>(self, font);
+        UpdateFont(self);
+        TextMeshProUGUI_Awake_Orig(self, method);
     }
 
     // TODO 文本未hook完整
-    DEFINE_HOOK(void, TextField_set_value, (void* _this, Il2cppString* value)) {
+    DEFINE_HOOK(void, TextField_set_value, (void* self, Il2cppString* value)) {
         Log::DebugFmt("TextField_set_value: %s", value->ToString().c_str());
-        TextField_set_value_Orig(_this, value);
+        TextField_set_value_Orig(self, value);
     }
 
     DEFINE_HOOK(Il2cppString*, OctoCaching_GetResourceFileName, (void* data, void* method)) {
@@ -410,7 +410,7 @@ namespace GakumasLocal::HookMain {
     }
 
     DEFINE_HOOK(void, OctoResourceLoader_LoadFromCacheOrDownload,
-                (void* _this, Il2cppString* resourceName, void* onComplete, void* onProgress, void* method)) {
+                (void* self, Il2cppString* resourceName, void* onComplete, void* onProgress, void* method)) {
 
         Log::DebugFmt("OctoResourceLoader_LoadFromCacheOrDownload: %s\n", resourceName->ToString().c_str());
 
@@ -423,24 +423,24 @@ namespace GakumasLocal::HookMain {
                 const auto onComplete_invoke = reinterpret_cast<void (*)(void*, Il2cppString*, void*)>(
                         onComplete_invoke_mtd->methodPointer
                 );
-                onComplete_invoke(onComplete, UnityResolve::UnityType::String::New(replaceStr), NULL);
+                onComplete_invoke(onComplete, UnityResolve::UnityType::String::New(replaceStr), nullptr);
                 return;
             }
         }
 
-        return OctoResourceLoader_LoadFromCacheOrDownload_Orig(_this, resourceName, onComplete, onProgress, method);
+        return OctoResourceLoader_LoadFromCacheOrDownload_Orig(self, resourceName, onComplete, onProgress, method);
     }
 
-    DEFINE_HOOK(void, OnDownloadProgress_Invoke, (void* _this, Il2cppString* name, uint64_t receivedLength, uint64_t contentLength)) {
+    DEFINE_HOOK(void, OnDownloadProgress_Invoke, (void* self, Il2cppString* name, uint64_t receivedLength, uint64_t contentLength)) {
         Log::DebugFmt("OnDownloadProgress_Invoke: %s, %lu/%lu", name->ToString().c_str(), receivedLength, contentLength);
-        OnDownloadProgress_Invoke_Orig(_this, name, receivedLength, contentLength);
+        OnDownloadProgress_Invoke_Orig(self, name, receivedLength, contentLength);
     }
 
     // UnHooked
-    DEFINE_HOOK(UnityResolve::UnityType::String*, UI_I18n_GetOrDefault, (void* _this,
+    DEFINE_HOOK(UnityResolve::UnityType::String*, UI_I18n_GetOrDefault, (void* self,
             UnityResolve::UnityType::String* key, UnityResolve::UnityType::String* defaultKey, void* method)) {
 
-        auto ret = UI_I18n_GetOrDefault_Orig(_this, key, defaultKey, method);
+        auto ret = UI_I18n_GetOrDefault_Orig(self, key, defaultKey, method);
 
         // Log::DebugFmt("UI_I18n_GetOrDefault: key: %s, default: %s, result: %s", key->ToString().c_str(), defaultKey->ToString().c_str(), ret->ToString().c_str());
 
@@ -448,16 +448,16 @@ namespace GakumasLocal::HookMain {
         // return UnityResolve::UnityType::String::New("[I18]" + ret->ToString());
     }
 
-    DEFINE_HOOK(void, PictureBookLiveThumbnailView_SetData, (void* _this, void* liveData, bool isUnlocked, bool isNew)) {
+    DEFINE_HOOK(void, PictureBookLiveThumbnailView_SetData, (void* self, void* liveData, bool isUnlocked, bool isNew, void* ct, void* mtd)) {
         // Log::DebugFmt("PictureBookLiveThumbnailView_SetData: isUnlocked: %d, isNew: %d", isUnlocked, isNew);
-        if (Config::unlockAllLive) {
+        if (Config::dbgMode && Config::unlockAllLive) {
             isUnlocked = true;
         }
-        PictureBookLiveThumbnailView_SetData_Orig(_this, liveData, isUnlocked, isNew);
+        PictureBookLiveThumbnailView_SetData_Orig(self, liveData, isUnlocked, isNew, ct, mtd);
     }
 
     bool needRestoreHides = false;
-    DEFINE_HOOK(void*, PictureBookLiveSelectScreenPresenter_MoveLiveScene, (void* _this, void* produceLive,
+    DEFINE_HOOK(void*, PictureBookLiveSelectScreenPresenter_MoveLiveScene, (void* self, void* produceLive,
             Il2cppString* characterId, Il2cppString* costumeId, Il2cppString* costumeHeadId)) {
         needRestoreHides = false;
         Log::InfoFmt("MoveLiveScene: characterId: %s, costumeId: %s, costumeHeadId: %s,",
@@ -468,18 +468,18 @@ namespace GakumasLocal::HookMain {
          characterId: shro, costumeId: shro-cstm-0006, costumeHeadId: costume_head_shro-cstm-0006,
          */
 
-        if (Config::enableLiveCustomeDress) {
+        if (Config::dbgMode && Config::enableLiveCustomeDress) {
             // 修改 LiveFixedData_GetCharacter 可以更改 Loading 角色和演唱者名字，而不变更实际登台人
-            return PictureBookLiveSelectScreenPresenter_MoveLiveScene_Orig(_this, produceLive, characterId,
+            return PictureBookLiveSelectScreenPresenter_MoveLiveScene_Orig(self, produceLive, characterId,
                                                                            Config::liveCustomeCostumeId.empty() ? costumeId : Il2cppString::New(Config::liveCustomeCostumeId),
                                                                            Config::liveCustomeHeadId.empty() ? costumeHeadId : Il2cppString::New(Config::liveCustomeHeadId));
         }
 
-        return PictureBookLiveSelectScreenPresenter_MoveLiveScene_Orig(_this, produceLive, characterId, costumeId, costumeHeadId);
+        return PictureBookLiveSelectScreenPresenter_MoveLiveScene_Orig(self, produceLive, characterId, costumeId, costumeHeadId);
     }
 
     // std::string lastMusicId;
-    DEFINE_HOOK(void, PictureBookLiveSelectScreenPresenter_OnSelectMusic, (void* _this, void* itemModel, bool isFirst, void* mtd)) {
+    DEFINE_HOOK(void, PictureBookLiveSelectScreenPresenter_OnSelectMusic, (void* self, void* itemModel, void* ct, void* mtd)) {
         /*  // 修改角色后，Live 结束返回时, itemModel 为 null
         Log::DebugFmt("OnSelectMusic itemModel at %p", itemModel);
 
@@ -501,7 +501,7 @@ namespace GakumasLocal::HookMain {
             auto newItemModel = PictureBookLiveSelectMusicListItemModel_klass->New<void*>();
             PictureBookLiveSelectMusicListItemModel_ctor->Invoke<void>(newItemModel, music, false);
 
-            return PictureBookLiveSelectScreenPresenter_OnSelectMusic_Orig(_this, newItemModel, isFirst, mtd);
+            return PictureBookLiveSelectScreenPresenter_OnSelectMusic_Orig(self, newItemModel, isFirst, mtd);
         }
 
         if (itemModel) {
@@ -510,23 +510,23 @@ namespace GakumasLocal::HookMain {
             lastMusicId = musicId->ToString();
         }*/
         if (!itemModel) return;
-        return PictureBookLiveSelectScreenPresenter_OnSelectMusic_Orig(_this, itemModel, isFirst, mtd);
+        return PictureBookLiveSelectScreenPresenter_OnSelectMusic_Orig(self, itemModel, ct, mtd);
     }
 
-    DEFINE_HOOK(bool, VLDOF_IsActive, (void* _this)) {
+    DEFINE_HOOK(bool, VLDOF_IsActive, (void* self)) {
         if (Config::enableFreeCamera) return false;
-        return VLDOF_IsActive_Orig(_this);
+        return VLDOF_IsActive_Orig(self);
     }
 
-    DEFINE_HOOK(void, CampusQualityManager_set_TargetFrameRate, (void* _this, float value)) {
+    DEFINE_HOOK(void, CampusQualityManager_set_TargetFrameRate, (void* self, float value)) {
         // Log::InfoFmt("CampusQualityManager_set_TargetFrameRate: %f", value);
         const auto configFps = Config::targetFrameRate;
-        CampusQualityManager_set_TargetFrameRate_Orig(_this, configFps == 0 ? value : (float)configFps);
+        CampusQualityManager_set_TargetFrameRate_Orig(self, configFps == 0 ? value : (float)configFps);
     }
 
-    DEFINE_HOOK(void, CampusQualityManager_ApplySetting, (void* _this, int qualitySettingsLevel, int maxBufferPixel, float renderScale, int volumeIndex)) {
+    DEFINE_HOOK(void, CampusQualityManager_ApplySetting, (void* self, int qualitySettingsLevel, int maxBufferPixel, float renderScale, int volumeIndex)) {
         if (Config::targetFrameRate != 0) {
-            CampusQualityManager_set_TargetFrameRate_Orig(_this, Config::targetFrameRate);
+            CampusQualityManager_set_TargetFrameRate_Orig(self, Config::targetFrameRate);
         }
         if (Config::useCustomeGraphicSettings) {
             static auto SetReflectionQuality = Il2cppUtils::GetMethod("campus-submodule.Runtime.dll", "Campus.Common",
@@ -545,8 +545,8 @@ namespace GakumasLocal::HookMain {
             if (Config::lodQualityLevel >= values.size()) Config::lodQualityLevel = values.size() - 1;
             if (Config::reflectionQualityLevel >= values.size()) Config::reflectionQualityLevel = values.size() - 1;
 
-            SetLODQuality->Invoke<void>(_this, values[Config::lodQualityLevel]);
-            SetReflectionQuality->Invoke<void>(_this, values[Config::reflectionQualityLevel]);
+            SetLODQuality->Invoke<void>(self, values[Config::lodQualityLevel]);
+            SetReflectionQuality->Invoke<void>(self, values[Config::reflectionQualityLevel]);
 
             qualitySettingsLevel = Config::qualitySettingsLevel;
             maxBufferPixel = Config::maxBufferPixel;
@@ -557,7 +557,7 @@ namespace GakumasLocal::HookMain {
                               qualitySettingsLevel, maxBufferPixel, renderScale, volumeIndex, Config::lodQualityLevel, Config::reflectionQualityLevel);
         }
 
-        CampusQualityManager_ApplySetting_Orig(_this, qualitySettingsLevel, maxBufferPixel, renderScale, volumeIndex);
+        CampusQualityManager_ApplySetting_Orig(self, qualitySettingsLevel, maxBufferPixel, renderScale, volumeIndex);
     }
 
     DEFINE_HOOK(void, UIManager_UpdateRenderTarget, (UnityResolve::UnityType::Vector2 ratio, void* mtd)) {
@@ -566,10 +566,10 @@ namespace GakumasLocal::HookMain {
         return UIManager_UpdateRenderTarget_Orig(ratio, mtd);
     }
 
-    DEFINE_HOOK(void, VLSRPCameraController_UpdateRenderTarget, (void* _this, int width, int height, bool forceAlpha, void* method)) {
+    DEFINE_HOOK(void, VLSRPCameraController_UpdateRenderTarget, (void* self, int width, int height, bool forceAlpha, void* method)) {
         // const auto resolution = GetResolution();
         // Log::DebugFmt("VLSRPCameraController_UpdateRenderTarget: %d, %d", width, height);
-        return VLSRPCameraController_UpdateRenderTarget_Orig(_this, width, height, forceAlpha, method);
+        return VLSRPCameraController_UpdateRenderTarget_Orig(self, width, height, forceAlpha, method);
     }
 
     DEFINE_HOOK(void*, VLUtility_GetLimitedResolution, (int32_t screenWidth, int32_t screenHeight,
@@ -584,8 +584,8 @@ namespace GakumasLocal::HookMain {
     }
 
 
-    DEFINE_HOOK(void, CampusActorModelParts_OnRegisterBone, (void* _this, Il2cppString** name, UnityResolve::UnityType::Transform* bone)) {
-        CampusActorModelParts_OnRegisterBone_Orig(_this, name, bone);
+    DEFINE_HOOK(void, CampusActorModelParts_OnRegisterBone, (void* self, Il2cppString** name, UnityResolve::UnityType::Transform* bone)) {
+        CampusActorModelParts_OnRegisterBone_Orig(self, name, bone);
         // Log::DebugFmt("CampusActorModelParts_OnRegisterBone: %s, %p", (*name)->ToString().c_str(), bone);
     }
 
@@ -607,6 +607,7 @@ namespace GakumasLocal::HookMain {
         }
 
         std::vector<std::string> namesVec{};
+        namesVec.reserve(names.size());
         for (auto i :names) {
             namesVec.push_back(i->ToString());
         }
@@ -645,7 +646,7 @@ namespace GakumasLocal::HookMain {
         }
     }
 
-    DEFINE_HOOK(void, CampusActorController_LateUpdate, (void* _this, void* mtd)) {
+    DEFINE_HOOK(void, CampusActorController_LateUpdate, (void* self, void* mtd)) {
         static auto CampusActorController_klass = Il2cppUtils::GetClass("campus-submodule.Runtime.dll",
                                                                         "Campus.Common", "CampusActorController");
         static auto rootBody_field = CampusActorController_klass->Get<UnityResolve::Field>("_rootBody");
@@ -654,10 +655,10 @@ namespace GakumasLocal::HookMain {
         if (!Config::enableFreeCamera || (GKCamera::GetCameraMode() == GKCamera::CameraMode::FREE)) {
             if (needRestoreHides) {
                 needRestoreHides = false;
-                HideHead(NULL, false);
-                HideHead(NULL, true);
+                HideHead(nullptr, false);
+                HideHead(nullptr, true);
             }
-            return CampusActorController_LateUpdate_Orig(_this, mtd);
+            return CampusActorController_LateUpdate_Orig(self, mtd);
         }
 
         static auto GetHumanBodyBoneTransform_mtd = Il2cppUtils::il2cpp_class_get_method_from_name(parentKlass, "GetHumanBodyBoneTransform", 1);
@@ -668,13 +669,13 @@ namespace GakumasLocal::HookMain {
         static auto get_Index = get_index_mtd ? reinterpret_cast<int (*)(void*)>(
                 get_index_mtd->methodPointer) : [](void*){return 0;};
 
-        const auto currIndex = get_Index(_this);
+        const auto currIndex = get_Index(self);
         if (currIndex == GKCamera::followCharaIndex) {
             static auto initPartsSuccess = InitBodyParts();
             static auto headBodyId = initPartsSuccess ? GKCamera::bodyPartsEnum.GetValueByName("Head") : 0xA;
             const auto isFirstPerson = GKCamera::GetCameraMode() == GKCamera::CameraMode::FIRST_PERSON;
 
-            auto targetTrans = GetHumanBodyBoneTransform(_this,
+            auto targetTrans = GetHumanBodyBoneTransform(self,
                                                          isFirstPerson ? headBodyId : GKCamera::bodyPartsEnum.GetCurrent().second);
 
             if (targetTrans) {
@@ -684,7 +685,7 @@ namespace GakumasLocal::HookMain {
                 cacheForward = cacheTrans->GetForward();
                 cacheLookAt = cacheTrans->GetPosition() + cacheTrans->GetForward() * 3;
 
-                auto rootBody = Il2cppUtils::ClassGetFieldValue<UnityResolve::UnityType::Transform*>(_this, rootBody_field);
+                auto rootBody = Il2cppUtils::ClassGetFieldValue<UnityResolve::UnityType::Transform*>(self, rootBody_field);
                 auto rootModel = rootBody->GetParent();
                 auto rootModelChildCount = rootModel->GetChildCount();
                 for (int i = 0; i < rootModelChildCount; i++) {
@@ -706,12 +707,12 @@ namespace GakumasLocal::HookMain {
                 }
             }
             else {
-                cacheTrans = NULL;
+                cacheTrans = nullptr;
             }
 
         }
 
-        CampusActorController_LateUpdate_Orig(_this, mtd);
+        CampusActorController_LateUpdate_Orig(self, mtd);
     }
 
     void UpdateSwingBreastBonesData(void* initializeData) {
@@ -814,9 +815,9 @@ namespace GakumasLocal::HookMain {
         // Log::DebugFmt("\n");
     }
 
-    DEFINE_HOOK(void, CampusActorAnimation_Setup, (void* _this, void* rootTrans, void* initializeData)) {
+    DEFINE_HOOK(void, CampusActorAnimation_Setup, (void* self, void* rootTrans, void* initializeData)) {
         UpdateSwingBreastBonesData(initializeData);
-        return CampusActorAnimation_Setup_Orig(_this, rootTrans, initializeData);
+        return CampusActorAnimation_Setup_Orig(self, rootTrans, initializeData);
     }
 
     void StartInjectFunctions() {
@@ -862,14 +863,14 @@ namespace GakumasLocal::HookMain {
 
         ADD_HOOK(PictureBookLiveThumbnailView_SetData,
                  Il2cppUtils::GetMethodPointer("Assembly-CSharp.dll", "Campus.OutGame.PictureBook",
-                                               "PictureBookLiveThumbnailView", "SetData"));
+                                               "PictureBookLiveThumbnailView", "SetDataAsync", {"*", "*", "*", "*"}));
 
         ADD_HOOK(PictureBookLiveSelectScreenPresenter_MoveLiveScene,
                  Il2cppUtils::GetMethodPointer("Assembly-CSharp.dll", "Campus.OutGame",
                                                "PictureBookLiveSelectScreenPresenter", "MoveLiveScene"));
         ADD_HOOK(PictureBookLiveSelectScreenPresenter_OnSelectMusic,
                  Il2cppUtils::GetMethodPointer("Assembly-CSharp.dll", "Campus.OutGame",
-                                               "PictureBookLiveSelectScreenPresenter", "OnSelectMusic"));
+                                               "PictureBookLiveSelectScreenPresenter", "OnSelectMusicAsync"));
 
         ADD_HOOK(VLDOF_IsActive,
                  Il2cppUtils::GetMethodPointer("Unity.RenderPipelines.Universal.Runtime.dll", "VL.Rendering",

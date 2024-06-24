@@ -30,7 +30,7 @@ namespace BaseCamera {
 		void setPos(float x, float y, float z);
 		void setLookAt(float x, float y, float z);
 
-		void set_lon_move(float vertanglePlus, LonMoveHState moveState = LonMoveHState::LonMoveLeftAndRight);
+		void set_lon_move(float vertanglePlus, LonMoveHState moveState = LonMoveHState::LonMoveLeftAndRight, float multiplier = 1.0f);
 		void updateVertLook();
 		void setHoriLook(float vertangle);
 
