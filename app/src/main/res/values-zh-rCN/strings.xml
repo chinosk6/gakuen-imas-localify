@@ -61,8 +61,6 @@
     <string name="about_about_p2">插件交流群: 975854705</string>
     <string name="project_contribution">项目贡献</string>
     <string name="plugin_code">插件本体</string>
-    <string name="translation_workflow">译文工作流</string>
-    <string name="and_other_translators">以及其他所有翻译贡献者</string>
     <string name="contributors">贡献者列表</string>
     <string name="translation_repository">译文仓库</string>
 
