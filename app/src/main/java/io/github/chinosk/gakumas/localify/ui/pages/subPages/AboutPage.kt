@@ -8,14 +8,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -29,8 +28,11 @@ import coil.compose.rememberAsyncImagePainter
 import coil.decode.SvgDecoder
 import coil.request.ImageRequest
 import coil.size.Size
+import com.google.gson.Gson
 import io.github.chinosk.gakumas.localify.MainActivity
 import io.github.chinosk.gakumas.localify.R
+import io.github.chinosk.gakumas.localify.hookUtils.FilesChecker.convertToString
+import io.github.chinosk.gakumas.localify.models.AboutPageConfig
 import io.github.chinosk.gakumas.localify.models.GakumasConfig
 import io.github.chinosk.gakumas.localify.ui.components.GakuButton
 
@@ -42,6 +44,13 @@ fun AboutPage(modifier: Modifier = Modifier,
              bottomSpacerHeight: Dp = 120.dp,
              screenH: Dp = 1080.dp) {
     // val config = getConfigState(context, previewData)
+    val contributorInfo = remember {
+        val dataJsonString = context?.getString(R.string.about_contributors_asset_file)?.let {
+            convertToString(context.assets?.open(it))
+        }
+        Gson().fromJson(dataJsonString, AboutPageConfig::class.java)
+            ?: AboutPageConfig()
+    }
 
     LazyColumn(modifier = modifier
         .sizeIn(maxHeight = screenH)
@@ -77,8 +86,10 @@ fun AboutPage(modifier: Modifier = Modifier,
                 .padding(
                     start = 8.dp, end = 8.dp, top = 8.dp, bottom = 0.dp
                 )) {
-                GakuButton(text = "Github", modifier = modifier.weight(1f).sizeIn(maxWidth = 600.dp), onClick = {
-                    context?.openUrl("https://github.com/chinosk6/gakuen-imas-localify")
+                GakuButton(text = "Github", modifier = modifier
+                    .weight(1f)
+                    .sizeIn(maxWidth = 600.dp), onClick = {
+                    context?.openUrl(contributorInfo.plugin_repo)
                 })
             }
         }
@@ -97,52 +108,23 @@ fun AboutPage(modifier: Modifier = Modifier,
                 item {
                     Text(stringResource(R.string.project_contribution), fontSize = 24.sp, color = MaterialTheme.colorScheme.onPrimaryContainer)
                 }
-                item {
-                    Row(modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(0.dp, 8.dp, 8.dp, 8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically) {
-                        Text("chinosk（${stringResource(R.string.plugin_code)}）", fontSize = 16.sp)
-                        GakuButton(text = "Github", modifier = modifier.height(40.dp),
-                            onClick = {
-                            context?.openUrl("https://github.com/chinosk6")
-                        })
-                        GakuButton(text = "Bilibili", modifier = modifier.height(40.dp),
-                            onClick = {
-                                context?.openUrl("https://space.bilibili.com/287061163")
-                            })
+                for (contributor in contributorInfo.main_contributors) {
+                    item {
+                        Row(modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(0.dp, 8.dp, 8.dp, 8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically) {
+                            Text(contributor.name, fontSize = 16.sp)
+                            for (link in contributor.links) {
+                                GakuButton(text = link.name, modifier = modifier.height(40.dp),
+                                    onClick = {
+                                        context?.openUrl(link.link)
+                                    })
+                            }
+                        }
                     }
-                }
-                item {
-                    Row(modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(0.dp, 8.dp, 8.dp, 8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically) {
-                        Text("DarwinTree（${stringResource(R.string.translation_workflow)}）", fontSize = 16.sp)
-                        GakuButton(text = "Github", modifier = modifier.height(40.dp),
-                            onClick = {
-                                context?.openUrl("https://github.com/darwintree")
-                            })
-                        GakuButton(text = "Bilibili", modifier = modifier.height(40.dp),
-                            onClick = {
-                                context?.openUrl("https://space.bilibili.com/6069705")
-                            })
-                    }
-                }
-                item {
-                    Row(modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(0.dp, 8.dp, 8.dp, 8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically) {
-                        Text(stringResource(R.string.and_other_translators), fontSize = 16.sp)
-                        GakuButton(text = "Github", modifier = modifier.height(40.dp),
-                            onClick = {
-                                context?.openUrl("https://github.com/chinosk6/GakumasTranslationData/graphs/contributors")
-                            })
-                    }
+
                 }
             }
         }
@@ -152,14 +134,14 @@ fun AboutPage(modifier: Modifier = Modifier,
 
             Text(stringResource(R.string.plugin_code), fontSize = 16.sp)
             NetworkSvgImage(
-                url = "https://contrib.rocks/image?repo=chinosk6/gakuen-imas-localify",
+                url = contributorInfo.contrib_img.plugin,
                 contentDescription = "plugin-contrib"
             )
             
             Spacer(modifier = Modifier.height(4.dp))
             Text(stringResource(R.string.translation_repository), fontSize = 16.sp)
             NetworkSvgImage(
-                url = "https://contrib.rocks/image?repo=chinosk6/GakumasTranslationData",
+                url = contributorInfo.contrib_img.translation,
                 contentDescription = "translation-contrib"
             )
         }

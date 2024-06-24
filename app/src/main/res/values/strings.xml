@@ -66,4 +66,5 @@
     <string name="contributors">Contributors</string>
     <string name="translation_repository">Translation Repository</string>
 
+    <string name="about_contributors_asset_file">about_contributors_en.json</string>
 </resources>

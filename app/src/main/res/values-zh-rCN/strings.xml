@@ -65,4 +65,6 @@
     <string name="and_other_translators">以及其他所有翻译贡献者</string>
     <string name="contributors">贡献者列表</string>
     <string name="translation_repository">译文仓库</string>
+
+    <string name="about_contributors_asset_file">about_contributors_zh_cn.json</string>
 </resources>
