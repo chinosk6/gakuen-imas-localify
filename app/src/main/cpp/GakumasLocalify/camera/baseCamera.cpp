@@ -62,14 +62,14 @@ namespace BaseCamera {
 		return lookAt;
 	}
 
-	void Camera::set_lon_move(float vertanglePlus, LonMoveHState moveState) {  // 前后移动
+	void Camera::set_lon_move(float vertanglePlus, LonMoveHState moveState, float multiplier) {  // 前后移动
 		auto radian = (verticalAngle + vertanglePlus) * M_PI / 180;
 		auto radianH = (double)horizontalAngle * M_PI / 180;
 
-		auto f_step = cos(radian) * moveStep * cos(radianH) / smoothLevel;  // ↑↓
-		auto l_step = sin(radian) * moveStep * cos(radianH) / smoothLevel;  // ←→
+		auto f_step = cos(radian) * moveStep * cos(radianH) / smoothLevel * multiplier;  // ↑↓
+		auto l_step = sin(radian) * moveStep * cos(radianH) / smoothLevel * multiplier;  // ←→
 		// auto h_step = tan(radianH) * sqrt(pow(f_step, 2) + pow(l_step, 2));
-		auto h_step = sin(radianH) * moveStep / smoothLevel;
+		auto h_step = sin(radianH) * moveStep / smoothLevel * multiplier;
 
 		switch (moveState)
 		{

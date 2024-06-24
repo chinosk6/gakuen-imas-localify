@@ -100,4 +100,30 @@ namespace GakumasLocal::Log {
         GetParamStringResult(result);
         ShowToast(result);
     }
+
+    void ShowToast(const char* text) {
+        DebugFmt("Toast: %s", text);
+
+        std::thread([text](){
+            auto env = Misc::GetJNIEnv();
+            if (!env) {
+                return;
+            }
+
+            jclass& kotlinClass = g_gakumasHookMainClass;
+            if (!kotlinClass) {
+                g_javaVM->DetachCurrentThread();
+                return;
+            }
+            jmethodID& methodId = showToastMethodId;
+            if (!methodId) {
+                g_javaVM->DetachCurrentThread();
+                return;
+            }
+            jstring param = env->NewStringUTF(text);
+            env->CallStaticVoidMethod(kotlinClass, methodId, param);
+
+            g_javaVM->DetachCurrentThread();
+        }).detach();
+    }
 }
