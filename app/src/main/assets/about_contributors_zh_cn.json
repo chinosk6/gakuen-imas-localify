@@ -1,0 +1,29 @@
+{
+    "plugin_repo": "https://github.com/chinosk6/gakuen-imas-localify",
+    "main_contributors": [
+        {
+            "name": "chinosk（插件本体）",
+            "links": [
+                {"name": "Github", "link": "https://github.com/chinosk6"},
+                {"name": "Bilibili", "link": "https://space.bilibili.com/287061163"}
+            ]
+        },
+        {
+            "name": "DarwinTree（译文工作流）",
+            "links": [
+                {"name": "Github", "link": "https://github.com/darwintree"},
+                {"name": "Bilibili", "link": "https://space.bilibili.com/6069705"}
+            ]
+        },
+        {
+            "name": "以及其他所有翻译贡献者",
+            "links": [
+                {"name": "Github", "link": "https://github.com/chinosk6/GakumasTranslationData/graphs/contributors"}
+            ]
+        }
+    ],
+    "contrib_img": {
+        "plugin": "https://contrib.rocks/image?repo=chinosk6/gakuen-imas-localify",
+        "translation": "https://contrib.rocks/image?repo=chinosk6/GakumasTranslationData"
+    }
+}

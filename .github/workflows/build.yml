@@ -37,11 +37,13 @@ jobs:
         git clone https://${{ secrets.ACCESS_TOKEN_GITHUB }}@github.com/imas-tools/gakumas-raw-txts.git app/src/main/assets/gakumas-local/gakumas-raw-txts
         mv app/src/main/assets/gakumas-local/gakumas-raw-txts/Resource app/src/main/assets/gakumas-local/raw
         rm -rf app/src/main/assets/gakumas-local/gakumas-raw-txts
+      continue-on-error: true
 
     - name: Build Assets
       run: |
         mv app/src/main/assets/gakumas-local/GakumasPreTranslation/.env.sample app/src/main/assets/gakumas-local/GakumasPreTranslation/.env
         cd app/src/main/assets/gakumas-local && make build-resource
+      continue-on-error: true
 
     - name: Write branch and commit info
       run: |
