@@ -20,12 +20,19 @@ import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.chinosk.gakumas.localify.hookUtils.FilesChecker
 import android.view.KeyEvent
+import android.view.MotionEvent
 import android.widget.Toast
 import com.google.gson.Gson
 import de.robv.android.xposed.XposedBridge
 import io.github.chinosk.gakumas.localify.models.GakumasConfig
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import java.io.File
 import java.util.Locale
+import kotlin.system.measureTimeMillis
 
 val TAG = "GakumasLocalify"
 
@@ -41,6 +48,20 @@ class GakumasHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
     private var getConfigError: Exception? = null
 
     override fun handleLoadPackage(lpparam: XC_LoadPackage.LoadPackageParam) {
+//        if (lpparam.packageName == "io.github.chinosk.gakumas.localify") {
+//            XposedHelpers.findAndHookMethod(
+//                "io.github.chinosk.gakumas.localify.MainActivity",
+//                lpparam.classLoader,
+//                "showToast",
+//                String::class.java,
+//                object : XC_MethodHook() {
+//                    override fun beforeHookedMethod(param: MethodHookParam) {
+//                        Log.d(TAG, "beforeHookedMethod hooked: ${param.args}")
+//                    }
+//                }
+//            )
+//        }
+
         if (lpparam.packageName != targetPackageName) {
             return
         }
@@ -57,6 +78,50 @@ class GakumasHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
                     val action = keyEvent.action
                     // Log.d(TAG, "Key event: keyCode=$keyCode, action=$action")
                     keyboardEvent(keyCode, action)
+                }
+            }
+        )
+
+        XposedHelpers.findAndHookMethod(
+            "android.app.Activity",
+            lpparam.classLoader,
+            "dispatchGenericMotionEvent",
+            MotionEvent::class.java,
+            object : XC_MethodHook() {
+                override fun beforeHookedMethod(param: MethodHookParam) {
+                    val motionEvent = param.args[0] as MotionEvent
+                    val action = motionEvent.action
+
+                    // 左摇杆的X和Y轴
+                    val leftStickX = motionEvent.getAxisValue(MotionEvent.AXIS_X)
+                    val leftStickY = motionEvent.getAxisValue(MotionEvent.AXIS_Y)
+
+                    // 右摇杆的X和Y轴
+                    val rightStickX = motionEvent.getAxisValue(MotionEvent.AXIS_Z)
+                    val rightStickY = motionEvent.getAxisValue(MotionEvent.AXIS_RZ)
+
+                    // 左扳机
+                    val leftTrigger = motionEvent.getAxisValue(MotionEvent.AXIS_LTRIGGER)
+
+                    // 右扳机
+                    val rightTrigger = motionEvent.getAxisValue(MotionEvent.AXIS_RTRIGGER)
+
+                    // 十字键
+                    val hatX = motionEvent.getAxisValue(MotionEvent.AXIS_HAT_X)
+                    val hatY = motionEvent.getAxisValue(MotionEvent.AXIS_HAT_Y)
+
+                    // 处理摇杆和扳机事件
+                    joystickEvent(
+                        action,
+                        leftStickX,
+                        leftStickY,
+                        rightStickX,
+                        rightStickY,
+                        leftTrigger,
+                        rightTrigger,
+                        hatX,
+                        hatY
+                    )
                 }
             }
         )
@@ -130,6 +195,21 @@ class GakumasHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
                     alreadyInitialized = true
                 }
             })
+
+        startLoop()
+    }
+
+    @OptIn(DelicateCoroutinesApi::class)
+    private fun startLoop() {
+        GlobalScope.launch {
+            val interval = 1000L / 30
+            while (isActive) {
+                val timeTaken = measureTimeMillis {
+                    pluginCallbackLooper()
+                }
+                delay(interval - timeTaken)
+            }
+        }
     }
 
     fun initGkmsConfig(activity: Activity) {
@@ -256,7 +336,22 @@ class GakumasHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
         @JvmStatic
         external fun keyboardEvent(keyCode: Int, action: Int)
         @JvmStatic
+        external fun joystickEvent(
+            action: Int,
+            leftStickX: Float,
+            leftStickY: Float,
+            rightStickX: Float,
+            rightStickY: Float,
+            leftTrigger: Float,
+            rightTrigger: Float,
+            hatX: Float,
+            hatY: Float
+        )
+        @JvmStatic
         external fun loadConfig(configJsonStr: String)
+
+        // Toast快速切换内容
+        private var toast: Toast? = null
 
         @JvmStatic
         fun showToast(message: String) {
@@ -265,13 +360,21 @@ class GakumasHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
             if (context != null) {
                 val handler = Handler(Looper.getMainLooper())
                 handler.post {
-                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                    // 取消之前的 Toast
+                    toast?.cancel()
+                    // 创建新的 Toast
+                    toast = Toast.makeText(context, message, Toast.LENGTH_SHORT)
+                    // 展示新的 Toast
+                    toast?.show()
                 }
             }
             else {
                 Log.e(TAG, "showToast: $message failed: applicationContext is null")
             }
         }
+
+        @JvmStatic
+        external fun pluginCallbackLooper()
     }
 
     init {

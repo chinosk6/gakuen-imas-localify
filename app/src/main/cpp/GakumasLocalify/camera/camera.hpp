@@ -1,5 +1,6 @@
 #pragma once
 #include "baseCamera.hpp"
+#include "Joystick/JoystickEvent.h"
 
 namespace GKCamera {
     enum class CameraMode {
@@ -44,5 +45,6 @@ namespace GKCamera {
                                                           const bool recordY = false);
 
     void on_cam_rawinput_keyboard(int message, int key);
+    void on_cam_rawinput_joystick(JoystickEvent event);
 	void initCameraSettings();
 }
