@@ -2,19 +2,15 @@ package io.github.chinosk.gakumas.localify.hookUtils
 
 import android.app.Activity
 import android.net.Uri
-import android.os.Build
 import android.util.Log
 import io.github.chinosk.gakumas.localify.GakumasHookMain
 import io.github.chinosk.gakumas.localify.TAG
 import java.io.BufferedReader
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.io.InputStreamReader
-import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 
 object FileHotUpdater {
