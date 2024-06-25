@@ -63,6 +63,17 @@
     <string name="plugin_code">Plugin Code</string>
     <string name="contributors">Contributors</string>
     <string name="translation_repository">Translation Repository</string>
+    <string name="resource_settings">Resource Settings</string>
+    <string name="check_built_in_resource">Check Built-in Assets Update</string>
+    <string name="delete_plugin_resource">Delete Plugin Resource</string>
+    <string name="use_remote_zip_resource">Use Remote ZIP Resource</string>
+    <string name="resource_url">Resource URL</string>
+    <string name="download">Download</string>
+    <string name="invalid_zip_file">Invalid file</string>
+    <string name="invalid_zip_file_warn">This file is not a valid ZIP translation resource pack.</string>
+    <string name="cancel">Cancel</string>
+    <string name="downloaded_resource_version">Downloaded Version</string>
+    <string name="del_remote_after_update">Delete Cache File After Update</string>
 
     <string name="about_contributors_asset_file">about_contributors_en.json</string>
 </resources>

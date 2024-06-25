@@ -34,13 +34,15 @@ fun GakuButton(
     shape: Shape = RoundedCornerShape(50.dp), // 用于实现左右两边的半圆角
     shadowElevation: Dp = 8.dp, // 阴影的高度
     borderWidth: Dp = 1.dp, // 描边的宽度
-    borderColor: Color = Color.Transparent // 描边的颜色
+    borderColor: Color = Color.Transparent, // 描边的颜色
+    enabled: Boolean = true
 ) {
     var buttonSize by remember { mutableStateOf(IntSize.Zero) }
 
     val gradient = remember(buttonSize) {
         Brush.linearGradient(
-            colors = listOf(Color(0xFFFF5F19), Color(0xFFFFA028)),
+            colors = if (enabled) listOf(Color(0xFFFF5F19), Color(0xFFFFA028)) else
+                listOf(Color(0xFFF9F9F9), Color(0xFFF0F0F0)),
             start = Offset(0f, 0f),
             end = Offset(buttonSize.width.toFloat(), buttonSize.height.toFloat()) // 动态终点
         )
@@ -48,6 +50,7 @@ fun GakuButton(
 
     Button(
         onClick = onClick,
+        enabled = enabled,
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.Transparent
         ),
@@ -61,7 +64,7 @@ fun GakuButton(
             .border(borderWidth, borderColor, shape),
         contentPadding = PaddingValues(0.dp)
     ) {
-        Text(text = text)
+        Text(text = text, color = if (enabled) Color.White else Color(0xFF111111))
     }
 }
 
@@ -69,5 +72,6 @@ fun GakuButton(
 @Preview(showBackground = true, uiMode = UI_MODE_NIGHT_NO)
 @Composable
 fun GakuButtonPreview() {
-    GakuButton(modifier = Modifier.width(80.dp).height(40.dp), text = "Button", onClick = {})
+    GakuButton(modifier = Modifier.width(80.dp).height(40.dp), text = "Button", onClick = {},
+        enabled = true)
 }

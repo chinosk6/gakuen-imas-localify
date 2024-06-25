@@ -16,10 +16,14 @@ object FilesChecker {
     var filesUpdated = false
 
     fun initAndCheck(fileDir: File, modulePath: String) {
-        this.filesDir = fileDir
-        this.modulePath = modulePath
+        initDir(fileDir, modulePath)
 
         checkFiles()
+    }
+
+    fun initDir(fileDir: File, modulePath: String) {
+        this.filesDir = fileDir
+        this.modulePath = modulePath
     }
 
     fun checkFiles() {
@@ -118,4 +122,45 @@ object FilesChecker {
         return stringBuilder.toString()
     }
 
+    private fun deleteRecursively(file: File): Boolean {
+        if (file.isDirectory) {
+            val children = file.listFiles()
+            if (children != null) {
+                for (child in children) {
+                    val success = deleteRecursively(child)
+                    if (!success) {
+                        return false
+                    }
+                }
+            }
+        }
+        return file.delete()
+    }
+
+    fun cleanAssets() {
+        val pluginBasePath = File(filesDir, localizationFilesDir)
+        val localFilesDir = File(pluginBasePath, "local-files")
+
+        val fontFile = File(localFilesDir, "gkamsZHFontMIX.otf")
+        val resourceDir = File(localFilesDir, "resource")
+        val genericTransDir = File(localFilesDir, "genericTrans")
+        val genericTransFile = File(localFilesDir, "generic.json")
+        val i18nFile = File(localFilesDir, "localization.json")
+
+        if (fontFile.exists()) {
+            fontFile.delete()
+        }
+        if (deleteRecursively(resourceDir)) {
+            resourceDir.mkdirs()
+        }
+        if (deleteRecursively(genericTransDir)) {
+            genericTransDir.mkdirs()
+        }
+        if (genericTransFile.exists()) {
+            genericTransFile.writeText("{}")
+        }
+        if (i18nFile.exists()) {
+            i18nFile.writeText("{}")
+        }
+    }
 }

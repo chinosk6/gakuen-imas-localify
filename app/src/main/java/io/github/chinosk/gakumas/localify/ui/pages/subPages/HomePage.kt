@@ -2,10 +2,13 @@ package io.github.chinosk.gakumas.localify.ui.pages.subPages
 
 import GakuGroupBox
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
+import android.util.Log
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -16,24 +19,44 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.chinosk.gakumas.localify.MainActivity
 import io.github.chinosk.gakumas.localify.R
+import io.github.chinosk.gakumas.localify.TAG
 import io.github.chinosk.gakumas.localify.getConfigState
+import io.github.chinosk.gakumas.localify.getProgramConfigState
+import io.github.chinosk.gakumas.localify.getProgramDownloadAbleState
+import io.github.chinosk.gakumas.localify.getProgramDownloadErrorStringState
+import io.github.chinosk.gakumas.localify.getProgramDownloadState
+import io.github.chinosk.gakumas.localify.getProgramLocalResourceVersionState
+import io.github.chinosk.gakumas.localify.hookUtils.FileHotUpdater
+import io.github.chinosk.gakumas.localify.mainUtils.FileDownloader
 import io.github.chinosk.gakumas.localify.models.GakumasConfig
+import io.github.chinosk.gakumas.localify.models.ResourceCollapsibleBoxViewModel
+import io.github.chinosk.gakumas.localify.models.ResourceCollapsibleBoxViewModelFactory
 import io.github.chinosk.gakumas.localify.ui.components.base.CollapsibleBox
 import io.github.chinosk.gakumas.localify.ui.components.GakuButton
+import io.github.chinosk.gakumas.localify.ui.components.GakuProgressBar
 import io.github.chinosk.gakumas.localify.ui.components.GakuRadio
 import io.github.chinosk.gakumas.localify.ui.components.GakuSwitch
 import io.github.chinosk.gakumas.localify.ui.components.GakuTextInput
+import java.io.File
 
 
 @Composable
@@ -43,6 +66,13 @@ fun HomePage(modifier: Modifier = Modifier,
              bottomSpacerHeight: Dp = 120.dp,
              screenH: Dp = 1080.dp) {
     val config = getConfigState(context, previewData)
+    val programConfig = getProgramConfigState(context)
+
+    val downloadProgress by getProgramDownloadState(context)
+    val downloadAble by getProgramDownloadAbleState(context)
+    val localResourceVersion by getProgramLocalResourceVersionState(context)
+    val downloadErrorString by getProgramDownloadErrorStringState(context)
+
     // val scrollState = rememberScrollState()
     val keyboardOptionsNumber = remember {
         KeyboardOptions(keyboardType = KeyboardType.Number)
@@ -50,6 +80,9 @@ fun HomePage(modifier: Modifier = Modifier,
     val keyBoardOptionsDecimal = remember {
         KeyboardOptions(keyboardType = KeyboardType.Decimal)
     }
+
+    val resourceSettingsViewModel: ResourceCollapsibleBoxViewModel =
+        viewModel(factory = ResourceCollapsibleBoxViewModelFactory(initiallyExpanded = false))
 
 
     LazyColumn(modifier = modifier
@@ -72,6 +105,177 @@ fun HomePage(modifier: Modifier = Modifier,
                     }
                 }
             }
+            Spacer(Modifier.height(6.dp))
+        }
+
+        item {
+            GakuGroupBox(modifier, stringResource(R.string.resource_settings),
+                contentPadding = 0.dp,
+                onHeadClick = {
+                    resourceSettingsViewModel.expanded = !resourceSettingsViewModel.expanded
+                }) {
+                CollapsibleBox(modifier = modifier,
+                    viewModel = resourceSettingsViewModel
+                ) {
+                    LazyColumn(modifier = modifier
+                        .padding(8.dp)
+                        .sizeIn(maxHeight = screenH),
+                        // verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        item {
+                            GakuSwitch(modifier = modifier,
+                                checked = programConfig.value.checkBuiltInAssets,
+                                text = stringResource(id = R.string.check_built_in_resource)
+                            ) { v -> context?.onPCheckBuiltInAssetsChanged(v) }
+                        }
+                        item {
+                            GakuSwitch(modifier = modifier,
+                                checked = programConfig.value.cleanLocalAssets,
+                                text = stringResource(id = R.string.delete_plugin_resource)
+                            ) { v -> context?.onPCleanLocalAssetsChanged(v) }
+                        }
+
+                        item {
+                            HorizontalDivider(
+                                thickness = 1.dp,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+                            )
+                        }
+
+                        item {
+                            GakuSwitch(modifier = modifier,
+                                checked = programConfig.value.useRemoteAssets,
+                                text = stringResource(id = R.string.use_remote_zip_resource)
+                            ) { v -> context?.onPUseRemoteAssetsChanged(v) }
+
+                            CollapsibleBox(modifier = modifier.graphicsLayer(clip = false),
+                                expandState = programConfig.value.useRemoteAssets,
+                                collapsedHeight = 0.dp,
+                                showExpand = false
+                            ) {
+                                GakuSwitch(modifier = modifier,
+                                    checked = programConfig.value.delRemoteAfterUpdate,
+                                    text = stringResource(id = R.string.del_remote_after_update)
+                                ) { v -> context?.onPDelRemoteAfterUpdateChanged(v) }
+
+                                LazyColumn(modifier = modifier
+                                    .padding(8.dp)
+                                    .sizeIn(maxHeight = screenH),
+                                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    item {
+                                        Row(modifier = modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.spacedBy(2.dp),
+                                            verticalAlignment = Alignment.CenterVertically) {
+
+                                            GakuTextInput(modifier = modifier
+                                                .height(45.dp)
+                                                .padding(end = 8.dp)
+                                                .fillMaxWidth()
+                                                .weight(1f),
+                                                fontSize = 14f,
+                                                value = programConfig.value.transRemoteZipUrl,
+                                                onValueChange = { c -> context?.onPTransRemoteZipUrlChanged(c, 0, 0, 0)},
+                                                label = { Text(stringResource(id = R.string.resource_url)) },
+                                                keyboardOptions = keyboardOptionsNumber)
+
+                                            if (downloadAble) {
+                                                GakuButton(modifier = modifier
+                                                    .height(40.dp)
+                                                    .sizeIn(minWidth = 80.dp),
+                                                    text = stringResource(id = R.string.download), onClick = {
+                                                        context?.mainPageAssetsViewDataUpdate(
+                                                            downloadAbleState = false,
+                                                            errorString = "",
+                                                            downloadProgressState = -1f
+                                                        )
+                                                        val (_, newUrl) = FileDownloader.checkAndChangeDownloadURL(programConfig.value.transRemoteZipUrl)
+                                                        context?.onPTransRemoteZipUrlChanged(newUrl, 0, 0, 0)
+                                                        FileDownloader.downloadFile(
+                                                            newUrl,
+                                                            checkContentTypes = listOf("application/zip", "application/octet-stream"),
+                                                            onDownload = { progress, _, _ ->
+                                                                context?.mainPageAssetsViewDataUpdate(downloadProgressState = progress)
+                                                            },
+                                                            onSuccess = { byteArray ->
+                                                                context?.mainPageAssetsViewDataUpdate(
+                                                                    downloadAbleState = true,
+                                                                    errorString = "",
+                                                                    downloadProgressState = -1f
+                                                                )
+                                                                val file = File(context?.filesDir, "update_trans.zip")
+                                                                file.writeBytes(byteArray)
+                                                                val newFileVersion = FileHotUpdater.getZipResourceVersion(file.absolutePath)
+                                                                if (newFileVersion != null) {
+                                                                    context?.mainPageAssetsViewDataUpdate(
+                                                                        localResourceVersionState = newFileVersion
+                                                                    )
+                                                                }
+                                                                else {
+                                                                    context?.mainPageAssetsViewDataUpdate(
+                                                                        localResourceVersionState = context.getString(
+                                                                            R.string.invalid_zip_file
+                                                                        ),
+                                                                        errorString = context.getString(R.string.invalid_zip_file_warn)
+                                                                    )
+                                                                }
+
+                                                            },
+                                                            onFailed = { code, reason ->
+                                                                context?.mainPageAssetsViewDataUpdate(
+                                                                    downloadAbleState = true,
+                                                                    errorString = reason,
+                                                                )
+                                                            })
+
+                                                    })
+                                            }
+                                            else {
+                                                GakuButton(modifier = modifier
+                                                    .height(40.dp)
+                                                    .sizeIn(minWidth = 80.dp),
+                                                    text = stringResource(id = R.string.cancel), onClick = {
+                                                        FileDownloader.cancel()
+                                                    })
+                                            }
+
+                                        }
+                                    }
+
+                                    if (downloadProgress >= 0) {
+                                        item {
+                                            GakuProgressBar(progress = downloadProgress, isError = downloadErrorString.isNotEmpty())
+                                        }
+                                    }
+
+                                    if (downloadErrorString.isNotEmpty()) {
+                                        item {
+                                            Text(text = downloadErrorString, color = Color(0xFFE2041B))
+                                        }
+                                    }
+
+                                    item {
+                                        Text(modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable {
+                                                val file =
+                                                    File(context?.filesDir, "update_trans.zip")
+                                                context?.mainPageAssetsViewDataUpdate(
+                                                    localResourceVersionState = FileHotUpdater
+                                                        .getZipResourceVersion(file.absolutePath)
+                                                        .toString()
+                                                )
+                                            }, text = "${stringResource(R.string.downloaded_resource_version)}: $localResourceVersion")
+                                    }
+
+                                }
+
+                            }
+                        }
+                    }
+                }
+            }
+
             Spacer(Modifier.height(6.dp))
         }
 
@@ -263,7 +467,7 @@ fun HomePage(modifier: Modifier = Modifier,
 }
 
 
-@Preview(showBackground = true, uiMode = UI_MODE_NIGHT_NO, widthDp = 880)
+@Preview(showBackground = true, uiMode = UI_MODE_NIGHT_NO)
 @Composable
 fun HomePagePreview(modifier: Modifier = Modifier, data: GakumasConfig = GakumasConfig()) {
     HomePage(modifier, previewData = data)
