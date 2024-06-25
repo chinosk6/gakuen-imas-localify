@@ -1,0 +1,36 @@
+{
+    "plugin_repo": "https://github.com/chinosk6/gakuen-imas-localify-zh-TW",
+    "main_contributors": [
+        {
+            "name": "chinosk（插件本體）",
+            "links": [
+                {"name": "Github", "link": "https://github.com/chinosk6"},
+                {"name": "Bilibili", "link": "https://space.bilibili.com/287061163"}
+            ]
+        },
+        {
+            "name": "yotv2000tw（插件本體翻譯）",
+            "links": [
+                {"name": "Github", "link": "https://github.com/yotv2000tw"},
+                {"name": "Twitter(舊X)", "link": "https://x.com/snowmaple_1"}
+            ]
+        },
+        {
+            "name": "DarwinTree（譯文工作流）",
+            "links": [
+                {"name": "Github", "link": "https://github.com/darwintree"},
+                {"name": "Bilibili", "link": "https://space.bilibili.com/6069705"}
+            ]
+        },
+        {
+            "name": "以及其他所有翻譯貢獻者",
+            "links": [
+                {"name": "Github", "link": "https://github.com/yotv2000tw/GakumasTranslationData_zh-TW/graphs/contributors"}
+            ]
+        }
+    ],
+    "contrib_img": {
+        "plugin": "https://contrib.rocks/image?repo=yotv2000tw/gakuen-imas-localify-zh-TW",
+        "translation": "https://contrib.rocks/image?repo=chinosk6/GakumasTranslationData_zh-TW"
+    }
+}
