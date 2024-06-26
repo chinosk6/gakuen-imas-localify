@@ -77,6 +77,54 @@ fun HomePage(modifier: Modifier = Modifier,
     val resourceSettingsViewModel: ResourceCollapsibleBoxViewModel =
         viewModel(factory = ResourceCollapsibleBoxViewModelFactory(initiallyExpanded = false))
 
+    fun onClickDownload() {
+        context?.mainPageAssetsViewDataUpdate(
+            downloadAbleState = false,
+            errorString = "",
+            downloadProgressState = -1f
+        )
+        val (_, newUrl) = FileDownloader.checkAndChangeDownloadURL(programConfig.value.transRemoteZipUrl)
+        context?.onPTransRemoteZipUrlChanged(newUrl, 0, 0, 0)
+        FileDownloader.downloadFile(
+            newUrl,
+            checkContentTypes = listOf("application/zip", "application/octet-stream"),
+            onDownload = { progress, _, _ ->
+                context?.mainPageAssetsViewDataUpdate(downloadProgressState = progress)
+            },
+
+            onSuccess = { byteArray ->
+                context?.mainPageAssetsViewDataUpdate(
+                    downloadAbleState = true,
+                    errorString = "",
+                    downloadProgressState = -1f
+                )
+                val file = File(context?.filesDir, "update_trans.zip")
+                file.writeBytes(byteArray)
+                val newFileVersion = FileHotUpdater.getZipResourceVersion(file.absolutePath)
+                if (newFileVersion != null) {
+                    context?.mainPageAssetsViewDataUpdate(
+                        localResourceVersionState = newFileVersion
+                    )
+                }
+                else {
+                    context?.mainPageAssetsViewDataUpdate(
+                        localResourceVersionState = context.getString(
+                            R.string.invalid_zip_file
+                        ),
+                        errorString = context.getString(R.string.invalid_zip_file_warn)
+                    )
+                }
+            },
+
+            onFailed = { code, reason ->
+                context?.mainPageAssetsViewDataUpdate(
+                    downloadAbleState = true,
+                    errorString = reason,
+                )
+            })
+
+    }
+
 
     LazyColumn(modifier = modifier
         .sizeIn(maxHeight = screenH)
@@ -111,18 +159,18 @@ fun HomePage(modifier: Modifier = Modifier,
                     viewModel = resourceSettingsViewModel
                 ) {
                     LazyColumn(modifier = modifier
-                        .padding(8.dp)
+                        // .padding(8.dp)
                         .sizeIn(maxHeight = screenH),
                         // verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         item {
-                            GakuSwitch(modifier = modifier,
+                            GakuSwitch(modifier = modifier.padding(start = 8.dp, end = 8.dp, top = 8.dp),
                                 checked = programConfig.value.checkBuiltInAssets,
                                 text = stringResource(id = R.string.check_built_in_resource)
                             ) { v -> context?.onPCheckBuiltInAssetsChanged(v) }
                         }
                         item {
-                            GakuSwitch(modifier = modifier,
+                            GakuSwitch(modifier = modifier.padding(start = 8.dp, end = 8.dp),
                                 checked = programConfig.value.cleanLocalAssets,
                                 text = stringResource(id = R.string.delete_plugin_resource)
                             ) { v -> context?.onPCleanLocalAssetsChanged(v) }
@@ -136,7 +184,7 @@ fun HomePage(modifier: Modifier = Modifier,
                         }
 
                         item {
-                            GakuSwitch(modifier = modifier,
+                            GakuSwitch(modifier = modifier.padding(start = 8.dp, end = 8.dp),
                                 checked = programConfig.value.useRemoteAssets,
                                 text = stringResource(id = R.string.use_remote_zip_resource)
                             ) { v -> context?.onPUseRemoteAssetsChanged(v) }
@@ -144,6 +192,7 @@ fun HomePage(modifier: Modifier = Modifier,
                             CollapsibleBox(modifier = modifier.graphicsLayer(clip = false),
                                 expandState = programConfig.value.useRemoteAssets,
                                 collapsedHeight = 0.dp,
+                                innerPaddingLeftRight = 8.dp,
                                 showExpand = false
                             ) {
                                 GakuSwitch(modifier = modifier,
@@ -152,7 +201,7 @@ fun HomePage(modifier: Modifier = Modifier,
                                 ) { v -> context?.onPDelRemoteAfterUpdateChanged(v) }
 
                                 LazyColumn(modifier = modifier
-                                    .padding(8.dp)
+                                    // .padding(8.dp)
                                     .sizeIn(maxHeight = screenH),
                                     verticalArrangement = Arrangement.spacedBy(12.dp)
                                 ) {
@@ -176,53 +225,8 @@ fun HomePage(modifier: Modifier = Modifier,
                                                 GakuButton(modifier = modifier
                                                     .height(40.dp)
                                                     .sizeIn(minWidth = 80.dp),
-                                                    text = stringResource(id = R.string.download), onClick = {
-                                                        context?.mainPageAssetsViewDataUpdate(
-                                                            downloadAbleState = false,
-                                                            errorString = "",
-                                                            downloadProgressState = -1f
-                                                        )
-                                                        val (_, newUrl) = FileDownloader.checkAndChangeDownloadURL(programConfig.value.transRemoteZipUrl)
-                                                        context?.onPTransRemoteZipUrlChanged(newUrl, 0, 0, 0)
-                                                        FileDownloader.downloadFile(
-                                                            newUrl,
-                                                            checkContentTypes = listOf("application/zip", "application/octet-stream"),
-                                                            onDownload = { progress, _, _ ->
-                                                                context?.mainPageAssetsViewDataUpdate(downloadProgressState = progress)
-                                                            },
-
-                                                            onSuccess = { byteArray ->
-                                                                context?.mainPageAssetsViewDataUpdate(
-                                                                    downloadAbleState = true,
-                                                                    errorString = "",
-                                                                    downloadProgressState = -1f
-                                                                )
-                                                                val file = File(context?.filesDir, "update_trans.zip")
-                                                                file.writeBytes(byteArray)
-                                                                val newFileVersion = FileHotUpdater.getZipResourceVersion(file.absolutePath)
-                                                                if (newFileVersion != null) {
-                                                                    context?.mainPageAssetsViewDataUpdate(
-                                                                        localResourceVersionState = newFileVersion
-                                                                    )
-                                                                }
-                                                                else {
-                                                                    context?.mainPageAssetsViewDataUpdate(
-                                                                        localResourceVersionState = context.getString(
-                                                                            R.string.invalid_zip_file
-                                                                        ),
-                                                                        errorString = context.getString(R.string.invalid_zip_file_warn)
-                                                                    )
-                                                                }
-                                                            },
-                                                            
-                                                            onFailed = { code, reason ->
-                                                                context?.mainPageAssetsViewDataUpdate(
-                                                                    downloadAbleState = true,
-                                                                    errorString = reason,
-                                                                )
-                                                            })
-
-                                                    })
+                                                    text = stringResource(id = R.string.download),
+                                                    onClick = { onClickDownload() })
                                             }
                                             else {
                                                 GakuButton(modifier = modifier
@@ -260,6 +264,10 @@ fun HomePage(modifier: Modifier = Modifier,
                                                         .toString()
                                                 )
                                             }, text = "${stringResource(R.string.downloaded_resource_version)}: $localResourceVersion")
+                                    }
+
+                                    item {
+                                        Spacer(Modifier.height(0.dp))
                                     }
 
                                 }
