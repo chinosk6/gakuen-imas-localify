@@ -11,19 +11,19 @@ import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import com.bytedance.shadowhook.ShadowHook
-import com.bytedance.shadowhook.ShadowHook.ConfigBuilder
-import de.robv.android.xposed.IXposedHookLoadPackage
-import de.robv.android.xposed.IXposedHookZygoteInit
-import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.XposedHelpers
-import de.robv.android.xposed.callbacks.XC_LoadPackage
-import io.github.chinosk.gakumas.localify.hookUtils.FilesChecker
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.widget.Toast
+import com.bytedance.shadowhook.ShadowHook
+import com.bytedance.shadowhook.ShadowHook.ConfigBuilder
 import com.google.gson.Gson
+import de.robv.android.xposed.IXposedHookLoadPackage
+import de.robv.android.xposed.IXposedHookZygoteInit
+import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
+import de.robv.android.xposed.XposedHelpers
+import de.robv.android.xposed.callbacks.XC_LoadPackage
+import io.github.chinosk.gakumas.localify.hookUtils.FilesChecker
 import io.github.chinosk.gakumas.localify.models.GakumasConfig
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -33,6 +33,11 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.util.Locale
 import kotlin.system.measureTimeMillis
+import android.content.ContentResolver
+import io.github.chinosk.gakumas.localify.hookUtils.FileHotUpdater
+import io.github.chinosk.gakumas.localify.models.ProgramConfig
+import java.io.BufferedReader
+import java.io.InputStreamReader
 
 val TAG = "GakumasLocalify"
 
@@ -46,6 +51,7 @@ class GakumasHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
     private var gkmsDataInited = false
 
     private var getConfigError: Exception? = null
+    private var externalFilesChecked: Boolean = false
 
     override fun handleLoadPackage(lpparam: XC_LoadPackage.LoadPackageParam) {
 //        if (lpparam.packageName == "io.github.chinosk.gakumas.localify") {
@@ -183,7 +189,7 @@ class GakumasHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
                         requestConfig(app.applicationContext)
                     }
 
-                    FilesChecker.initAndCheck(app.filesDir, modulePath)
+                    FilesChecker.initDir(app.filesDir, modulePath)
                     initHook(
                         "${app.applicationInfo.nativeLibraryDir}/libil2cpp.so",
                         File(
@@ -215,6 +221,7 @@ class GakumasHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
     fun initGkmsConfig(activity: Activity) {
         val intent = activity.intent
         val gkmsData = intent.getStringExtra("gkmsData")
+        val programData = intent.getStringExtra("localData")
         if (gkmsData != null) {
             gkmsDataInited = true
             val initConfig = try {
@@ -223,8 +230,39 @@ class GakumasHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
             catch (e: Exception) {
                 null
             }
+            val programConfig = try {
+                Gson().fromJson(programData, ProgramConfig::class.java)
+            }
+            catch (e: Exception) {
+                null
+            }
+
+            // 清理本地文件
+            if (programConfig?.cleanLocalAssets == true) {
+                FilesChecker.cleanAssets()
+            }
+
+            // 检查 files 版本和 assets 版本并更新
+            if (programConfig?.checkBuiltInAssets == true) {
+                FilesChecker.initAndCheck(activity.filesDir, modulePath)
+            }
+
+            // 强制导出 assets 文件
             if (initConfig?.forceExportResource == true) {
                 FilesChecker.updateFiles()
+            }
+
+            // 使用热更新文件
+            if (programConfig?.useRemoteAssets == true) {
+                val dataUri = intent.data
+                if (dataUri != null) {
+                    if (!externalFilesChecked) {
+                        externalFilesChecked = true
+                        // Log.d(TAG, "dataUri: $dataUri")
+                        FileHotUpdater.updateFilesFromZip(activity, dataUri, activity.filesDir,
+                            programConfig.delRemoteAfterUpdate)
+                    }
+                }
             }
 
             loadConfig(gkmsData)

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
@@ -29,6 +30,8 @@ fun CollapsibleBox(
     viewModel: CollapsibleBoxViewModel = viewModel(),
     showExpand: Boolean = true,
     expandState: Boolean? = null,
+    innerPaddingTopBottom: Dp = 0.dp,
+    innerPaddingLeftRight: Dp = 0.dp,
     content: @Composable () -> Unit
 ) {
     val expanded by viewModel::expanded
@@ -65,6 +68,8 @@ fun CollapsibleBox(
             modifier = Modifier
                 .height(animatedHeight)
                 .fillMaxWidth()
+                .padding(start = innerPaddingLeftRight, end = innerPaddingLeftRight,
+                    top = innerPaddingTopBottom, bottom = innerPaddingTopBottom)
                 // .fillMaxSize()
                 .clickable {
                     if (!expanded && showExpand) {

@@ -299,6 +299,11 @@ namespace GakumasLocal::HookMain {
 
     void* fontCache = nullptr;
     void* GetReplaceFont() {
+        static std::string fontName = Local::GetBasePath() / "local-files" / "gkamsZHFontMIX.otf";
+        if (!std::filesystem::exists(fontName)) {
+            return nullptr;
+        }
+
         static auto CreateFontFromPath = reinterpret_cast<void (*)(void* self, Il2cppString* path)>(
                 Il2cppUtils::il2cpp_resolve_icall("UnityEngine.Font::Internal_CreateFontFromPath(UnityEngine.Font,System.String)")
         );
@@ -315,7 +320,6 @@ namespace GakumasLocal::HookMain {
         const auto newFont = Font_klass->New<void*>();
         Font_ctor->Invoke<void>(newFont);
 
-        static std::string fontName = Local::GetBasePath() / "local-files" / "gkamsZHFontMIX.otf";
         CreateFontFromPath(newFont, Il2cppString::New(fontName));
         fontCache = newFont;
         return newFont;
@@ -334,9 +338,10 @@ namespace GakumasLocal::HookMain {
         static auto UpdateFontAssetData = Il2cppUtils::GetMethod("Unity.TextMeshPro.dll", "TMPro",
                                                                  "TMP_FontAsset", "UpdateFontAssetData");
 
-        auto fontAsset = get_font->Invoke<void*>(TMP_Textself);
         auto newFont = GetReplaceFont();
-        if (fontAsset && newFont) {
+        if (!newFont) return;
+        auto fontAsset = get_font->Invoke<void*>(TMP_Textself);
+        if (fontAsset) {
             set_sourceFontFile->Invoke<void>(fontAsset, newFont);
             if (!updatedFontPtrs.contains(fontAsset)) {
                 updatedFontPtrs.emplace(fontAsset);

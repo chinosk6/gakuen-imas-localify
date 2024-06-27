@@ -63,6 +63,17 @@
     <string name="plugin_code">插件本体</string>
     <string name="contributors">贡献者列表</string>
     <string name="translation_repository">译文仓库</string>
+    <string name="resource_settings">资源设置</string>
+    <string name="check_built_in_resource">检查内置数据更新</string>
+    <string name="delete_plugin_resource">清除游戏目录内的插件资源</string>
+    <string name="use_remote_zip_resource">使用远程 ZIP 数据</string>
+    <string name="resource_url">资源地址</string>
+    <string name="download">下载</string>
+    <string name="invalid_zip_file">文件解析失败</string>
+    <string name="invalid_zip_file_warn">此文件不是一个有效的 ZIP 翻译资源包</string>
+    <string name="cancel">取消</string>
+    <string name="downloaded_resource_version">已下载资源版本</string>
+    <string name="del_remote_after_update">替换文件后删除下载缓存</string>
 
     <string name="about_contributors_asset_file">about_contributors_zh_cn.json</string>
 </resources>

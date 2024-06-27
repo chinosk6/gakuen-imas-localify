@@ -8,6 +8,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import io.github.chinosk.gakumas.localify.databinding.ActivityMainBinding
 import io.github.chinosk.gakumas.localify.models.GakumasConfig
+import io.github.chinosk.gakumas.localify.models.ProgramConfig
+import io.github.chinosk.gakumas.localify.models.ProgramConfigViewModel
+import io.github.chinosk.gakumas.localify.models.ProgramConfigViewModelFactory
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -55,6 +58,15 @@ interface ConfigListener {
     fun onBUseArmCorrectionChanged(value: Boolean)
     fun onBUseScaleChanged(value: Boolean)
     fun onBClickPresetChanged(index: Int)
+    fun onPCheckBuiltInAssetsChanged(value: Boolean)
+    fun onPUseRemoteAssetsChanged(value: Boolean)
+    fun onPCleanLocalAssetsChanged(value: Boolean)
+    fun onPDelRemoteAfterUpdateChanged(value: Boolean)
+    fun onPTransRemoteZipUrlChanged(s: CharSequence, start: Int, before: Int, count: Int)
+    fun mainPageAssetsViewDataUpdate(downloadAbleState: Boolean? = null,
+                                     downloadProgressState: Float? = null,
+                                     localResourceVersionState: String? = null,
+                                     errorString: String? = null)
 }
 
 class UserConfigViewModelFactory(private val initialValue: GakumasConfig) : ViewModelProvider.Factory {
@@ -78,10 +90,15 @@ interface ConfigUpdateListener: ConfigListener {
     var factory: UserConfigViewModelFactory
     var viewModel: UserConfigViewModel
 
+    var programConfig: ProgramConfig
+    var programConfigFactory: ProgramConfigViewModelFactory
+    var programConfigViewModel: ProgramConfigViewModel
+
     fun pushKeyEvent(event: KeyEvent): Boolean
     fun getConfigContent(): String
     fun checkConfigAndUpdateView()
     fun saveConfig()
+    fun saveProgramConfig()
 
 
     override fun onEnabledChanged(value: Boolean) {
@@ -491,6 +508,39 @@ interface ConfigUpdateListener: ConfigListener {
 
         checkConfigAndUpdateView()
         saveConfig()
+    }
+
+    override fun onPCheckBuiltInAssetsChanged(value: Boolean) {
+        programConfig.checkBuiltInAssets = value
+        saveProgramConfig()
+    }
+
+    override fun onPUseRemoteAssetsChanged(value: Boolean) {
+        programConfig.useRemoteAssets = value
+        saveProgramConfig()
+    }
+
+    override fun onPCleanLocalAssetsChanged(value: Boolean) {
+        programConfig.cleanLocalAssets = value
+        saveProgramConfig()
+    }
+
+    override fun onPDelRemoteAfterUpdateChanged(value: Boolean) {
+        programConfig.delRemoteAfterUpdate = value
+        saveProgramConfig()
+    }
+
+    override fun onPTransRemoteZipUrlChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+        programConfig.transRemoteZipUrl = s.toString()
+        saveProgramConfig()
+    }
+
+    override fun mainPageAssetsViewDataUpdate(downloadAbleState: Boolean?, downloadProgressState: Float?,
+                                              localResourceVersionState: String?, errorString: String?) {
+        downloadAbleState?.let { programConfigViewModel.downloadAbleState.value = downloadAbleState }
+        downloadProgressState?.let{ programConfigViewModel.downloadProgressState.value = downloadProgressState }
+        localResourceVersionState?.let{ programConfigViewModel.localResourceVersionState.value = localResourceVersionState }
+        errorString?.let{ programConfigViewModel.errorStringState.value = errorString }
     }
 
 }

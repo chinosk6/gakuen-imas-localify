@@ -29,8 +29,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.chinosk.gakumas.localify.MainActivity
 import io.github.chinosk.gakumas.localify.R
 import io.github.chinosk.gakumas.localify.getConfigState
-import io.github.chinosk.gakumas.localify.models.CollapsibleBoxViewModel
-import io.github.chinosk.gakumas.localify.models.CollapsibleBoxViewModelFactory
+import io.github.chinosk.gakumas.localify.models.BreastCollapsibleBoxViewModel
+import io.github.chinosk.gakumas.localify.models.BreastCollapsibleBoxViewModelFactory
 import io.github.chinosk.gakumas.localify.models.GakumasConfig
 import io.github.chinosk.gakumas.localify.ui.components.base.CollapsibleBox
 import io.github.chinosk.gakumas.localify.ui.components.GakuButton
@@ -47,8 +47,8 @@ fun AdvanceSettingsPage(modifier: Modifier = Modifier,
     val config = getConfigState(context, previewData)
     // val scrollState = rememberScrollState()
 
-    val breastParamViewModel: CollapsibleBoxViewModel =
-        viewModel(factory = CollapsibleBoxViewModelFactory(initiallyExpanded = false))
+    val breastParamViewModel: BreastCollapsibleBoxViewModel =
+        viewModel(factory = BreastCollapsibleBoxViewModelFactory(initiallyExpanded = false))
     val keyBoardOptionsDecimal = remember {
         KeyboardOptions(keyboardType = KeyboardType.Decimal)
     }
