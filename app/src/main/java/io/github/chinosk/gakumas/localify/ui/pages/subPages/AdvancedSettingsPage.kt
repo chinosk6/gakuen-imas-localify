@@ -1,6 +1,6 @@
 package io.github.chinosk.gakumas.localify.ui.pages.subPages
 
-import GakuGroupBox
+import io.github.chinosk.gakumas.localify.ui.components.GakuGroupBox
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

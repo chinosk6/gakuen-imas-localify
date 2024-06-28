@@ -3,7 +3,6 @@ package io.github.chinosk.gakumas.localify
 import android.view.KeyEvent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import io.github.chinosk.gakumas.localify.databinding.ActivityMainBinding
 import io.github.chinosk.gakumas.localify.models.GakumasConfig
 import io.github.chinosk.gakumas.localify.models.ProgramConfig
 import io.github.chinosk.gakumas.localify.models.ProgramConfigViewModel
@@ -83,7 +82,7 @@ class UserConfigViewModel(initValue: GakumasConfig) : ViewModel() {
 
 
 interface ConfigUpdateListener: ConfigListener {
-    var binding: ActivityMainBinding
+    val config: GakumasConfig
     var factory: UserConfigViewModelFactory
     var viewModel: UserConfigViewModel
 
@@ -99,40 +98,40 @@ interface ConfigUpdateListener: ConfigListener {
 
 
     override fun onEnabledChanged(value: Boolean) {
-        binding.config!!.enabled = value
+        config.enabled = value
         saveConfig()
         pushKeyEvent(KeyEvent(1145, 29))
     }
 
     override fun onForceExportResourceChanged(value: Boolean) {
-        binding.config!!.forceExportResource = value
+        config.forceExportResource = value
         saveConfig()
         pushKeyEvent(KeyEvent(1145, 30))
     }
 
     override fun onReplaceFontChanged(value: Boolean) {
-        binding.config!!.replaceFont = value
+        config.replaceFont = value
         saveConfig()
         pushKeyEvent(KeyEvent(1145, 30))
     }
 
     override fun onTextTestChanged(value: Boolean) {
-        binding.config!!.textTest = value
+        config.textTest = value
         saveConfig()
     }
 
     override fun onDumpTextChanged(value: Boolean) {
-        binding.config!!.dumpText = value
+        config.dumpText = value
         saveConfig()
     }
 
     override fun onEnableFreeCameraChanged(value: Boolean) {
-        binding.config!!.enableFreeCamera = value
+        config.enableFreeCamera = value
         saveConfig()
     }
 
     override fun onUnlockAllLiveChanged(value: Boolean) {
-        binding.config!!.unlockAllLive = value
+        config.unlockAllLive = value
         saveConfig()
     }
 
@@ -145,7 +144,7 @@ interface ConfigUpdateListener: ConfigListener {
             } else {
                 valueStr.toInt()
             }
-            binding.config!!.targetFrameRate = value
+            config.targetFrameRate = value
             saveConfig()
         }
         catch (e: Exception) {
@@ -154,22 +153,22 @@ interface ConfigUpdateListener: ConfigListener {
     }
 
     override fun onLiveCustomeDressChanged(value: Boolean) {
-        binding.config!!.enableLiveCustomeDress = value
+        config.enableLiveCustomeDress = value
         saveConfig()
     }
 
     override fun onLiveCustomeCostumeIdChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-        binding.config!!.liveCustomeCostumeId = s.toString()
+        config.liveCustomeCostumeId = s.toString()
         saveConfig()
     }
 
     override fun onUseCustomeGraphicSettingsChanged(value: Boolean) {
-        binding.config!!.useCustomeGraphicSettings = value
+        config.useCustomeGraphicSettings = value
         saveConfig()
     }
 
     override fun onRenderScaleChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-        binding.config!!.renderScale = try {
+        config.renderScale = try {
             s.toString().toFloat()
         }
         catch (e: Exception) {
@@ -179,7 +178,7 @@ interface ConfigUpdateListener: ConfigListener {
     }
 
     override fun onQualitySettingsLevelChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-        binding.config!!.qualitySettingsLevel = try {
+        config.qualitySettingsLevel = try {
             s.toString().toInt()
         }
         catch (e: Exception) {
@@ -189,7 +188,7 @@ interface ConfigUpdateListener: ConfigListener {
     }
 
     override fun onVolumeIndexChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-        binding.config!!.volumeIndex = try {
+        config.volumeIndex = try {
             s.toString().toInt()
         }
         catch (e: Exception) {
@@ -199,7 +198,7 @@ interface ConfigUpdateListener: ConfigListener {
     }
 
     override fun onMaxBufferPixelChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-        binding.config!!.maxBufferPixel = try {
+        config.maxBufferPixel = try {
             s.toString().toInt()
         }
         catch (e: Exception) {
@@ -209,12 +208,12 @@ interface ConfigUpdateListener: ConfigListener {
     }
 
     override fun onLiveCustomeHeadIdChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-        binding.config!!.liveCustomeHeadId = s.toString()
+        config.liveCustomeHeadId = s.toString()
         saveConfig()
     }
 
     override fun onReflectionQualityLevelChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-        binding.config!!.reflectionQualityLevel = try {
+        config.reflectionQualityLevel = try {
             val value = s.toString().toInt()
             if (value > 5) 5 else value
         }
@@ -225,7 +224,7 @@ interface ConfigUpdateListener: ConfigListener {
     }
 
     override fun onLodQualityLevelChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-        binding.config!!.lodQualityLevel = try {
+        config.lodQualityLevel = try {
             val value = s.toString().toInt()
             if (value > 5) 5 else value
         }
@@ -238,44 +237,44 @@ interface ConfigUpdateListener: ConfigListener {
     override fun onChangePresetQuality(level: Int) {
         when (level) {
             0 -> {
-                binding.config!!.renderScale = 0.5f
-                binding.config!!.qualitySettingsLevel = 1
-                binding.config!!.volumeIndex = 0
-                binding.config!!.maxBufferPixel = 1024
-                binding.config!!.lodQualityLevel = 1
-                binding.config!!.reflectionQualityLevel = 1
+                config.renderScale = 0.5f
+                config.qualitySettingsLevel = 1
+                config.volumeIndex = 0
+                config.maxBufferPixel = 1024
+                config.lodQualityLevel = 1
+                config.reflectionQualityLevel = 1
             }
             1 -> {
-                binding.config!!.renderScale = 0.59f
-                binding.config!!.qualitySettingsLevel = 1
-                binding.config!!.volumeIndex = 1
-                binding.config!!.maxBufferPixel = 1440
-                binding.config!!.lodQualityLevel = 2
-                binding.config!!.reflectionQualityLevel = 2
+                config.renderScale = 0.59f
+                config.qualitySettingsLevel = 1
+                config.volumeIndex = 1
+                config.maxBufferPixel = 1440
+                config.lodQualityLevel = 2
+                config.reflectionQualityLevel = 2
             }
             2 -> {
-                binding.config!!.renderScale = 0.67f
-                binding.config!!.qualitySettingsLevel = 2
-                binding.config!!.volumeIndex = 2
-                binding.config!!.maxBufferPixel = 2538
-                binding.config!!.lodQualityLevel = 3
-                binding.config!!.reflectionQualityLevel = 3
+                config.renderScale = 0.67f
+                config.qualitySettingsLevel = 2
+                config.volumeIndex = 2
+                config.maxBufferPixel = 2538
+                config.lodQualityLevel = 3
+                config.reflectionQualityLevel = 3
             }
             3 -> {
-                binding.config!!.renderScale = 0.77f
-                binding.config!!.qualitySettingsLevel = 3
-                binding.config!!.volumeIndex = 3
-                binding.config!!.maxBufferPixel = 3384
-                binding.config!!.lodQualityLevel = 4
-                binding.config!!.reflectionQualityLevel = 4
+                config.renderScale = 0.77f
+                config.qualitySettingsLevel = 3
+                config.volumeIndex = 3
+                config.maxBufferPixel = 3384
+                config.lodQualityLevel = 4
+                config.reflectionQualityLevel = 4
             }
             4 -> {
-                binding.config!!.renderScale = 1.0f
-                binding.config!!.qualitySettingsLevel = 5
-                binding.config!!.volumeIndex = 4
-                binding.config!!.maxBufferPixel = 8190
-                binding.config!!.lodQualityLevel = 5
-                binding.config!!.reflectionQualityLevel = 5
+                config.renderScale = 1.0f
+                config.qualitySettingsLevel = 5
+                config.volumeIndex = 4
+                config.maxBufferPixel = 8190
+                config.lodQualityLevel = 5
+                config.reflectionQualityLevel = 5
             }
         }
         checkConfigAndUpdateView()
@@ -283,38 +282,31 @@ interface ConfigUpdateListener: ConfigListener {
     }
 
     override fun onGameOrientationChanged(checkedId: Int) {
-        when (checkedId) {
-            R.id.radioButtonGameDefault -> binding.config!!.gameOrientation = 0
-            R.id.radioButtonGamePortrait -> binding.config!!.gameOrientation = 1
-            R.id.radioButtonGameLandscape -> binding.config!!.gameOrientation = 2
-            else -> {
-                if (listOf(0, 1, 2).contains(checkedId)) {
-                    binding.config!!.gameOrientation = checkedId
-                }
-            }
+        if (checkedId in listOf(0, 1, 2)) {
+            config.gameOrientation = checkedId
         }
         saveConfig()
     }
 
     override fun onEnableBreastParamChanged(value: Boolean) {
-        binding.config!!.enableBreastParam = value
+        config.enableBreastParam = value
         saveConfig()
         checkConfigAndUpdateView()
     }
 
     override fun onBUseArmCorrectionChanged(value: Boolean) {
-        binding.config!!.bUseArmCorrection = value
+        config.bUseArmCorrection = value
         saveConfig()
     }
 
     override fun onBUseScaleChanged(value: Boolean) {
-        binding.config!!.bUseScale = value
+        config.bUseScale = value
         saveConfig()
         checkConfigAndUpdateView()
     }
 
     override fun onBDampingChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-        binding.config!!.bDamping = try {
+        config.bDamping = try {
             s.toString().toFloat()
         }
         catch (e: Exception) {
@@ -324,7 +316,7 @@ interface ConfigUpdateListener: ConfigListener {
     }
 
     override fun onBStiffnessChanged(s: CharSequence, start: Int, before: Int, count: Int){
-        binding.config!!.bStiffness = try {
+        config.bStiffness = try {
             s.toString().toFloat()
         }
         catch (e: Exception) {
@@ -334,7 +326,7 @@ interface ConfigUpdateListener: ConfigListener {
     }
 
     override fun onBSpringChanged(s: CharSequence, start: Int, before: Int, count: Int){
-        binding.config!!.bSpring = try {
+        config.bSpring = try {
             s.toString().toFloat()
         }
         catch (e: Exception) {
@@ -344,7 +336,7 @@ interface ConfigUpdateListener: ConfigListener {
     }
 
     override fun onBPendulumChanged(s: CharSequence, start: Int, before: Int, count: Int){
-        binding.config!!.bPendulum = try {
+        config.bPendulum = try {
             s.toString().toFloat()
         }
         catch (e: Exception) {
@@ -354,7 +346,7 @@ interface ConfigUpdateListener: ConfigListener {
     }
 
     override fun onBPendulumRangeChanged(s: CharSequence, start: Int, before: Int, count: Int){
-        binding.config!!.bPendulumRange = try {
+        config.bPendulumRange = try {
             s.toString().toFloat()
         }
         catch (e: Exception) {
@@ -364,7 +356,7 @@ interface ConfigUpdateListener: ConfigListener {
     }
 
     override fun onBAverageChanged(s: CharSequence, start: Int, before: Int, count: Int){
-        binding.config!!.bAverage = try {
+        config.bAverage = try {
             s.toString().toFloat()
         }
         catch (e: Exception) {
@@ -374,7 +366,7 @@ interface ConfigUpdateListener: ConfigListener {
     }
 
     override fun onBRootWeightChanged(s: CharSequence, start: Int, before: Int, count: Int){
-        binding.config!!.bRootWeight = try {
+        config.bRootWeight = try {
             s.toString().toFloat()
         }
         catch (e: Exception) {
@@ -384,13 +376,13 @@ interface ConfigUpdateListener: ConfigListener {
     }
 
     override fun onBUseLimitChanged(value: Boolean){
-        binding.config!!.bUseLimit = value
+        config.bUseLimit = value
         saveConfig()
         checkConfigAndUpdateView()
     }
 
     override fun onBLimitXxChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-        binding.config!!.bLimitXx = try {
+        config.bLimitXx = try {
             s.toString().toFloat()
         }
         catch (e: Exception) {
@@ -400,7 +392,7 @@ interface ConfigUpdateListener: ConfigListener {
     }
 
     override fun onBLimitXyChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-        binding.config!!.bLimitXy = try {
+        config.bLimitXy = try {
             s.toString().toFloat()
         }
         catch (e: Exception) {
@@ -410,7 +402,7 @@ interface ConfigUpdateListener: ConfigListener {
     }
 
     override fun onBLimitYxChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-        binding.config!!.bLimitYx = try {
+        config.bLimitYx = try {
             s.toString().toFloat()
         }
         catch (e: Exception) {
@@ -420,7 +412,7 @@ interface ConfigUpdateListener: ConfigListener {
     }
 
     override fun onBLimitYyChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-        binding.config!!.bLimitYy = try {
+        config.bLimitYy = try {
             s.toString().toFloat()
         }
         catch (e: Exception) {
@@ -430,7 +422,7 @@ interface ConfigUpdateListener: ConfigListener {
     }
 
     override fun onBLimitZxChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-        binding.config!!.bLimitZx = try {
+        config.bLimitZx = try {
             s.toString().toFloat()
         }
         catch (e: Exception) {
@@ -440,7 +432,7 @@ interface ConfigUpdateListener: ConfigListener {
     }
 
     override fun onBLimitZyChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-        binding.config!!.bLimitZy = try {
+        config.bLimitZy = try {
             s.toString().toFloat()
         }
         catch (e: Exception) {
@@ -451,7 +443,7 @@ interface ConfigUpdateListener: ConfigListener {
 
 
     override fun onBScaleChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-        binding.config!!.bScale = try {
+        config.bScale = try {
             s.toString().toFloat()
         }
         catch (e: Exception) {
@@ -481,27 +473,27 @@ interface ConfigUpdateListener: ConfigListener {
                 1f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f)
         }
 
-        binding.config!!.bDamping = setData[0]
-        binding.config!!.bStiffness = setData[1]
-        binding.config!!.bSpring = setData[2]
-        binding.config!!.bPendulum = setData[3]
-        binding.config!!.bPendulumRange = setData[4]
-        binding.config!!.bAverage = setData[5]
-        binding.config!!.bRootWeight = setData[6]
-        binding.config!!.bUseLimit = if (setData[7] == 0f) {
+        config.bDamping = setData[0]
+        config.bStiffness = setData[1]
+        config.bSpring = setData[2]
+        config.bPendulum = setData[3]
+        config.bPendulumRange = setData[4]
+        config.bAverage = setData[5]
+        config.bRootWeight = setData[6]
+        config.bUseLimit = if (setData[7] == 0f) {
             false
         }
         else {
-            binding.config!!.bLimitXx = setData[8]
-            binding.config!!.bLimitXy = setData[9]
-            binding.config!!.bLimitYx = setData[10]
-            binding.config!!.bLimitYy = setData[11]
-            binding.config!!.bLimitZx = setData[12]
-            binding.config!!.bLimitZy = setData[13]
+            config.bLimitXx = setData[8]
+            config.bLimitXy = setData[9]
+            config.bLimitYx = setData[10]
+            config.bLimitYy = setData[11]
+            config.bLimitZx = setData[12]
+            config.bLimitZy = setData[13]
             true
         }
 
-        binding.config!!.bUseArmCorrection = true
+        config.bUseArmCorrection = true
 
         checkConfigAndUpdateView()
         saveConfig()
@@ -539,5 +531,4 @@ interface ConfigUpdateListener: ConfigListener {
         localResourceVersionState?.let{ programConfigViewModel.localResourceVersionState.value = localResourceVersionState }
         errorString?.let{ programConfigViewModel.errorStringState.value = errorString }
     }
-
 }

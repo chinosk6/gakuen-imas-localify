@@ -1,7 +1,5 @@
 package io.github.chinosk.gakumas.localify.mainUtils
 
-import android.util.Log
-import io.github.chinosk.gakumas.localify.TAG
 import okhttp3.*
 import java.io.IOException
 import java.io.ByteArrayOutputStream
