@@ -16,7 +16,6 @@ import android.view.MotionEvent
 import android.widget.Toast
 import com.bytedance.shadowhook.ShadowHook
 import com.bytedance.shadowhook.ShadowHook.ConfigBuilder
-import com.google.gson.Gson
 import de.robv.android.xposed.IXposedHookLoadPackage
 import de.robv.android.xposed.IXposedHookZygoteInit
 import de.robv.android.xposed.XC_MethodHook
@@ -33,11 +32,9 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.util.Locale
 import kotlin.system.measureTimeMillis
-import android.content.ContentResolver
 import io.github.chinosk.gakumas.localify.hookUtils.FileHotUpdater
+import io.github.chinosk.gakumas.localify.mainUtils.json
 import io.github.chinosk.gakumas.localify.models.ProgramConfig
-import java.io.BufferedReader
-import java.io.InputStreamReader
 
 val TAG = "GakumasLocalify"
 
@@ -225,13 +222,17 @@ class GakumasHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
         if (gkmsData != null) {
             gkmsDataInited = true
             val initConfig = try {
-                Gson().fromJson(gkmsData, GakumasConfig::class.java)
+                json.decodeFromString<GakumasConfig>(gkmsData)
             }
             catch (e: Exception) {
                 null
             }
             val programConfig = try {
-                Gson().fromJson(programData, ProgramConfig::class.java)
+                if (programData == null) {
+                    ProgramConfig()
+                } else {
+                    json.decodeFromString<ProgramConfig>(programData)
+                }
             }
             catch (e: Exception) {
                 null

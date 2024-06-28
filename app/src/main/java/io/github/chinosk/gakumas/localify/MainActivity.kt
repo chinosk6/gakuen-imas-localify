@@ -15,23 +15,22 @@ import androidx.compose.runtime.collectAsState
 import androidx.core.content.FileProvider
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
-import com.google.gson.ExclusionStrategy
-import com.google.gson.FieldAttributes
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
-import com.google.gson.JsonSyntaxException
 import io.github.chinosk.gakumas.localify.databinding.ActivityMainBinding
 import io.github.chinosk.gakumas.localify.hookUtils.FileHotUpdater
 import io.github.chinosk.gakumas.localify.hookUtils.FilesChecker
 import io.github.chinosk.gakumas.localify.hookUtils.MainKeyEventDispatcher
+import io.github.chinosk.gakumas.localify.mainUtils.json
 import io.github.chinosk.gakumas.localify.models.GakumasConfig
 import io.github.chinosk.gakumas.localify.models.ProgramConfig
+import io.github.chinosk.gakumas.localify.models.ProgramConfigSerializer
 import io.github.chinosk.gakumas.localify.models.ProgramConfigViewModel
 import io.github.chinosk.gakumas.localify.models.ProgramConfigViewModelFactory
 import io.github.chinosk.gakumas.localify.ui.pages.MainUI
 import io.github.chinosk.gakumas.localify.ui.theme.GakumasLocalifyTheme
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.encodeToString
 import java.io.File
 
 
@@ -78,8 +77,8 @@ class MainActivity : ComponentActivity(), ConfigUpdateListener {
         }
     }
 
-    private fun getProgramConfigContent(excludes: List<String>? = null): String {
-        if (excludes == null) {
+    private fun getProgramConfigContent(excludes: List<String> = emptyList()): String {
+        if (excludes.isEmpty()) {
             val configFile = File(filesDir, "localify-config.json")
             return if (configFile.exists()) {
                 configFile.readText()
@@ -89,18 +88,7 @@ class MainActivity : ComponentActivity(), ConfigUpdateListener {
             }
         }
         else {
-            val gson = GsonBuilder()
-                .setExclusionStrategies(object : ExclusionStrategy {
-                    override fun shouldSkipField(f: FieldAttributes): Boolean {
-                        return excludes.contains(f.name)
-                    }
-
-                    override fun shouldSkipClass(clazz: Class<*>): Boolean {
-                        return false
-                    }
-                })
-                .create()
-            return gson.toJson(programConfig)
+            return json.encodeToString(ProgramConfigSerializer(excludes),  programConfig)
         }
     }
 
@@ -113,7 +101,7 @@ class MainActivity : ComponentActivity(), ConfigUpdateListener {
             Log.d(TAG, e.toString())
         }
         val configFile = File(filesDir, "gkms-config.json")
-        configFile.writeText(Gson().toJson(binding.config!!))
+        configFile.writeText(json.encodeToString(binding.config!!))
     }
 
     override fun saveProgramConfig() {
@@ -125,7 +113,7 @@ class MainActivity : ComponentActivity(), ConfigUpdateListener {
             Log.d(TAG, e.toString())
         }
         val configFile = File(filesDir, "localify-config.json")
-        configFile.writeText(Gson().toJson(programConfig))
+        configFile.writeText(json.encodeToString(programConfig))
     }
 
     fun getVersion(): List<String> {
@@ -155,20 +143,20 @@ class MainActivity : ComponentActivity(), ConfigUpdateListener {
     private fun loadConfig() {
         val configStr = getConfigContent()
         binding.config = try {
-            Gson().fromJson(configStr, GakumasConfig::class.java)
+            json.decodeFromString<GakumasConfig>(configStr)
         }
-        catch (e: JsonSyntaxException) {
+        catch (e: SerializationException) {
             showToast("配置文件异常，已重置: $e")
-            Gson().fromJson("{}", GakumasConfig::class.java)
+            GakumasConfig()
         }
         saveConfig()
 
         val programConfigStr = getProgramConfigContent()
         programConfig = try {
-            Gson().fromJson(programConfigStr, ProgramConfig::class.java)
+            json.decodeFromString<ProgramConfig>(programConfigStr)
         }
-        catch (e: JsonSyntaxException) {
-            Gson().fromJson("{}", ProgramConfig::class.java)
+        catch (e: SerializationException) {
+            ProgramConfig()
         }
     }
 

@@ -1,6 +1,8 @@
 package io.github.chinosk.gakumas.localify.models
 
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class GakumasConfig (
     var dbgMode: Boolean = false,
     var enabled: Boolean = true,

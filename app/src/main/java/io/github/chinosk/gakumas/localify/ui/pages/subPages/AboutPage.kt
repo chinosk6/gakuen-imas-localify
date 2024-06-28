@@ -28,10 +28,10 @@ import coil.compose.rememberAsyncImagePainter
 import coil.decode.SvgDecoder
 import coil.request.ImageRequest
 import coil.size.Size
-import com.google.gson.Gson
 import io.github.chinosk.gakumas.localify.MainActivity
 import io.github.chinosk.gakumas.localify.R
 import io.github.chinosk.gakumas.localify.hookUtils.FilesChecker.convertToString
+import io.github.chinosk.gakumas.localify.mainUtils.json
 import io.github.chinosk.gakumas.localify.models.AboutPageConfig
 import io.github.chinosk.gakumas.localify.models.GakumasConfig
 import io.github.chinosk.gakumas.localify.ui.components.GakuButton
@@ -48,7 +48,7 @@ fun AboutPage(modifier: Modifier = Modifier,
         val dataJsonString = context?.getString(R.string.about_contributors_asset_file)?.let {
             convertToString(context.assets?.open(it))
         }
-        Gson().fromJson(dataJsonString, AboutPageConfig::class.java)
+        dataJsonString?.let { json.decodeFromString<AboutPageConfig>(it) }
             ?: AboutPageConfig()
     }
 
@@ -137,7 +137,7 @@ fun AboutPage(modifier: Modifier = Modifier,
                 url = contributorInfo.contrib_img.plugin,
                 contentDescription = "plugin-contrib"
             )
-            
+
             Spacer(modifier = Modifier.height(4.dp))
             Text(stringResource(R.string.translation_repository), fontSize = 16.sp)
             NetworkSvgImage(
