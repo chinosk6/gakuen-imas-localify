@@ -1,8 +1,9 @@
 plugins {
-    id 'com.android.application'
-    id 'org.jetbrains.kotlin.android'
+    alias(libs.plugins.androidApplication)
+    alias(libs.plugins.kotlinAndroid)
+    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.serialization)
 }
-android.buildFeatures.buildConfig true
 
 android {
     namespace 'io.github.chinosk.gakumas.localify'
@@ -38,23 +39,16 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = '11'
     }
     buildFeatures {
+        buildConfig true
         compose true
         prefab true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion '1.5.1'
-    }
-    packaging {
-        resources {
-            excludes += '/META-INF/{AL2.0,LGPL2.1}'
-        }
     }
     externalNativeBuild {
         cmake {
@@ -62,13 +56,20 @@ android {
             version '3.22.1'
         }
     }
-    packagingOptions {
-        pickFirst '**/libxdl.so'
-        pickFirst '**/libshadowhook.so'
-        exclude 'gakumas-local/gakuen-adapted-translation-data/**'
-    }
     dataBinding {
         enable true
+    }
+
+    packaging {
+        jniLibs {
+            pickFirsts += "**/libxdl.so"
+            pickFirsts += "**/libshadowhook.so"
+        }
+        resources {
+            excludes += "**/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "kotlin/**"
+            excludes += "**.bin"
+        }
     }
 
     applicationVariants.configureEach { variant ->
@@ -83,42 +84,40 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.material3)
+    implementation(libs.material)
 
-    implementation 'androidx.core:core-ktx:1.13.1'
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.8.2'
-    implementation 'androidx.compose.material3:material3'
-    implementation 'com.google.android.material:material:1.12.0'
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.navigation.compose)
 
-    implementation "androidx.activity:activity-compose:1.9.0"
-    implementation "androidx.appcompat:appcompat:1.7.0"
-    implementation 'androidx.navigation:navigation-compose:2.7.7'
-
-    def composeBom = platform('androidx.compose:compose-bom:2024.06.00')
+    def composeBom = platform(libs.androidx.compose.bom)
     implementation(composeBom)
     androidTestImplementation(composeBom)
-    implementation "androidx.compose.runtime:runtime"
-    implementation "androidx.compose.material:material"
-    implementation "androidx.compose.foundation:foundation"
-    implementation "androidx.compose.foundation:foundation-layout"
-    implementation "androidx.compose.animation:animation"
-    implementation "androidx.compose.ui:ui-tooling-preview"
-    androidTestImplementation "androidx.compose.ui:ui-test-junit4"
-    debugImplementation "androidx.compose.ui:ui-tooling"
-    debugImplementation "androidx.compose.ui:ui-test-manifest"
-    implementation "com.google.accompanist:accompanist-pager:0.30.0"
-    implementation "com.google.accompanist:accompanist-pager-indicators:0.30.0"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.8.2"
+    implementation(libs.androidx.runtime)
+    implementation(libs.androidx.material)
+    implementation(libs.androidx.foundation)
+    implementation(libs.androidx.foundation.layout)
+    implementation(libs.androidx.animation)
+    implementation(libs.androidx.ui.tooling.preview)
+    androidTestImplementation(libs.androidx.ui.test.junit4)
+    debugImplementation(libs.androidx.ui.tooling)
+    debugImplementation(libs.androidx.ui.test.manifest)
+    implementation(libs.accompanist.pager)
+    implementation(libs.accompanist.pager.indicators)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
 
-    implementation "io.coil-kt:coil-compose:2.6.0"
-    implementation "io.coil-kt:coil-svg:2.6.0"
+    implementation(libs.coil.compose)
+    implementation(libs.coil.svg)
 
-    implementation(platform("com.squareup.okhttp3:okhttp-bom:4.12.0"))
-    implementation "com.squareup.okhttp3:okhttp"
-    implementation "com.squareup.okhttp3:logging-interceptor"
+    implementation(platform(libs.okhttp.bom))
+    implementation(libs.okhttp)
+    implementation(libs.logging.interceptor)
 
-    implementation 'io.github.hexhacking:xdl:2.1.1'
-    implementation 'com.bytedance.android:shadowhook:1.0.9'
-    compileOnly 'de.robv.android.xposed:api:82'
-    implementation "org.jetbrains.kotlin:kotlin-reflect:1.9.22"
-    implementation 'com.google.code.gson:gson:2.11.0'
+    implementation(libs.xdl)
+    implementation(libs.shadowhook)
+    compileOnly(libs.xposed.api)
+    implementation(libs.kotlinx.serialization.json)
 }
