@@ -36,6 +36,7 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             buildConfigField "boolean", "ENABLE_LOG", "true"
+            signingConfig signingConfigs.debug
         }
     }
     compileOptions {

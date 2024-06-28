@@ -187,17 +187,9 @@ class MainActivity : ComponentActivity(), ConfigUpdateListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        binding = DataBindingUtil.setContentView<ActivityMainBinding>(this, R.layout.activity_main)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         loadConfig()
         binding.listener = this
-
-        val requestData = intent.getStringExtra("gkmsData")
-        if (requestData != null) {
-            if (requestData == "requestConfig") {
-                onClickStartGame()
-                finish()
-            }
-        }
 
         factory = UserConfigViewModelFactory(binding.config!!)
         viewModel = ViewModelProvider(this, factory)[UserConfigViewModel::class.java]
