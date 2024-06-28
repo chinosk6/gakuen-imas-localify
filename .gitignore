@@ -16,3 +16,5 @@ local.properties
 /.idea
 /.vs
 /.kotlin
+/app/debug
+/app/release
