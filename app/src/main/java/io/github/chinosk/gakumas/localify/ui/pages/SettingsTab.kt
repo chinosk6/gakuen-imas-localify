@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.chinosk.gakumas.localify.MainActivity
 import io.github.chinosk.gakumas.localify.models.GakumasConfig
+import io.github.chinosk.gakumas.localify.onClickStartGame
 import io.github.chinosk.gakumas.localify.ui.components.GakuTabRow
 import io.github.chinosk.gakumas.localify.ui.pages.subPages.AboutPage
 import io.github.chinosk.gakumas.localify.ui.pages.subPages.AdvanceSettingsPage

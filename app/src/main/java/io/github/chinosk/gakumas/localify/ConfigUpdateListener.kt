@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.asStateFlow
 
 
 interface ConfigListener {
-    fun onClickStartGame()
     fun onEnabledChanged(value: Boolean)
     fun onForceExportResourceChanged(value: Boolean)
     fun onTextTestChanged(value: Boolean)
@@ -81,19 +80,16 @@ class UserConfigViewModel(initValue: GakumasConfig) : ViewModel() {
 }
 
 
-interface ConfigUpdateListener: ConfigListener {
-    val config: GakumasConfig
+interface ConfigUpdateListener: ConfigListener, IHasConfigItems {
     var factory: UserConfigViewModelFactory
     var viewModel: UserConfigViewModel
 
-    var programConfig: ProgramConfig
     var programConfigFactory: ProgramConfigViewModelFactory
     var programConfigViewModel: ProgramConfigViewModel
 
     fun pushKeyEvent(event: KeyEvent): Boolean
-    fun getConfigContent(): String
-    fun checkConfigAndUpdateView()
-    fun saveConfig()
+    fun checkConfigAndUpdateView() {}  // do nothing
+    // fun saveConfig()
     fun saveProgramConfig()
 
 

@@ -12,7 +12,6 @@ import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
-import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModelProvider
 import io.github.chinosk.gakumas.localify.hookUtils.FileHotUpdater
 import io.github.chinosk.gakumas.localify.hookUtils.FilesChecker
@@ -20,19 +19,17 @@ import io.github.chinosk.gakumas.localify.hookUtils.MainKeyEventDispatcher
 import io.github.chinosk.gakumas.localify.mainUtils.json
 import io.github.chinosk.gakumas.localify.models.GakumasConfig
 import io.github.chinosk.gakumas.localify.models.ProgramConfig
-import io.github.chinosk.gakumas.localify.models.ProgramConfigSerializer
 import io.github.chinosk.gakumas.localify.models.ProgramConfigViewModel
 import io.github.chinosk.gakumas.localify.models.ProgramConfigViewModelFactory
 import io.github.chinosk.gakumas.localify.ui.pages.MainUI
 import io.github.chinosk.gakumas.localify.ui.theme.GakumasLocalifyTheme
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.serialization.SerializationException
 import kotlinx.serialization.encodeToString
 import java.io.File
 
 
-class MainActivity : ComponentActivity(), ConfigUpdateListener {
+class MainActivity : ComponentActivity(), ConfigUpdateListener, IConfigurableActivity<MainActivity> {
     override lateinit var config: GakumasConfig
     override lateinit var programConfig: ProgramConfig
 
@@ -42,56 +39,14 @@ class MainActivity : ComponentActivity(), ConfigUpdateListener {
     override lateinit var programConfigFactory: ProgramConfigViewModelFactory
     override lateinit var programConfigViewModel: ProgramConfigViewModel
 
-    override fun onClickStartGame() {
-        val intent = Intent().apply {
-            setClassName("com.bandainamcoent.idolmaster_gakuen", "com.google.firebase.MessagingUnityPlayerActivity")
-            putExtra("gkmsData", getConfigContent())
-            putExtra("localData", getProgramConfigContent(listOf("transRemoteZipUrl", "p")))
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        }
-
-        val updateFile = File(filesDir, "update_trans.zip")
-        if (updateFile.exists()) {
-            val dirUri = FileProvider.getUriForFile(this, "io.github.chinosk.gakumas.localify.fileprovider", File(updateFile.absolutePath))
-            intent.setDataAndType(dirUri, "resource/file")
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-        }
-
-        startActivity(intent)
-    }
 
     private fun showToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
-    override fun getConfigContent(): String {
-        val configFile = File(filesDir, "gkms-config.json")
-        return if (configFile.exists()) {
-            configFile.readText()
-        }
-        else {
-            showToast("检测到第一次启动，初始化配置文件...")
-            "{}"
-        }
-    }
-
-    private fun getProgramConfigContent(excludes: List<String> = emptyList()): String {
-        if (excludes.isEmpty()) {
-            val configFile = File(filesDir, "localify-config.json")
-            return if (configFile.exists()) {
-                configFile.readText()
-            }
-            else {
-                "{}"
-            }
-        }
-        else {
-            return json.encodeToString(ProgramConfigSerializer(excludes),  programConfig)
-        }
-    }
-
     override fun saveConfig() {
         try {
+            config.pf = false
             viewModel.configState.value = config.copy( pf = true )  // 更新 UI
         }
         catch (e: RuntimeException) {
@@ -135,30 +90,6 @@ class MainActivity : ComponentActivity(), ConfigUpdateListener {
         val webpage = Uri.parse(url)
         val intent = Intent(Intent.ACTION_VIEW, webpage)
         startActivity(intent)
-    }
-
-    private fun loadConfig() {
-        val configStr = getConfigContent()
-        config = try {
-            json.decodeFromString<GakumasConfig>(configStr)
-        }
-        catch (e: SerializationException) {
-            showToast("配置文件异常，已重置: $e")
-            GakumasConfig()
-        }
-        saveConfig()
-
-        val programConfigStr = getProgramConfigContent()
-        programConfig = try {
-            json.decodeFromString<ProgramConfig>(programConfigStr)
-        }
-        catch (e: SerializationException) {
-            ProgramConfig()
-        }
-    }
-
-    override fun checkConfigAndUpdateView() {
-
     }
 
     override fun pushKeyEvent(event: KeyEvent): Boolean {
