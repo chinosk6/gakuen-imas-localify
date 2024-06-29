@@ -2,8 +2,8 @@ package io.github.chinosk.gakumas.localify
 
 import android.app.Activity
 import android.content.Intent
+import android.widget.Toast
 import androidx.core.content.FileProvider
-import io.github.chinosk.gakumas.localify.GakumasHookMain.Companion.showToast
 import io.github.chinosk.gakumas.localify.mainUtils.json
 import io.github.chinosk.gakumas.localify.models.GakumasConfig
 import io.github.chinosk.gakumas.localify.models.ProgramConfig
@@ -27,7 +27,8 @@ fun <T> T.getConfigContent(): String where T : Activity {
     return if (configFile.exists()) {
         configFile.readText()
     } else {
-        showToast("检测到第一次启动，初始化配置文件...")
+        Toast.makeText(this, "检测到第一次启动，初始化配置文件...", Toast.LENGTH_SHORT).show()
+        configFile.writeText("{}")
         "{}"
     }
 }
@@ -62,7 +63,7 @@ fun <T> T.loadConfig() where T : Activity, T : IHasConfigItems {
     config = try {
         json.decodeFromString<GakumasConfig>(configStr)
     } catch (e: SerializationException) {
-        showToast("配置文件异常，已重置: $e")
+        Toast.makeText(this, "配置文件异常: $e", Toast.LENGTH_SHORT).show()
         GakumasConfig()
     }
     saveConfig()
