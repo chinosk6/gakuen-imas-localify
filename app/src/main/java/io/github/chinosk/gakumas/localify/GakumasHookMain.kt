@@ -347,7 +347,7 @@ class GakumasHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
     fun requestConfig(activity: Context) {
         try {
             val intent = Intent().apply {
-                setClassName("io.github.chinosk.gakumas.localify", "io.github.chinosk.gakumas.localify.MainActivity")
+                setClassName("io.github.chinosk.gakumas.localify", "io.github.chinosk.gakumas.localify.TranslucentActivity")
                 putExtra("gkmsData", "requestConfig")
                 flags = FLAG_ACTIVITY_NEW_TASK
             }

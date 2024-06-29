@@ -1,3 +1,5 @@
+package io.github.chinosk.gakumas.localify.ui.components
+
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
