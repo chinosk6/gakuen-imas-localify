@@ -1393,6 +1393,25 @@ public:
 				}
 			}
 
+            [[nodiscard]] auto ToWString() const -> std::u16string {
+#if WINDOWS_MODE
+                if (IsBadReadPtr(this, sizeof(String))) return {};
+				if (IsBadReadPtr(m_firstChar, m_stringLength)) return {};
+#endif
+                if (!this) return {};
+                try {
+                    // using convert_typeX = std::codecvt_utf8<wchar_t>;
+                    // std::wstring_convert<convert_typeX> converterX;
+                    // return converterX.to_bytes(m_firstChar);
+                    return {chars};
+                }
+                catch (std::exception& e) {
+                    std::cout << "String Invoke Error\n";
+                    GakumasLocal::Log::ErrorFmt("String Invoke Error: %s", e.what());
+                    return {};
+                }
+            }
+
 			auto operator=(const std::string& newString) const -> String* { return New(newString); }
 
 			auto operator==(const std::wstring& newString) const -> bool { return Equals(newString); }
