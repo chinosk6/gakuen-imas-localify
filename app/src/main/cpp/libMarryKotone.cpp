@@ -15,6 +15,10 @@ JavaVM* g_javaVM = nullptr;
 jclass g_gakumasHookMainClass = nullptr;
 jmethodID showToastMethodId = nullptr;
 
+bool UnityResolveProgress::startInit = false;
+UnityResolveProgress::Progress UnityResolveProgress::assembliesProgress{};
+UnityResolveProgress::Progress UnityResolveProgress::classProgress{};
+
 namespace
 {
     class AndroidHookInstaller : public GakumasLocal::HookInstaller
@@ -114,8 +118,37 @@ Java_io_github_chinosk_gakumas_localify_GakumasHookMain_loadConfig(JNIEnv *env, 
 }
 
 extern "C"
-JNIEXPORT void JNICALL
+JNIEXPORT jint JNICALL
 Java_io_github_chinosk_gakumas_localify_GakumasHookMain_pluginCallbackLooper(JNIEnv *env,
                                                                              jclass clazz) {
     GakumasLocal::Log::ToastLoop(env, clazz);
+
+    if (UnityResolveProgress::startInit) {
+        return 9;
+    }
+    return 0;
+}
+
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_io_github_chinosk_gakumas_localify_models_NativeInitProgress_pluginInitProgressLooper(
+        JNIEnv *env, jclass clazz, jobject progress) {
+
+    // jclass progressClass = env->GetObjectClass(progress);
+
+    static jfieldID startInitFieldID = env->GetStaticFieldID(clazz, "startInit", "Z");
+
+    static jmethodID setAssembliesProgressDataMethodID = env->GetMethodID(clazz, "setAssembliesProgressData", "(JJ)V");
+    static jmethodID setClassProgressDataMethodID = env->GetMethodID(clazz, "setClassProgressData", "(JJ)V");
+
+    // jboolean startInit = env->GetStaticBooleanField(clazz, startInitFieldID);
+
+    env->SetStaticBooleanField(clazz, startInitFieldID, UnityResolveProgress::startInit);
+
+    env->CallVoidMethod(progress, setAssembliesProgressDataMethodID,
+                        UnityResolveProgress::assembliesProgress.current, UnityResolveProgress::assembliesProgress.total);
+    env->CallVoidMethod(progress, setClassProgressDataMethodID,
+                        UnityResolveProgress::classProgress.current, UnityResolveProgress::classProgress.total);
+
 }

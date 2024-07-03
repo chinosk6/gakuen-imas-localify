@@ -47,6 +47,18 @@
 #include "../../GakumasLocalify/Log.h"
 #include "../../GakumasLocalify/Misc.hpp"
 
+class UnityResolveProgress final {
+public:
+    struct Progress {
+        long current = 0;
+        long total = 1;
+    };
+
+    static bool startInit;
+    static Progress assembliesProgress;
+    static Progress classProgress;
+};
+
 class UnityResolve final {
 public:
 	struct Assembly;
@@ -284,9 +296,11 @@ public:
 		hmodule_ = hmodule;
 
 		if (mode_ == Mode::Il2Cpp) {
+            UnityResolveProgress::startInit = true;
 			pDomain = Invoke<void*>("il2cpp_domain_get");
 			Invoke<void*>("il2cpp_thread_attach", pDomain);
 			ForeachAssembly();
+            UnityResolveProgress::startInit = false;
 		}
 		else {
 			pDomain = Invoke<void*>("mono_get_root_domain");
@@ -561,7 +575,11 @@ private:
 		if (mode_ == Mode::Il2Cpp) {
 			size_t     nrofassemblies = 0;
 			const auto assemblies = Invoke<void**>("il2cpp_domain_get_assemblies", pDomain, &nrofassemblies);
+
+            UnityResolveProgress::assembliesProgress.total = nrofassemblies;
+
 			for (auto i = 0; i < nrofassemblies; i++) {
+                UnityResolveProgress::assembliesProgress.current = i + 1;
 				const auto ptr = assemblies[i];
 				if (ptr == nullptr) continue;
 				auto       assembly = new Assembly{ .address = ptr };
@@ -594,7 +612,9 @@ private:
 		// 遍历类
 		if (mode_ == Mode::Il2Cpp) {
 			const auto count = Invoke<int>("il2cpp_image_get_class_count", image);
+            UnityResolveProgress::classProgress.total = count;
 			for (auto i = 0; i < count; i++) {
+                UnityResolveProgress::classProgress.current = i + 1;
 				const auto pClass = Invoke<void*>("il2cpp_image_get_class", image, i);
 				if (pClass == nullptr) continue;
 				const auto pAClass = new Class();

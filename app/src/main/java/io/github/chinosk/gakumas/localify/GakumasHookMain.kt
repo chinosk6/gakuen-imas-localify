@@ -34,7 +34,9 @@ import java.util.Locale
 import kotlin.system.measureTimeMillis
 import io.github.chinosk.gakumas.localify.hookUtils.FileHotUpdater
 import io.github.chinosk.gakumas.localify.mainUtils.json
+import io.github.chinosk.gakumas.localify.models.NativeInitProgress
 import io.github.chinosk.gakumas.localify.models.ProgramConfig
+import io.github.chinosk.gakumas.localify.ui.game_attach.InitProgressUI
 
 val TAG = "GakumasLocalify"
 
@@ -49,6 +51,7 @@ class GakumasHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
 
     private var getConfigError: Exception? = null
     private var externalFilesChecked: Boolean = false
+    private var gameActivity: Activity? = null
 
     override fun handleLoadPackage(lpparam: XC_LoadPackage.LoadPackageParam) {
 //        if (lpparam.packageName == "io.github.chinosk.gakumas.localify") {
@@ -135,6 +138,7 @@ class GakumasHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
                 super.beforeHookedMethod(param)
                 Log.d(TAG, "onStart")
                 val currActivity = param.thisObject as Activity
+                gameActivity = currActivity
                 if (getConfigError != null) {
                     showGetConfigFailed(currActivity)
                 }
@@ -148,6 +152,7 @@ class GakumasHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
             override fun beforeHookedMethod(param: MethodHookParam) {
                 Log.d(TAG, "onResume")
                 val currActivity = param.thisObject as Activity
+                gameActivity = currActivity
                 if (getConfigError != null) {
                     showGetConfigFailed(currActivity)
                 }
@@ -206,9 +211,30 @@ class GakumasHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
     private fun startLoop() {
         GlobalScope.launch {
             val interval = 1000L / 30
+            var lastFrameStartInit = NativeInitProgress.startInit
+            val initProgressUI = InitProgressUI()
+
             while (isActive) {
                 val timeTaken = measureTimeMillis {
-                    pluginCallbackLooper()
+                    val returnValue = pluginCallbackLooper()  // plugin main thread loop
+                    if (returnValue == 9) {
+                        NativeInitProgress.startInit = true
+                    }
+
+                    if (NativeInitProgress.startInit) {  // if init, update data
+                        NativeInitProgress.pluginInitProgressLooper(NativeInitProgress)
+                        gameActivity?.let { initProgressUI.updateData(it) }
+                    }
+
+                    if ((gameActivity != null) && (lastFrameStartInit != NativeInitProgress.startInit)) {  // change status
+                        if (NativeInitProgress.startInit) {
+                            initProgressUI.createView(gameActivity!!)
+                        }
+                        else {
+                            initProgressUI.finishLoad(gameActivity!!)
+                        }
+                    }
+                    lastFrameStartInit = NativeInitProgress.startInit
                 }
                 delay(interval - timeTaken)
             }
@@ -413,7 +439,7 @@ class GakumasHookMain : IXposedHookLoadPackage, IXposedHookZygoteInit {
         }
 
         @JvmStatic
-        external fun pluginCallbackLooper()
+        external fun pluginCallbackLooper(): Int
     }
 
     init {
