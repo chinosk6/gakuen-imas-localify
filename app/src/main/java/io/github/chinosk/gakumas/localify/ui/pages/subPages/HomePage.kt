@@ -141,9 +141,14 @@ fun HomePage(modifier: Modifier = Modifier,
                             v -> context?.onEnabledChanged(v)
                     }
 
+                    GakuSwitch(modifier, stringResource(R.string.lazy_init), checked = config.value.lazyInit) {
+                            v -> context?.onLazyInitChanged(v)
+                    }
+
                     GakuSwitch(modifier, stringResource(R.string.replace_font), checked = config.value.replaceFont) {
                             v -> context?.onReplaceFontChanged(v)
                     }
+
                 }
             }
             Spacer(Modifier.height(6.dp))

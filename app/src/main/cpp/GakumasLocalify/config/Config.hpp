@@ -5,6 +5,7 @@ namespace GakumasLocal::Config {
 
     extern bool dbgMode;
     extern bool enabled;
+    extern bool lazyInit;
     extern bool replaceFont;
     extern bool forceExportResource;
     extern int gameOrientation;

@@ -17,6 +17,7 @@ interface ConfigListener {
     fun onForceExportResourceChanged(value: Boolean)
     fun onTextTestChanged(value: Boolean)
     fun onReplaceFontChanged(value: Boolean)
+    fun onLazyInitChanged(value: Boolean)
     fun onEnableFreeCameraChanged(value: Boolean)
     fun onTargetFpsChanged(s: CharSequence, start: Int, before: Int, count: Int)
     fun onUnlockAllLiveChanged(value: Boolean)
@@ -109,6 +110,11 @@ interface ConfigUpdateListener: ConfigListener, IHasConfigItems {
         config.replaceFont = value
         saveConfig()
         pushKeyEvent(KeyEvent(1145, 30))
+    }
+
+    override fun onLazyInitChanged(value: Boolean) {
+        config.lazyInit = value
+        saveConfig()
     }
 
     override fun onTextTestChanged(value: Boolean) {

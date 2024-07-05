@@ -81,8 +81,16 @@ public:
 
 		[[nodiscard]] auto Get(const std::string& strClass, const std::string& strNamespace = "*", const std::string& strParent = "*") const -> Class* {
 			if (!this) return nullptr;
+            /*
+            if (lazyInit_ && classes.empty()) {
+                const auto image = Invoke<void*>("il2cpp_assembly_get_image", address);
+                ForeachClass(const_cast<Assembly *>(this), image);
+            }*/
 			for (const auto pClass : classes) if (strClass == pClass->name && (strNamespace == "*" || pClass->namespaze == strNamespace) && (strParent == "*" || pClass->parent == strParent)) return pClass;
-			return nullptr;
+			if (lazyInit_) {
+                return FillClass_Il2ccpp(const_cast<Assembly *>(this), strNamespace.c_str(), strClass.c_str());
+            }
+            return nullptr;
 		}
 	};
 
@@ -291,16 +299,17 @@ public:
 		}
 	}
 
-	static auto Init(void* hmodule, const Mode mode = Mode::Mono) -> void {
+	static auto Init(void* hmodule, const Mode mode = Mode::Mono, const bool lazyInit = false) -> void {
 		mode_ = mode;
 		hmodule_ = hmodule;
+        lazyInit_ = lazyInit;
 
 		if (mode_ == Mode::Il2Cpp) {
-            UnityResolveProgress::startInit = true;
+            if (!lazyInit) UnityResolveProgress::startInit = true;
 			pDomain = Invoke<void*>("il2cpp_domain_get");
 			Invoke<void*>("il2cpp_thread_attach", pDomain);
 			ForeachAssembly();
-            UnityResolveProgress::startInit = false;
+            if (!lazyInit) UnityResolveProgress::startInit = false;
 		}
 		else {
 			pDomain = Invoke<void*>("mono_get_root_domain");
@@ -576,10 +585,10 @@ private:
 			size_t     nrofassemblies = 0;
 			const auto assemblies = Invoke<void**>("il2cpp_domain_get_assemblies", pDomain, &nrofassemblies);
 
-            UnityResolveProgress::assembliesProgress.total = nrofassemblies;
+            if (!lazyInit_) UnityResolveProgress::assembliesProgress.total = nrofassemblies;
 
 			for (auto i = 0; i < nrofassemblies; i++) {
-                UnityResolveProgress::assembliesProgress.current = i + 1;
+                if (!lazyInit_) UnityResolveProgress::assembliesProgress.current = i + 1;
 				const auto ptr = assemblies[i];
 				if (ptr == nullptr) continue;
 				auto       assembly = new Assembly{ .address = ptr };
@@ -587,7 +596,9 @@ private:
 				assembly->file = Invoke<const char*>("il2cpp_image_get_filename", image);
 				assembly->name = Invoke<const char*>("il2cpp_image_get_name", image);
 				UnityResolve::assembly.push_back(assembly);
-				ForeachClass(assembly, image);
+                if (!lazyInit_) {
+                    ForeachClass(assembly, image);
+                }
 			}
 		}
 		else {
@@ -608,13 +619,39 @@ private:
 		}
 	}
 
+    static auto FillClass_Il2ccpp(Assembly* assembly, const char* namespaze, const char* klassName) -> Class* {
+        auto image = Invoke<void*>("il2cpp_assembly_get_image", assembly->address);
+        const auto pClass = Invoke<void*>("il2cpp_class_from_name", image, namespaze, klassName);
+        if (pClass == nullptr) return nullptr;
+        const auto pAClass = new Class();
+        pAClass->address = pClass;
+        pAClass->name = Invoke<const char*>("il2cpp_class_get_name", pClass);
+        if (const auto pPClass = Invoke<void*>("il2cpp_class_get_parent", pClass)) pAClass->parent = Invoke<const char*>("il2cpp_class_get_name", pPClass);
+        // pAClass->namespaze = Invoke<const char*>("il2cpp_class_get_namespace", pClass);
+        pAClass->namespaze = namespaze;
+        assembly->classes.push_back(pAClass);
+
+        ForeachFields(pAClass, pClass);
+        ForeachMethod(pAClass, pClass);
+
+        void* i_class{};
+        void* iter{};
+        do {
+            if ((i_class = Invoke<void*>("il2cpp_class_get_interfaces", pClass, &iter))) {
+                ForeachFields(pAClass, i_class);
+                ForeachMethod(pAClass, i_class);
+            }
+        } while (i_class);
+        return pAClass;
+    }
+
 	static auto ForeachClass(Assembly* assembly, void* image) -> void {
 		// 遍历类
 		if (mode_ == Mode::Il2Cpp) {
 			const auto count = Invoke<int>("il2cpp_image_get_class_count", image);
-            UnityResolveProgress::classProgress.total = count;
+            if (!lazyInit_) UnityResolveProgress::classProgress.total = count;
 			for (auto i = 0; i < count; i++) {
-                UnityResolveProgress::classProgress.current = i + 1;
+                if (!lazyInit_) UnityResolveProgress::classProgress.current = i + 1;
 				const auto pClass = Invoke<void*>("il2cpp_image_get_class", image, i);
 				if (pClass == nullptr) continue;
 				const auto pAClass = new Class();
@@ -2606,6 +2643,7 @@ public:
 private:
 	inline static Mode                                   mode_{};
 	inline static void* hmodule_;
+	inline static bool lazyInit_;
 	inline static std::unordered_map<std::string, void*> address_{};
 	inline static void* pDomain{};
 };

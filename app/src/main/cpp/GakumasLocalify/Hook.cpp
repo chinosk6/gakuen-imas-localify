@@ -39,7 +39,8 @@ std::unordered_set<void*> hookedStubs{};
             GakumasLocal::Log::InfoFmt("ADD_HOOK: %s at %p", #name, addr);                         \
         }                                                                                          \
     }                                                                                              \
-    else GakumasLocal::Log::ErrorFmt("Hook failed: %s is NULL", #name, addr)
+    else GakumasLocal::Log::ErrorFmt("Hook failed: %s is NULL", #name, addr);                      \
+    if (Config::lazyInit) UnityResolveProgress::classProgress.current++
 
 void UnHookAll() {
     for (const auto i: hookedStubs) {
@@ -827,7 +828,8 @@ namespace GakumasLocal::HookMain {
 
     void StartInjectFunctions() {
         const auto hookInstaller = Plugin::GetInstance().GetHookInstaller();
-        UnityResolve::Init(xdl_open(hookInstaller->m_il2cppLibraryPath.c_str(), RTLD_NOW), UnityResolve::Mode::Il2Cpp);
+        UnityResolve::Init(xdl_open(hookInstaller->m_il2cppLibraryPath.c_str(), RTLD_NOW),
+                           UnityResolve::Mode::Il2Cpp, Config::lazyInit);
 
         ADD_HOOK(AssetBundle_LoadAssetAsync, Il2cppUtils::il2cpp_resolve_icall(
                 "UnityEngine.AssetBundle::LoadAssetAsync_Internal(System.String,System.Type)"));
@@ -959,9 +961,29 @@ namespace GakumasLocal::HookMain {
 
         Log::Info("Start init plugin...");
 
+        if (Config::lazyInit) {
+            UnityResolveProgress::startInit = true;
+            UnityResolveProgress::assembliesProgress.total = 2;
+            UnityResolveProgress::assembliesProgress.current = 1;
+            UnityResolveProgress::classProgress.total = 36;
+            UnityResolveProgress::classProgress.current = 0;
+        }
+
         StartInjectFunctions();
         GKCamera::initCameraSettings();
+
+        if (Config::lazyInit) {
+            UnityResolveProgress::assembliesProgress.current = 2;
+            UnityResolveProgress::classProgress.total = 1;
+            UnityResolveProgress::classProgress.current = 0;
+        }
+
         Local::LoadData();
+
+        if (Config::lazyInit) {
+            UnityResolveProgress::classProgress.current = 1;
+            UnityResolveProgress::startInit = false;
+        }
 
         Log::Info("Plugin init finished.");
         return ret;

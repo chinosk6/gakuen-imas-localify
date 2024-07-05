@@ -7,6 +7,7 @@ namespace GakumasLocal::Config {
 
     bool dbgMode = false;
     bool enabled = true;
+    bool lazyInit = true;
     bool replaceFont = true;
     bool forceExportResource = true;
     bool textTest = false;
@@ -55,6 +56,7 @@ namespace GakumasLocal::Config {
 
             GetConfigItem(dbgMode);
             GetConfigItem(enabled);
+            GetConfigItem(lazyInit);
             GetConfigItem(replaceFont);
             GetConfigItem(forceExportResource);
             GetConfigItem(gameOrientation);

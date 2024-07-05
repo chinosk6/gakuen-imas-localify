@@ -96,7 +96,7 @@ class InitProgressUI {
                 gravity = Gravity.CENTER_HORIZONTAL
             }
             setTextColor(Color.BLACK)
-            text = "Initializing Plugins"
+            text = "Initializing"
             textSize = 20f
             setTypeface(typeface, Typeface.BOLD)
         }

@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 data class GakumasConfig (
     var dbgMode: Boolean = false,
     var enabled: Boolean = true,
+    var lazyInit: Boolean = true,
     var replaceFont: Boolean = true,
     var textTest: Boolean = false,
     var dumpText: Boolean = false,
