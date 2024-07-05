@@ -619,9 +619,27 @@ private:
 		}
 	}
 
+    static auto GetPClassFromUnknownNamespace(void* image, const char* klassName) -> void* {
+        const auto count = Invoke<int>("il2cpp_image_get_class_count", image);
+        for (auto i = 0; i < count; i++) {
+            const auto pClass = Invoke<void*>("il2cpp_image_get_class", image, i);
+            const auto className = Invoke<const char*>("il2cpp_class_get_name", pClass);
+            if (strcmp(className, klassName) == 0) {
+                return pClass;
+            }
+        }
+        return nullptr;
+    }
+
     static auto FillClass_Il2ccpp(Assembly* assembly, const char* namespaze, const char* klassName) -> Class* {
         auto image = Invoke<void*>("il2cpp_assembly_get_image", assembly->address);
-        const auto pClass = Invoke<void*>("il2cpp_class_from_name", image, namespaze, klassName);
+        void* pClass;
+        if (strcmp(namespaze, "*") == 0) {
+            pClass = GetPClassFromUnknownNamespace(image, klassName);
+        }
+        else {
+            pClass = Invoke<void*>("il2cpp_class_from_name", image, namespaze, klassName);
+        }
         if (pClass == nullptr) return nullptr;
         const auto pAClass = new Class();
         pAClass->address = pClass;

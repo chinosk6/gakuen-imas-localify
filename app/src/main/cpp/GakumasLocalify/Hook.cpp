@@ -98,7 +98,7 @@ namespace GakumasLocal::HookMain {
     UnityResolve::UnityType::Transform* cameraTransformCache = nullptr;
     void CheckAndUpdateMainCamera() {
         if (!Config::enableFreeCamera) return;
-        if (IsNativeObjectAlive(mainCameraCache)) return;
+        if (IsNativeObjectAlive(mainCameraCache) && IsNativeObjectAlive(cameraTransformCache)) return;
 
         mainCameraCache = UnityResolve::UnityType::Camera::GetMain();
         cameraTransformCache = mainCameraCache->GetTransform();
