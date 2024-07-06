@@ -33,24 +33,8 @@
 
 
 
-# 翻译仓库贡献列表
-
-<a href="https://github.com/chinosk6/GakumasTranslationData">
-  <img src="https://contrib.rocks/image?repo=chinosk6/GakumasTranslationData" />
-</a>
-
-
-
 # Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=chinosk6/gakuen-imas-localify&type=Date)](https://star-history.com/#chinosk6/gakuen-imas-localify&Date)
 
-
-
-# 特别鸣谢
-
-- [gkmasToolkit](https://github.com/kishidanatsumi/gkmasToolkit)
-- [UmaPyogin-Android](https://github.com/akemimadoka/UmaPyogin-Android)
-- [UnityResolve.hpp](https://github.com/issuimo/UnityResolve.hpp)
-- You
 
