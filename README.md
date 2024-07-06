@@ -2,14 +2,12 @@
 
 - 学园偶像大师 本地化插件
 - **本仓库及其分支已被万代 [DMCA](https://github.com/github/dmca/blob/master/2024/07/2024-07-02-bandai.md)，且所有分支已被禁用**
-- **This repository and its forks have been submitted a [DMCA request](https://github.com/github/dmca/blob/master/2024/07/2024-07-02-bandai.md) by Bandai Namco Entertainment Inc., and all forks have been disabled.**
+- **This repository and its forks have been submitted a [DMCA request](https://github.com/github/dmca/blob/master/2024/07/2024-07-02-bandai.md) by Bandai Namco Entertainment Inc., and all forks have been blocked.**
 
 
 
-- **请不要在 Issue 页发表无关信息**
-  - 若有想讨论的，请前往 [Discussions](https://github.com/chinosk6/gakuen-imas-localify/discussions) 页面讨论
-- **Please do not post irrelevant information on the Issue page.**
-  - If you have anything to discuss, please go to the [Discussions](https://github.com/chinosk6/gakuen-imas-localify/discussions) page.
+- **请不要在 Issue 页发表无关信息。**若有想讨论的，请前往 [Discussions](https://github.com/chinosk6/gakuen-imas-localify/discussions) 页面讨论
+- **Please do not post irrelevant information on the Issue page.** If you have anything to discuss, please go to the [Discussions](https://github.com/chinosk6/gakuen-imas-localify/discussions) page.
 
 
 
@@ -42,5 +40,4 @@
 # Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=chinosk6/gakuen-imas-localify&type=Date)](https://star-history.com/#chinosk6/gakuen-imas-localify&Date)
-
 
