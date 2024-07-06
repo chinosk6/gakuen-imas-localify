@@ -6,7 +6,7 @@
 
 
 
-- **请不要在 Issue 页发表无关信息。**若有想讨论的，请前往 [Discussions](https://github.com/chinosk6/gakuen-imas-localify/discussions) 页面讨论
+- **请不要在 Issue 页发表无关信息。** 若有想讨论的，请前往 [Discussions](https://github.com/chinosk6/gakuen-imas-localify/discussions) 页面讨论
 - **Please do not post irrelevant information on the Issue page.** If you have anything to discuss, please go to the [Discussions](https://github.com/chinosk6/gakuen-imas-localify/discussions) page.
 
 
