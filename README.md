@@ -37,7 +37,7 @@
 - `local-files/localization.json` 为 localization 翻译
 - `local-files/generic.json` 为 localization 未覆盖部分的翻译
 - `local-files/genericTrans` 文件夹内所有 `.json` 文件作用同 `generic.json`，文件夹名/文件名可自定义，方便区分翻译内容
-- `local-files/resource` 文件夹存放资源文件，目前可以替换所有同名的 txt 文件。获取游戏原始资源可以查看：[gkmasToolkit](https://github.com/kishidanatsumi/gkmasToolkit)
+- `local-files/resource` 文件夹存放资源文件，目前可以替换所有同名的 txt 文件。
 
 
 
