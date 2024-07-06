@@ -11,6 +11,10 @@
 
 
 
+![](img/ISurrender.jpg)
+
+
+
 # Usage
 
 - 这是一个 XPosed 插件，已 Root 用户可以使用 [LSPosed](https://github.com/LSPosed/LSPosed)，未 Root 用户可以使用 [LSPatch](https://github.com/LSPosed/LSPatch)。
